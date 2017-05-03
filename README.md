@@ -25,9 +25,9 @@ in your openshift3 role or environment.
 Test Matrix
 ===========
 
-| Platform | OSE 1.4.1 | OSE 1.3.3 | OSE 1.2.1 |
-|----------|-----------|-----------|-----------|
-| centos 7.2 | PASS | PASS | open issues: #76 |
+| Platform | OSE 1.5.0 | OSE 1.4.1 | OSE 1.3.3 | OSE 1.2.1 |
+|----------|-----------|-----------|-----------|-----------|
+| centos 7.2 | PASS | PASS | PASS | open issues: #76 |
 
 Override Attributes
 ===================
