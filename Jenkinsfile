@@ -2,6 +2,7 @@
 
 def nodename='cage'
 def builddir='cookbook-openshift3-test-' + env.BUILD_NUMBER
+def branch=env.BRANCH_NAME
 
 try {
   stage('setupenv') {
@@ -9,7 +10,7 @@ try {
       sh 'mkdir -p ' + builddir
       dir(builddir) {
         ////when in source...
-        checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/IshentRas/cookbook-openshift3']]])
+        checkout([$class: 'GitSCM', branches: [[name: '*/' + branch]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/IshentRas/cookbook-openshift3']]])
       }
     }
   }
@@ -18,6 +19,19 @@ try {
     node(nodename) {
       dir(builddir) {
         sh 'rubocop -r cookstyle -D'
+      }
+    }
+  }
+
+  stage('shutit_tests') {
+    node(nodename) {
+      dir(builddir) {
+        sh 'git clone --recursive --depth 1 https://github.com/ianmiell/shutit-openshift-cluster'
+        dir('shutit-openshift-cluster') {
+          withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
+            sh 'COOKBOOK_VERSION=' + branch + ' ./run_tests.sh --interactive 0'
+          }
+        }
       }
     }
   }
@@ -32,19 +46,6 @@ try {
             sh('kitchen converge ' + f)
             sh('kitchen verify ' + f)
             sh('kitchen destroy ' + f)
-          }
-        }
-      }
-    }
-  }
-
-  stage('shutit_tests') {
-    node(nodename) {
-      dir(builddir) {
-        sh 'git clone --recursive --depth 1 https://github.com/ianmiell/shutit-openshift-cluster'
-        dir('shutit-openshift-cluster') {
-          withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
-            sh 'COOKBOOK_VERSION=master ./run_tests.sh --interactive 0'
           }
         }
       }
