@@ -138,7 +138,7 @@ if etcd_servers.find { |server_etcd| server_etcd['fqdn'] == node['fqdn'] }
 
   remote_file "Retrieve certificate from ETCD Master[#{master_servers.first['fqdn']}]" do
     path "#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd-#{node['fqdn']}.tgz"
-    source "http://#{etcd_servers.first['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd-#{node['fqdn']}.tgz"
+    source "http://#{master_servers.first['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd-#{node['fqdn']}.tgz"
     action :create_if_missing
     notifies :run, 'execute[Extract certificate to ETCD folder]', :immediately
     retries 12
@@ -171,7 +171,7 @@ if etcd_servers.find { |server_etcd| server_etcd['fqdn'] == node['fqdn'] }
     end
   end
 
-  execute 'Fix ETCD directiory permissions' do
+  execute 'Fix ETCD directory permissions' do
     command "chmod 755 #{node['cookbook-openshift3']['etcd_conf_dir']}"
     only_if "[[ $(stat -c %a #{node['cookbook-openshift3']['etcd_conf_dir']}) -ne 755 ]]"
   end

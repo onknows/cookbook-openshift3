@@ -14,7 +14,7 @@ node['cookbook-openshift3']['enabled_firewall_rules_master_cluster'].each do |ru
   end
 end
 
-if etcd_servers.first['fqdn'] != master_servers.first['fqdn']
+if master_servers.first['fqdn'] == node['fqdn']
   directory node['cookbook-openshift3']['etcd_ca_dir'] do
     owner 'root'
     group 'root'
@@ -48,18 +48,6 @@ if etcd_servers.first['fqdn'] != master_servers.first['fqdn']
     action :create_if_missing
   end
 
-  %w(ca.crt ca.key).each do |etcd_crt|
-    remote_file "Retrieve CA certificates #{etcd_crt} from ETCD Master[#{etcd_servers.first['fqdn']}]" do
-      path "#{node['cookbook-openshift3']['etcd_ca_dir']}/#{etcd_crt}"
-      source "http://#{etcd_servers.first['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd/#{etcd_crt}"
-      action :create_if_missing
-      retries 10
-      retry_delay 5
-    end
-  end
-end
-
-if master_servers.first['fqdn'] == node['fqdn']
   %W(/var/www/html/master #{node['cookbook-openshift3']['master_generated_certs_dir']}).each do |path|
     directory path do
       mode '0755'
