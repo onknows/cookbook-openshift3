@@ -136,7 +136,7 @@ if etcd_servers.find { |server_etcd| server_etcd['fqdn'] == node['fqdn'] }
     end
   end
 
-  remote_file "Retrieve certificate from ETCD Master[#{etcd_servers.first['fqdn']}]" do
+  remote_file "Retrieve certificate from ETCD Master[#{master_servers.first['fqdn']}]" do
     path "#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd-#{node['fqdn']}.tgz"
     source "http://#{etcd_servers.first['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd-#{node['fqdn']}.tgz"
     action :create_if_missing
