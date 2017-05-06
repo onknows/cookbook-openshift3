@@ -4,6 +4,7 @@ def nodename='cage'
 def builddir='cookbook-openshift3-test-' + env.BUILD_NUMBER
 def branch=env.BRANCH_NAME
 
+
 try {
   stage('setupenv') {
     node(nodename) {
@@ -67,3 +68,18 @@ RELEASE
 ''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.tk', replyTo: '', subject: 'Build failure', to: 'ian.miell@gmail.com'
   throw(err)
 }
+
+def cleanup() {
+  stage('cleanup') {
+    node(nodename) {
+      dir(builddir) {
+        dir('shutit-openshift-cluster') {
+          sh('yes | ./destroy.sh')
+        }
+      }
+    }
+  }
+}
+
+cleanup()
+  
