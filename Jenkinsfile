@@ -62,14 +62,20 @@ RELEASE
 - knife cookbook site share cookbook-openshift3
 
 ''', cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.tk', replyTo: '', subject: 'Build OK', to: 'ian.miell@gmail.com'
+  stage('cleanup') {
+    node(nodename) {
+      dir(builddir) {
+        dir('shutit-openshift-cluster') {
+          sh('yes | ./destroy.sh')
+        }
+      }
+    }
+  }
 } catch(err) {
   mail bcc: '', body: '''See: http://jenkins.meirionconsulting.tk/job/cookbook-openshift3-pipeline
 
 ''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.tk', replyTo: '', subject: 'Build failure', to: 'ian.miell@gmail.com'
   throw(err)
-}
-
-def cleanup() {
   stage('cleanup') {
     node(nodename) {
       dir(builddir) {
@@ -80,6 +86,3 @@ def cleanup() {
     }
   }
 }
-
-cleanup()
-  

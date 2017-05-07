@@ -1,6 +1,14 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.47
+### Improvement
+- Jenkinsfile gets correct branch
+- Kitchen tests at end (less likely to fail)
+
+### Bug
+- Separated etcd cluster now works (all certs pulled from first master)
+
 ## v1.10.46
 ### Bug
 - Spacing corrected and defaults not included as per discussion in #115
