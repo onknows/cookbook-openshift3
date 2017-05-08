@@ -66,7 +66,7 @@ RELEASE
     node(nodename) {
       dir(builddir) {
         dir('shutit-openshift-cluster') {
-          sh('yes | ./destroy.sh')
+          sh('yes | ./destroy_vms.sh')
         }
       }
     }
@@ -80,7 +80,7 @@ RELEASE
     node(nodename) {
       dir(builddir) {
         dir('shutit-openshift-cluster') {
-          sh('yes | ./destroy.sh')
+          sh('yes | ./destroy_vms.sh')
         }
       }
     }
