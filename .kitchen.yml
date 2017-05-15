@@ -29,8 +29,8 @@ openshift3-shared-attributes: &SHARED
   #  - name: "centos-openshift-origin"
   #    baseurl: "http://buildlogs.centos.org/centos/7/paas/x86_64/openshift-origin/"
   #    gpgcheck: false
-  # we override these because 10.0.2.15 is whitelisted in $no_proxy
-  openshift_common_api_hostname: 10.0.2.15
+  # attention: if using http proxies, make sure that '10.0.2.15.nip.io' is whitelisted in $no_proxy!
+  openshift_common_api_hostname: 10.0.2.15.nip.io
   openshift_master_router_subdomain: cloudapps.10.0.2.15.nip.io
   openshift_master_metrics_public_url: metrics.10.0.2.15.nip.io
   openshift_common_default_nodeSelector: region=infra

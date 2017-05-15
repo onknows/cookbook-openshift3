@@ -137,7 +137,7 @@ if master_servers.first['fqdn'] == node['fqdn']
 
   execute 'Create the master certificates' do
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-master-certs \
-            --hostnames=#{node['cookbook-openshift3']['erb_corsAllowedOrigins'].uniq.join(',')} \
+            --hostnames=#{(node['cookbook-openshift3']['erb_corsAllowedOrigins'] + [master_servers.first['ipaddress']]).uniq.join(',')} \
             --master=#{node['cookbook-openshift3']['openshift_master_api_url']} \
             --public-master=#{node['cookbook-openshift3']['openshift_master_public_api_url']} \
             --cert-dir=#{node['cookbook-openshift3']['openshift_master_config_dir']} --overwrite=false"
@@ -169,7 +169,7 @@ if master_servers.first['fqdn'] == node['fqdn']
 
     execute "Create the master peer certificates for #{peer_server['fqdn']}" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} create-master-certs \
-              --hostnames=#{node['cookbook-openshift3']['erb_corsAllowedOrigins'].uniq.join(',').gsub(master_servers.first['ipaddress'], peer_server['ipaddress'])} \
+              --hostnames=#{(node['cookbook-openshift3']['erb_corsAllowedOrigins'] + [peer_server['ipaddress']]).uniq.join(',')} \
               --master=#{node['cookbook-openshift3']['openshift_master_api_url']} \
               --public-master=#{node['cookbook-openshift3']['openshift_master_public_api_url']} \
               --cert-dir=#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{peer_server['fqdn']} --overwrite=false"
