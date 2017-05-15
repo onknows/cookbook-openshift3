@@ -17,12 +17,10 @@ action :redeploy do
     cwd node['cookbook-openshift3']['etcd_conf_dir']
     only_if "[ -a #{node['cookbook-openshift3']['etcd_conf_dir']} ]"
   end
-  %W(peer* server* etcd-#{node['fqdn']}.tgz).each do |certs|
-    execute 'Delete Peer/Server certs' do
-      command "rm -rf #{certs} || true"
-      cwd node['cookbook-openshift3']['etcd_conf_dir']
-      only_if "[ -a #{node['cookbook-openshift3']['etcd_conf_dir']} ]"
-    end
+  execute 'Delete etcd Peer/Server certs' do
+    command "rm -rf peer* server* etcd-#{node['fqdn']}.tgz || true"
+    cwd node['cookbook-openshift3']['etcd_conf_dir']
+    only_if "[ -a #{node['cookbook-openshift3']['etcd_conf_dir']} ]"
   end
   execute 'Backup master stuff' do
     command "tar czvf master-backup-$(date +%s).tar.gz #{node['cookbook-openshift3']['openshift_master_config_dir']} /var/www/html/master --ignore-failed-read && rm -rf /var/www/html/master"
