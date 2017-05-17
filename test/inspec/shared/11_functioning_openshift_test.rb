@@ -43,3 +43,11 @@ describe command('oc get node/$HOSTNAME --no-headers') do
   its('exit_status') { should eq 0 }
   its('stdout') { should match(/SchedulingDisabled/) }
 end
+
+# the openshift master api endpoints should by queriable using the https protocol; in other words,
+# `curl --fail https://$(oc get endpoints kubernetes -n default -o jsonpath='{.subsets[*].addresses[0].ip}'):8443`
+# should always work, even if the endpoint ipaddress is not explicitly listed in `node['cookbook-openshift3']['erb_corsAllowedOrigins']`.
+describe command('curl --fail --cacert /etc/origin/node/ca.crt https://10.0.2.15:8443') do
+  its('exit_status') { should eq 0 }
+  its('stdout') { should include('/api/v1') }
+end
