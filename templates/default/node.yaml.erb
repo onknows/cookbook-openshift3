@@ -8,7 +8,7 @@ iptablesSyncPeriod: "<%= node['cookbook-openshift3']['openshift_node_iptables_sy
 imageConfig:
   format: <%= node['cookbook-openshift3']['openshift_common_registry_url'] %>
   latest: false
-<% if @ose_major_version.split('.')[1].to_i.between?(3,4) %>
+<% if @ose_major_version.split('.')[1].to_i.between?(3,5) %>
 masterClientConnectionOverrides:
   acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
   contentType: application/vnd.kubernetes.protobuf

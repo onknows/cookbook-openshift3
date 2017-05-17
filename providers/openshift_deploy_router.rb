@@ -30,6 +30,7 @@ action :create do
       'namespace_router' => node['cookbook-openshift3']['openshift_hosted_router_namespace']
     )
     cwd node['cookbook-openshift3']['openshift_master_config_dir']
+    only_if { ::File.file?(node['cookbook-openshift3']['openshift_hosted_router_certfile']) && ::File.file?(node['cookbook-openshift3']['openshift_hosted_router_keyfile']) }
     not_if 'oc get secret router-certs -n $namespace_router --no-headers'
   end
 
