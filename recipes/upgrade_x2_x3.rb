@@ -7,4 +7,4 @@
 # This must be run before any upgrade takes place.
 # It creates the service signer certs (and any others) if they were not in
 # existence previously.
-include_recipe 'cookbook-openshift3::adhoc_redeploy_certs'
+include_recipe 'cookbook-openshift3::adhoc_redeploy_certificates'
