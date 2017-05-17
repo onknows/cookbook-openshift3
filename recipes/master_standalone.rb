@@ -29,7 +29,7 @@ end
 
 execute 'Create the master certificates' do
   command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-master-certs \
-          --hostnames=#{node['cookbook-openshift3']['erb_corsAllowedOrigins'].join(',')} \
+          --hostnames=#{(node['cookbook-openshift3']['erb_corsAllowedOrigins'] + [node['cookbook-openshift3']['openshift_common_ip']]).uniq.join(',')} \
           --master=#{node['cookbook-openshift3']['openshift_master_api_url']} \
           --public-master=#{node['cookbook-openshift3']['openshift_master_public_api_url']} \
           --cert-dir=#{node['cookbook-openshift3']['openshift_master_config_dir']} --overwrite=false"
