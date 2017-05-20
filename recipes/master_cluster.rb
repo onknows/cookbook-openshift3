@@ -164,6 +164,8 @@ if master_servers.first['fqdn'] == node['fqdn']
     %w(ca.crt ca.key ca.serial.txt admin.crt admin.key admin.kubeconfig master.kubelet-client.crt master.kubelet-client.key openshift-master.crt openshift-master.key openshift-master.kubeconfig openshift-registry.crt openshift-registry.key openshift-registry.kubeconfig openshift-router.crt master.proxy-client.crt master.proxy-client.key openshift-router.key openshift-router.kubeconfig serviceaccounts.private.key serviceaccounts.public.key service-signer.crt service-signer.key).each do |master_certificate|
       remote_file "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{peer_server['fqdn']}/#{master_certificate}" do
         source "file://#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{master_certificate}"
+        only_if { ::File.file?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{master_certificate}") }
+
       end
     end
 
