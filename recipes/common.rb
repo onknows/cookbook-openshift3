@@ -11,6 +11,40 @@ iptables_rule 'firewall_jump_rule' do
   action :enable
 end
 
+lb_servers = node['cookbook-openshift3']['lb_servers']
+
+if lb_servers.find { |lb| lb['fqdn'] == node['fqdn'] }
+  package 'haproxy'
+
+  node['cookbook-openshift3']['enabled_firewall_rules_lb'].each do |rule|
+    iptables_rule rule do
+      action :enable
+    end
+  end
+
+  directory '/etc/systemd/system/haproxy.service.d' do
+    recursive true
+  end
+
+  template '/etc/haproxy/haproxy.cfg' do
+    source 'haproxy.conf.erb'
+    variables lazy {
+      {
+        master_servers: node['cookbook-openshift3']['master_servers'],
+        maxconn: node['cookbook-openshift3']['lb_default_maxconn'].nil? ? '20000' : node['cookbook-openshift3']['lb_default_maxconn']
+      }
+    }
+    notifies :restart, 'service[haproxy]', :immediately
+  end
+
+  template '/etc/systemd/system/haproxy.service.d/limits.conf' do
+    source 'haproxy.service.erb'
+    variables nofile: node['cookbook-openshift3']['lb_limit_nofile'].nil? ? '100000' : node['cookbook-openshift3']['lb_limit_nofile']
+    notifies :run, 'execute[daemon-reload]', :immediately
+    notifies :restart, 'service[haproxy]', :immediately
+  end
+end
+
 if node['cookbook-openshift3']['install_method'].eql? 'yum'
   node['cookbook-openshift3']['yum_repositories'].each do |repo|
     yum_repository repo['name'] do

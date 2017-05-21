@@ -13,7 +13,7 @@ ruby_block 'Update ca trust' do
   block do
     Mixlib::ShellOut.new('update-ca-trust').run_command
   end
-  notifies :restart, 'service[docker]', :delayed
+  notifies :restart, 'service[docker]', :immediately
   action :nothing
 end
 

@@ -74,10 +74,10 @@ openshift_create_pv 'Create Persistent Storage' do
 end
 
 node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
-  execute 'Wait up to 30s for nodes registration' do
+  execute "Wait up to 30s for nodes registration [Size : #{node_servers.size.to_i}]" do
     command "[[ `oc get node --no-headers --config=admin.kubeconfig | grep -wc \"Ready\"` -ne #{node_servers.size.to_i} ]]"
     cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    only_if "[[ `oc get node --no-headers --config=admin.kubeconfig | wc -l` -n #{node_servers.size.to_i} ]]"
+    only_if "[[ `oc get node --no-headers --config=admin.kubeconfig | wc -l` -ne #{node_servers.size.to_i} ]]"
     retries 6
     retry_delay 5
     ignore_failure true

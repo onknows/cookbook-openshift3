@@ -15,7 +15,7 @@ Requirements
 
 * Support OSE version from 3.1.0.4+
 * Support Origin version from 1.1.1+
-* Default the installation to 1.4 or 3.4
+* Default the installation to 1.5 or 3.5
 
 **Highly recommended**: explicitly set `node['cookbook-openshift3']['ose_version']`, `node['cookbook-openshift3']['ose_major_version']`
 and ideally `node['cookbook-openshift3']['docker_version']` to be safe when a major version is released on the
@@ -25,7 +25,7 @@ in your openshift3 role or environment.
 Test Matrix
 ===========
 
-| Platform | OSE 1.5.0 | OSE 1.4.1 | OSE 1.3.3 | OSE 1.2.1 |
+| Platform | OSE 1.5.1 | OSE 1.4.1 | OSE 1.3.3 | OSE 1.2.2 |
 |----------|-----------|-----------|-----------|-----------|
 | centos 7.2 | PASS | PASS | PASS | open issues: #76 |
 
@@ -383,6 +383,12 @@ In general, override attributes in the environment should be used when changing 
           "path": "/var/nfs/logging",
           "policy": "Recycle"
         }
+      ],
+      "lb_servers": [
+        {
+          "fqdn": "lb1-server.domain.local",
+          "ipaddress": "1.1.1.4"
+        },
       ],
       "master_servers": [
         {

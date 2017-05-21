@@ -30,6 +30,8 @@ service 'NetworkManager'
 
 service 'openvswitch'
 
+service 'haproxy'
+
 include_recipe 'cookbook-openshift3::validate'
 include_recipe 'cookbook-openshift3::common'
 include_recipe 'cookbook-openshift3::master'

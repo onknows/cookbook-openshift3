@@ -36,7 +36,7 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['ose_major_version']` -  Defaults to `node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? '3.4' : '1.4`.
 * `node['cookbook-openshift3']['deploy_containerized']` -  Defaults to `false`.
 * `node['cookbook-openshift3']['deploy_example']` -  Defaults to `false`.
-* `node['cookbook-openshift3']['deploy_dnsmasq']` -  Defaults to `false`.
+* `node['cookbook-openshift3']['deploy_dnsmasq']` -  Defaults to `true`.
 * `node['cookbook-openshift3']['deploy_standalone_registry']` -  Defaults to `false`.
 * `node['cookbook-openshift3']['deploy_example_db_templates']` -  Defaults to `true`.
 * `node['cookbook-openshift3']['deploy_example_image-streams']` -  Defaults to `true`.
@@ -55,6 +55,7 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['enabled_firewall_rules_node']` -  Defaults to `%w(firewall_node)`.
 * `node['cookbook-openshift3']['enabled_firewall_additional_rules_node']` -  Defaults to `[ ... ]`.
 * `node['cookbook-openshift3']['enabled_firewall_rules_etcd']` -  Defaults to `%w(firewall_etcd)`.
+* `node['cookbook-openshift3']['enabled_firewall_rules_lb']` -  Defaults to `%w(firewall_lb)`.
 * `node['cookbook-openshift3']['openshift_service_type']` -  Defaults to `node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'atomic-openshift' : 'origin`.
 * `node['cookbook-openshift3']['registry_persistent_volume']` -  Defaults to ``.
 * `node['cookbook-openshift3']['yum_repositories']` -  Defaults to `node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? %w() : [{ 'name' => 'centos-openshift-origin', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin/', 'gpgcheck' => false }]`.
@@ -94,6 +95,7 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_master_auditconfig']` -  Defaults to `false`.
 * `node['cookbook-openshift3']['openshift_master_api_port']` -  Defaults to `8443`.
 * `node['cookbook-openshift3']['openshift_master_console_port']` -  Defaults to `8443`.
+* `node['cookbook-openshift3']['openshift_lb_port']` -  Defaults to `8443`.
 * `node['cookbook-openshift3']['openshift_master_controllers_port']` -  Defaults to `8444`.
 * `node['cookbook-openshift3']['openshift_master_controller_lease_ttl']` -  Defaults to `30`.
 * `node['cookbook-openshift3']['openshift_master_dynamic_provisioning_enabled']` -  Defaults to `true`.
