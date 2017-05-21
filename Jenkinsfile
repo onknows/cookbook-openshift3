@@ -24,29 +24,33 @@ try {
     }
   }
 
-  stage('shutit_tests') {
-    node(nodename) {
-      dir(builddir) {
-        sh 'git clone --recursive --depth 1 https://github.com/ianmiell/shutit-openshift-cluster'
-        dir('shutit-openshift-cluster') {
-          withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
-            sh 'COOKBOOK_VERSION=' + branch + ' ./run_tests.sh --interactive 0'
+  lock('cookbook_openshift3_shutit_tests') {
+    stage('shutit_tests') {
+      node(nodename) {
+        dir(builddir) {
+          sh 'git clone --recursive --depth 1 https://github.com/ianmiell/shutit-openshift-cluster'
+          dir('shutit-openshift-cluster') {
+            withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
+              sh 'COOKBOOK_VERSION=' + branch + ' ./run_tests.sh --interactive 0'
+            }
           }
         }
       }
     }
   }
 
-  stage('kitchen') {
-    node(nodename) {
-      dir(builddir) {
-        def l = sh(script: 'kitchen list -b', returnStdout: true).trim().tokenize()
-        for (f in l) {
-          // Seeing persistent 'SCP did not finish successfully (255):  (Net::SCP::Error)' errors, so retry added.
-          retry(10) {
-            sh('kitchen converge ' + f)
-            sh('kitchen verify ' + f)
-            sh('kitchen destroy ' + f)
+  lock('cookbook_openshift3_kitchen_tests') {
+    stage('kitchen') {
+      node(nodename) {
+        dir(builddir) {
+          def l = sh(script: 'kitchen list -b', returnStdout: true).trim().tokenize()
+          for (f in l) {
+            // Seeing persistent 'SCP did not finish successfully (255):  (Net::SCP::Error)' errors, so retry added.
+            retry(10) {
+              sh('kitchen converge ' + f)
+              sh('kitchen verify ' + f)
+              sh('kitchen destroy ' + f)
+            }
           }
         }
       }
