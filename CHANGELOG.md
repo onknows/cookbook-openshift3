@@ -1,6 +1,16 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.48
+### Improvement
+- Initial support for 1.5/3.5 OCP
+- Refactor logic for HA cluster deployment
+- Add support for deploying only LB role (Haproxy) https://github.com/IshentRas/cookbook-openshift3/issues/100
+- MISC bug fix
+
+### Bug
+- Separated certificates to be copied from first master
+
 ## v1.10.47
 ### Improvement
 - Jenkinsfile gets correct branch
