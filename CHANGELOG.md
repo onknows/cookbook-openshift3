@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.49
+###
+- Fix Foodcritic issues related to metada.rb
+
 ## v1.10.48
 ### Improvement
 - Initial support for 1.5/3.5 OCP
