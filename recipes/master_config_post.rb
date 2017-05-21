@@ -74,6 +74,15 @@ openshift_create_pv 'Create Persistent Storage' do
 end
 
 node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
+  execute 'Wait up to 30s for nodes registration' do
+    command "[[ `oc get node --no-headers --config=admin.kubeconfig | grep -wc \"Ready\"` -ne #{node_servers.size.to_i} ]]"
+    cwd node['cookbook-openshift3']['openshift_master_config_dir']
+    only_if "[[ `oc get node --no-headers --config=admin.kubeconfig | wc -l` -n #{node_servers.size.to_i} ]]"
+    retries 6
+    retry_delay 5
+    ignore_failure true
+  end
+
   execute "Set schedulability for Master node : #{nodes['fqdn']}" do
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} manage-node #{nodes['fqdn']} --schedulable=${schedulability} --config=admin.kubeconfig"
     environment(
@@ -109,14 +118,6 @@ node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
         !Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
     end
   end
-end
-
-execute 'Wait up to 30s for nodes registration' do
-  command '[[ `oc get node --no-headers --config=admin.kubeconfig | grep -wc "Ready"` -ne 0 ]]'
-  cwd node['cookbook-openshift3']['openshift_master_config_dir']
-  only_if '[[ `oc get node --no-headers --config=admin.kubeconfig | grep -wc "Ready"` -eq 0 ]]'
-  retries 6
-  retry_delay 5
 end
 
 openshift_deploy_router 'Deploy Router' do

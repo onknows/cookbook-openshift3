@@ -40,10 +40,6 @@ action :create do
     end
   end
 
-  service "#{new_resource.openshift_service_type}-master"
-  service "#{new_resource.openshift_service_type}-master-api"
-  service "#{new_resource.openshift_service_type}-master-controllers"
-
   if new_resource.cluster
     template new_resource.master_file do
       source 'master.yaml.erb'
@@ -55,8 +51,7 @@ action :create do
         masters_size: new_resource.masters_size,
         ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
       )
-      notifies :restart, "service[#{new_resource.openshift_service_type}-master-api]", :delayed
-      notifies :restart, "service[#{new_resource.openshift_service_type}-master-controllers]", :delayed
+      notifies :run, 'ruby_block[Restart API]', :immediately
     end
   else
     template new_resource.master_file do
@@ -69,7 +64,7 @@ action :create do
         masters_size: new_resource.masters_size,
         ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
       )
-      notifies :restart, "service[#{new_resource.openshift_service_type}-master]", :delayed
+      notifies :run, 'ruby_block[Restart Master]', :immediately
     end
   end
   new_resource.updated_by_last_action(true)

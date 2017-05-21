@@ -8,6 +8,15 @@ master_servers = node['cookbook-openshift3']['master_servers']
 node_servers = node['cookbook-openshift3']['node_servers']
 path_certificate = node['cookbook-openshift3']['use_wildcard_nodes'] ? 'wildcard_nodes.tgz' : "#{node['fqdn']}.tgz"
 
+# Use ruby_block for copying OpenShift CA to system CA trust
+ruby_block 'Update ca trust' do
+  block do
+    Mixlib::ShellOut.new('update-ca-trust').run_command
+  end
+  notifies :restart, 'service[docker]', :delayed
+  action :nothing
+end
+
 if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
   file '/usr/local/etc/.firewall_node_additional.txt' do
     content node['cookbook-openshift3']['enabled_firewall_additional_rules_node'].join('\n')
@@ -72,7 +81,7 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
   template "/etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-node" do
     source 'service_node.sysconfig.erb'
     variables(sysconfig_vars)
-    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :delayed
+    notifies :run, 'ruby_block[Restart Node]', :immediately
   end
 
   package "#{node['cookbook-openshift3']['openshift_service_type']}-node" do
@@ -117,6 +126,11 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
     mode '0644'
   end
 
+  remote_file '/etc/pki/ca-trust/source/anchors/openshift-ca.crt' do
+    source "file://#{node['cookbook-openshift3']['openshift_node_config_dir']}/ca.crt"
+    notifies :run, 'ruby_block[Update ca trust]', :immediately
+  end
+
   if node['cookbook-openshift3']['deploy_dnsmasq']
     template '/etc/dnsmasq.d/origin-dns.conf' do
       source 'origin-dns.conf.erb'
@@ -137,7 +151,7 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
     source 'node.yaml.erb'
     variables ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
     notifies :run, 'execute[daemon-reload]', :immediately
-    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
+    notifies :run, 'ruby_block[Restart Node]', :immediately
     notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
   end
 

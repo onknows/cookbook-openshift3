@@ -59,7 +59,6 @@ cat << EOF > environments/origin.json
       "openshift_common_default_nodeSelector": "region=infra",
       "deploy_containerized": true,
       "deploy_example": true,
-      "openshift_docker_image_version": "v1.4.1",
       "openshift_master_router_subdomain": "cloudapps.${IP}.nip.io",
       "master_servers": [
         {

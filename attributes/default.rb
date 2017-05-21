@@ -33,7 +33,7 @@ default['cookbook-openshift3']['ose_major_version'] = node['cookbook-openshift3'
 default['cookbook-openshift3']['openshift_docker_image_version'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'v3.5' : 'v1.5.1'
 default['cookbook-openshift3']['deploy_containerized'] = false
 default['cookbook-openshift3']['deploy_example'] = false
-default['cookbook-openshift3']['deploy_dnsmasq'] = false
+default['cookbook-openshift3']['deploy_dnsmasq'] = true
 default['cookbook-openshift3']['deploy_standalone_registry'] = false
 default['cookbook-openshift3']['deploy_example_db_templates'] = true
 default['cookbook-openshift3']['deploy_example_image-streams'] = true
@@ -96,6 +96,7 @@ default['cookbook-openshift3']['openshift_master_config_dir'] = "#{node['cookboo
 default['cookbook-openshift3']['openshift_master_bind_addr'] = '0.0.0.0'
 default['cookbook-openshift3']['openshift_master_auditconfig'] = false
 default['cookbook-openshift3']['openshift_master_api_port'] = '8443'
+default['cookbook-openshift3']['openshift_master_certs'] = %w(admin.crt admin.key admin.kubeconfig master.kubelet-client.crt master.kubelet-client.key ca.crt ca.key ca-bundle.crt serviceaccounts.private.key serviceaccounts.public.key master.proxy-client.crt master.proxy-client.key service-signer.crt service-signer.key)
 default['cookbook-openshift3']['openshift_master_console_port'] = '8443'
 default['cookbook-openshift3']['openshift_master_controllers_port'] = '8444'
 default['cookbook-openshift3']['openshift_master_controller_lease_ttl'] = '30'
