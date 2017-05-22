@@ -13,7 +13,7 @@ end
 
 lb_servers = node['cookbook-openshift3']['lb_servers']
 
-if lb_servers.find { |lb| lb['fqdn'] == node['fqdn'] }
+if !lb_servers.nil? && lb_servers.find { |lb| lb['fqdn'] == node['fqdn'] }
   package 'haproxy'
 
   node['cookbook-openshift3']['enabled_firewall_rules_lb'].each do |rule|
