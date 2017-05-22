@@ -31,7 +31,7 @@ if !lb_servers.nil? && lb_servers.find { |lb| lb['fqdn'] == node['fqdn'] }
     variables lazy {
       {
         master_servers: node['cookbook-openshift3']['master_servers'],
-        maxconn: node['cookbook-openshift3']['lb_default_maxconn'].nil? ? '20000' : node['cookbook-openshift3']['lb_default_maxconn']
+        maxconn: node['cookbook-openshift3']['lb_default_maxconn'].nil? ? '20000' : node['cookbook-openshift3']['lb_default_maxconn'],
       }
     }
     notifies :restart, 'service[haproxy]', :immediately
