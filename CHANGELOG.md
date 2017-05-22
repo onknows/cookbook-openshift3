@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.52
+### Bug
+- Fix cookstyle issues
+
 ## v1.10.51
 ### Bug
 - Fix bug when not declaring lb_servers role
