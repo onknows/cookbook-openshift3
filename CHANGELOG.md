@@ -1,6 +1,15 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.53
+### Improvement
+- Remove duplicated code between etcd_cluster and master_cluster recipes.
+
+### Bug
+- Enable *-master-controllers and *-master-api services on master nodes.
+- Fix Jenkinsfile: email address does not support aliases
+- Fix CHEF-3694 warning with master certificates
+
 ## v1.10.52
 ### Bug
 - Fix cookstyle issues
