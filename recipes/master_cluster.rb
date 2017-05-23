@@ -16,39 +16,6 @@ node['cookbook-openshift3']['enabled_firewall_rules_master_cluster'].each do |ru
 end
 
 if master_servers.first['fqdn'] == node['fqdn']
-  directory node['cookbook-openshift3']['etcd_ca_dir'] do
-    owner 'root'
-    group 'root'
-    mode '0700'
-    action :create
-    recursive true
-  end
-
-  template node['cookbook-openshift3']['etcd_openssl_conf'] do
-    source 'openssl.cnf.erb'
-  end
-
-  %w(certs crl fragments).each do |etcd_ca_sub_dir|
-    directory "#{node['cookbook-openshift3']['etcd_ca_dir']}/#{etcd_ca_sub_dir}" do
-      owner 'root'
-      group 'root'
-      mode '0700'
-      action :create
-      recursive true
-    end
-  end
-
-  execute "ETCD Generate index.txt #{node['fqdn']}" do
-    command 'touch index.txt'
-    cwd node['cookbook-openshift3']['etcd_ca_dir']
-    creates "#{node['cookbook-openshift3']['etcd_ca_dir']}/index.txt"
-  end
-
-  file "#{node['cookbook-openshift3']['etcd_ca_dir']}/serial" do
-    content '01'
-    action :create_if_missing
-  end
-
   %W(/var/www/html/master #{node['cookbook-openshift3']['master_generated_certs_dir']}).each do |path|
     directory path do
       mode '0755'
@@ -104,7 +71,7 @@ execute 'Extract certificate to Master folder' do
   action :nothing
 end
 
-%w(client.crt client.key ca.cert).each do |certificate_type|
+%w(client.crt client.key ca.crt).each do |certificate_type|
   file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}#{certificate_type}" do
     owner 'root'
     group 'root'

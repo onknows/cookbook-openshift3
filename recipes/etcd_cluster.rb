@@ -13,6 +13,15 @@ if master_servers.find { |server_master| server_master['fqdn'] == node['fqdn'] }
       notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
       notifies :enable, 'service[httpd]', :immediately
     end
+
+    directory node['cookbook-openshift3']['etcd_ca_dir'] do
+      owner 'root'
+      group 'root'
+      mode '0700'
+      action :create
+      recursive true
+    end
+
     %w(certs crl fragments).each do |etcd_ca_sub_dir|
       directory "#{node['cookbook-openshift3']['etcd_ca_dir']}/#{etcd_ca_sub_dir}" do
         owner 'root'
