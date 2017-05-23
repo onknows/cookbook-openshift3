@@ -306,6 +306,7 @@ end
 execute 'Activate services for Master API on first master' do
   command 'echo nothing to do specific'
   notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
+  notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
   only_if { master_servers.first['fqdn'] == node['fqdn'] }
 end
 
@@ -318,6 +319,7 @@ end
 execute 'Activate services for Master API on all masters' do
   command 'echo nothing to do specific'
   notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
+  notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
   only_if { master_servers.first['fqdn'] != node['fqdn'] }
 end
 
@@ -330,6 +332,7 @@ end
 execute 'Activate services for Master CONTROLLERS on first master' do
   command 'echo nothing to do specific'
   notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
+  notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
   only_if { master_servers.first['fqdn'] == node['fqdn'] }
 end
 
@@ -342,6 +345,7 @@ end
 execute 'Activate services for Master CONTROLLERS on all masters' do
   command 'echo nothing to do specific'
   notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
+  notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
   only_if { master_servers.first['fqdn'] != node['fqdn'] }
 end
 
