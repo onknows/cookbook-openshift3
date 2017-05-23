@@ -154,7 +154,7 @@ if master_servers.first['fqdn'] == node['fqdn']
               node['cookbook-openshift3']['openshift_master_certs']
             end
 
-    certs.each do |master_certificate|
+    certs.uniq.each do |master_certificate|
       remote_file "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{peer_server['fqdn']}/#{master_certificate}" do
         source "file://#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{master_certificate}"
         only_if { ::File.file?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{master_certificate}") }
