@@ -6,25 +6,25 @@ def branch=env.BRANCH_NAME
 
 
 try {
-  stage('setupenv') {
-    node(nodename) {
-      sh 'mkdir -p ' + builddir
-      dir(builddir) {
-        ////when in source...
-        checkout([$class: 'GitSCM', branches: [[name: '*/' + branch]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/IshentRas/cookbook-openshift3']]])
+  lock('cookbook_openshift3_tests') {
+    stage('setupenv') {
+      node(nodename) {
+        sh 'mkdir -p ' + builddir
+        dir(builddir) {
+          ////when in source...
+          checkout([$class: 'GitSCM', branches: [[name: '*/' + branch]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/IshentRas/cookbook-openshift3']]])
+        }
       }
     }
-  }
 
-  stage('rubocop') {
-    node(nodename) {
-      dir(builddir) {
-        sh 'rubocop -r cookstyle -D'
+    stage('rubocop') {
+      node(nodename) {
+        dir(builddir) {
+          sh 'rubocop -r cookstyle -D'
+        }
       }
     }
-  }
 
-  lock('cookbook_openshift3_shutit_tests') {
     stage('shutit_tests') {
       node(nodename) {
         dir(builddir) {
@@ -37,9 +37,6 @@ try {
         }
       }
     }
-  }
-
-  lock('cookbook_openshift3_kitchen_tests') {
     stage('kitchen') {
       node(nodename) {
         dir(builddir) {
