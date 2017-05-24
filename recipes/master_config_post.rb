@@ -73,16 +73,16 @@ openshift_create_pv 'Create Persistent Storage' do
   persistent_storage node['cookbook-openshift3']['persistent_storage']
 end
 
-node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
-  execute "Wait up to 30s for nodes registration [Size : #{node_servers.size.to_i}]" do
-    command "[[ `oc get node --no-headers --config=admin.kubeconfig | grep -wc \"Ready\"` -ne #{node_servers.size.to_i} ]]"
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    only_if "[[ `oc get node --no-headers --config=admin.kubeconfig | wc -l` -ne #{node_servers.size.to_i} ]]"
-    retries 6
-    retry_delay 5
-    ignore_failure true
-  end
+execute "Wait up to 30s for nodes registration [Size : #{node_servers.size.to_i}]" do
+  command "[[ `oc get node --no-headers --config=admin.kubeconfig | grep -wc \"Ready\"` -ne #{node_servers.size.to_i} ]]"
+  cwd node['cookbook-openshift3']['openshift_master_config_dir']
+  only_if "[[ `oc get node --no-headers --config=admin.kubeconfig | wc -l` -ne #{node_servers.size.to_i} ]]"
+  retries 6
+  retry_delay 5
+  ignore_failure true
+end
 
+node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
   execute "Set schedulability for Master node : #{nodes['fqdn']}" do
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} manage-node #{nodes['fqdn']} --schedulable=${schedulability} --config=admin.kubeconfig"
     environment(
