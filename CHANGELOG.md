@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.54
+### Bug
+- Fix CHEF-3694 warning that triggered while waiting for node registration
+
 ## v1.10.53
 ### Improvement
 - Remove duplicated code between etcd_cluster and master_cluster recipes.
