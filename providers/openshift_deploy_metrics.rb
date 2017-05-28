@@ -17,8 +17,6 @@ def random_password(length = 10)
 end
 
 action :create do
-  ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
-
   directory "#{Chef::Config['file_cache_path']}/hosted_metric/templates" do
     recursive true
   end
@@ -109,18 +107,18 @@ action :create do
     path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular_metrics_secrets.yaml"
     source 'secret.yaml.erb'
     variables(
-      :name => 'hawkular-metrics-secrets',
-      :labels => { 'metrics-infra': 'hawkular-metrics' },
-      :data => { 
-        'hawkular-metrics.keystore': secret_hash['hawkular-metrics.keystore'],
-        'hawkular-metrics.keystore.password': secret_hash['hawkular-metrics-keystore.pwd'],
-        'hawkular-metrics.truststore': secret_hash['hawkular-metrics.truststore'],
-        'hawkular-metrics.truststore.password': secret_hash['hawkular-metrics-truststore.pwd'],
-        'hawkular-metrics.keystore.alias': `echo -n hawkular-metrics | base64`,
-        'hawkular-metrics.htpasswd.file': secret_hash['hawkular-metrics.htpasswd'],
-        'hawkular-metrics.jgroups.keystore': secret_hash['hawkular-jgroups.keystore'],
-        'hawkular-metrics.jgroups.keystore.password': secret_hash['hawkular-jgroups-keystore.pwd'],
-        'hawkular-metrics.jgroups.alias': `echo -n hawkular | base64`,
+      name: 'hawkular-metrics-secrets',
+      labels: { 'metrics-infra' => 'hawkular-metrics' },
+      data: {
+        'hawkular-metrics.keystore' => secret_hash['hawkular-metrics.keystore'],
+        'hawkular-metrics.keystore.password' => secret_hash['hawkular-metrics-keystore.pwd'],
+        'hawkular-metrics.truststore' => secret_hash['hawkular-metrics.truststore'],
+        'hawkular-metrics.truststore.password' => secret_hash['hawkular-metrics-truststore.pwd'],
+        'hawkular-metrics.keystore.alias' => `echo -n hawkular-metrics | base64`,
+        'hawkular-metrics.htpasswd.file' => secret_hash['hawkular-metrics.htpasswd'],
+        'hawkular-metrics.jgroups.keystore' => secret_hash['hawkular-jgroups.keystore'],
+        'hawkular-metrics.jgroups.keystore.password' => secret_hash['hawkular-jgroups-keystore.pwd'],
+        'hawkular-metrics.jgroups.alias' => `echo -n hawkular | base64`,
       }
     )
   end
@@ -129,11 +127,11 @@ action :create do
     path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular_metrics_certificate.yaml"
     source 'secret.yaml.erb'
     variables(
-      :name => 'hawkular-metrics-certificate',
-      :labels => { 'metrics-infra': 'hawkular-metrics' },
-      :data => { 
-        'hawkular-metrics.certificate': secret_hash['hawkular-metrics.crt'],
-        'hawkular-metrics-ca.certificate': secret_hash['ca.crt'],
+      name: 'hawkular-metrics-certificate',
+      labels: { 'metrics-infra' => 'hawkular-metrics' },
+      data: {
+        'hawkular-metrics.certificate' => secret_hash['hawkular-metrics.crt'],
+        'hawkular-metrics-ca.certificate' => secret_hash['ca.crt'],
       }
     )
   end
@@ -142,11 +140,11 @@ action :create do
     path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular_metrics_account.yaml"
     source 'secret.yaml.erb'
     variables(
-      :name => 'hawkular-metrics-account',
-      :labels => { 'metrics-infra': 'hawkular-metrics' },
-      :data => { 
-        'hawkular-metrics.username': `echo -n hawkular | base64`,
-        'hawkular-metrics.password': secret_hash['hawkular-metrics.pwd'],
+      name: 'hawkular-metrics-account',
+      labels: { 'metrics-infra' => 'hawkular-metrics' },
+      data: {
+        'hawkular-metrics.username' => `echo -n hawkular | base64`,
+        'hawkular-metrics.password' => secret_hash['hawkular-metrics.pwd'],
       }
     )
   end
@@ -155,15 +153,15 @@ action :create do
     path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/cassandra_secrets.yaml"
     source 'secret.yaml.erb'
     variables(
-      :name => 'hawkular-cassandra-secrets',
-      :labels => { 'metrics-infra': 'hawkular-cassandra' },
-      :data => { 
-        'cassandra.keystore': secret_hash['hawkular-cassandra.keystore'],
-        'cassandra.keystore.password': secret_hash['hawkular-cassandra-keystore.pwd'],
-        'cassandra.keystore.alias': `echo -n hawkular-cassandra | base64`,
-        'cassandra.truststore': secret_hash['hawkular-cassandra.truststore'],
-        'cassandra.truststore.password': secret_hash['hawkular-cassandra-truststore.pwd'],
-        'cassandra.pem': secret_hash['hawkular-cassandra.pem'],
+      name: 'hawkular-cassandra-secrets',
+      labels: { 'metrics-infra' => 'hawkular-cassandra' },
+      data: {
+        'cassandra.keystore' => secret_hash['hawkular-cassandra.keystore'],
+        'cassandra.keystore.password' => secret_hash['hawkular-cassandra-keystore.pwd'],
+        'cassandra.keystore.alias' => `echo -n hawkular-cassandra | base64`,
+        'cassandra.truststore' => secret_hash['hawkular-cassandra.truststore'],
+        'cassandra.truststore.password' => secret_hash['hawkular-cassandra-truststore.pwd'],
+        'cassandra.pem' => secret_hash['hawkular-cassandra.pem'],
       }
     )
   end
@@ -172,11 +170,11 @@ action :create do
     path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/cassandra_certificate.yaml"
     source 'secret.yaml.erb'
     variables(
-      :name => 'hawkular-cassandra-certificate',
-      :labels => { 'metrics-infra': 'hawkular-cassandra' },
-      :data => {
-        'cassandra.certificate': secret_hash['hawkular-cassandra.crt'],
-        'cassandra-ca.certificate': secret_hash['hawkular-cassandra.pem'],
+      name: 'hawkular-cassandra-certificate',
+      labels: { 'metrics-infra' => 'hawkular-cassandra' },
+      data: {
+        'cassandra.certificate' => secret_hash['hawkular-cassandra.crt'],
+        'cassandra-ca.certificate' => secret_hash['hawkular-cassandra.pem'],
       }
     )
   end
