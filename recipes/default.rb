@@ -34,12 +34,19 @@ service 'haproxy'
 
 include_recipe 'cookbook-openshift3::validate'
 include_recipe 'cookbook-openshift3::common'
-include_recipe 'cookbook-openshift3::master'
-include_recipe 'cookbook-openshift3::node'
+#include_recipe 'cookbook-openshift3::master'
+#include_recipe 'cookbook-openshift3::node'
 
-if master_servers.find { |server_master| server_master['fqdn'] == node['fqdn'] }
-  if master_servers.first['fqdn'] == node['fqdn']
-    include_recipe 'cookbook-openshift3::master_config_post'
+#if master_servers.find { |server_master| server_master['fqdn'] == node['fqdn'] }
+#  if master_servers.first['fqdn'] == node['fqdn']
+#    include_recipe 'cookbook-openshift3::master_config_post'
+#  end
+#end
+
+openshift_deploy_metrics 'Deploy Cluster Metrics' do
+  metrics_params Hash[node['cookbook-openshift3']['openshift_hosted_metrics_parameters'].map { |k, v| [k.upcase, v] }]
+  only_if do
+    node['cookbook-openshift3']['openshift_hosted_cluster_metrics']
   end
 end
 
