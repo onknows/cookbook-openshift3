@@ -48,7 +48,7 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['docker_log_options']` -  Defaults to `{ ... }`.
 * `node['cookbook-openshift3']['install_method']` -  Defaults to `yum`.
 * `node['cookbook-openshift3']['httpd_xfer_port']` -  Defaults to `9999`.
-* `node['cookbook-openshift3']['core_packages']` -  Defaults to `%w(libselinux-python wget vim-enhanced net-tools bind-utils git bash-completion bash-completion dnsmasq)`.
+* `node['cookbook-openshift3']['core_packages']` -  Defaults to `%w(libselinux-python wget vim-enhanced net-tools bind-utils git bash-completion dnsmasq)`.
 * `node['cookbook-openshift3']['osn_cluster_dns_domain']` -  Defaults to `cluster.local`.
 * `node['cookbook-openshift3']['enabled_firewall_rules_master']` -  Defaults to `%w(firewall_master)`.
 * `node['cookbook-openshift3']['enabled_firewall_rules_master_cluster']` -  Defaults to `%w(firewall_master_cluster)`.
