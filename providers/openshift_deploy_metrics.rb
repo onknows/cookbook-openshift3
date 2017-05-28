@@ -11,48 +11,174 @@ def whyrun_supported?
   true
 end
 
+CHARS = ('0'..'9').to_a + ('A'..'Z').to_a + ('a'..'z').to_a
+def random_password(length = 10)
+  CHARS.sort_by { rand }.join[0...length]
+end
+
 action :create do
   ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
-  execute 'Deploy metrics-deployer secret' do
-    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} secrets new metrics-deployer ${metrics_deployer_secrets} -n openshift-infra --config=admin.kubeconfig"
-    environment(
-      'metrics_deployer_secrets' => node['cookbook-openshift3']['openshift_hosted_metrics_secrets'].empty? ? '/dev/null' : node['cookbook-openshift3']['openshift_hosted_metrics_secrets'].map { |opt, value| " #{opt}=#{value}" }
+
+  directory "#{Chef::Config['file_cache_path']}/hosted_metric/templates" do
+    recursive true
+  end
+
+  cookbook_file "#{Chef::Config['file_cache_path']}/hosted_metric/import_jks_certs.sh" do
+    source 'import_jks_certs.sh'
+    mode '0755'
+  end
+
+  remote_file "#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig" do
+    source "file://#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
+  end
+
+  package 'java-1.8.0-openjdk-headless'
+
+  execute 'Generate ca certificate chain' do
+    command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-signer-cert \
+            --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
+            --key=#{Chef::Config['file_cache_path']}/hosted_metric/ca.key \
+            --cert=#{Chef::Config['file_cache_path']}/hosted_metric/ca.crt \
+            --serial=#{Chef::Config['file_cache_path']}/hosted_metric/ca.serial.txt \
+            --name=metrics-signer@$(date +%s)"
+  end
+
+  %w(hawkular-metrics hawkular-cassandra).each do |component|
+    execute "Generate #{component} keys" do
+      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-server-cert \
+              --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
+              --key=#{Chef::Config['file_cache_path']}/hosted_metric/#{component}.key \
+              --cert=#{Chef::Config['file_cache_path']}/hosted_metric/#{component}.crt \
+              --hostnames=#{component} \
+              --signer-key=#{Chef::Config['file_cache_path']}/hosted_metric/ca.key \
+              --signer-cert=#{Chef::Config['file_cache_path']}/hosted_metric/ca.crt \
+              --signer-serial=#{Chef::Config['file_cache_path']}/hosted_metric/ca.serial.txt"
+    end
+
+    execute "Generate #{component} certificate" do
+      command "cat #{Chef::Config['file_cache_path']}/hosted_metric/#{component}.key #{Chef::Config['file_cache_path']}/hosted_metric/#{component}.crt > #{Chef::Config['file_cache_path']}/hosted_metric/#{component}.pem"
+    end
+
+    file "Generate random password for the #{component} keystore" do
+      path "#{Chef::Config['file_cache_path']}/hosted_metric/#{component}-keystore.pwd"
+      content random_password
+    end
+
+    execute "Create the #{component} pkcs12 from the pem file" do
+      command "openssl pkcs12 -export -in #{Chef::Config['file_cache_path']}/hosted_metric/#{component}.pem \
+              -out #{Chef::Config['file_cache_path']}/hosted_metric/#{component}.pkcs12 \
+              -name #{component} -noiter -nomaciter \
+              -password pass:$(cat #{Chef::Config['file_cache_path']}/hosted_metric/#{component}-keystore.pwd)"
+    end
+
+    file "Generate random password for #{component} truststore" do
+      path "#{Chef::Config['file_cache_path']}/hosted_metric/#{component}-truststore.pwd"
+      content random_password
+    end
+  end
+
+  %w(hawkular-metrics hawkular-jgroups-keystore).each do |component|
+    file "Generate random password for the #{component} truststore" do
+      path "#{Chef::Config['file_cache_path']}/hosted_metric/#{component}.pwd"
+      content random_password
+    end
+  end
+
+  execute 'Generate htpasswd file for hawkular metrics' do
+    command "htpasswd -b -c #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.htpasswd hawkular $(cat #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.pwd)"
+  end
+
+  execute 'Generate JKS certs' do
+    command "#{Chef::Config['file_cache_path']}/hosted_metric/import_jks_certs.sh"
+    environment lazy {
+      {
+        CERT_DIR: "#{Chef::Config['file_cache_path']}/hosted_metric",
+        METRICS_KEYSTORE_PASSWD: ::File.read("#{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics-keystore.pwd"),
+        CASSANDRA_KEYSTORE_PASSWD: ::File.read("#{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra-keystore.pwd"),
+        METRICS_TRUSTSTORE_PASSWD: ::File.read("#{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics-truststore.pwd"),
+        CASSANDRA_TRUSTSTORE_PASSWD: ::File.read("#{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra-truststore.pwd"),
+        JGROUPS_PASSWD: ::File.read("#{Chef::Config['file_cache_path']}/hosted_metric/hawkular-jgroups-keystore.pwd"),
+      }
+    }
+  end
+
+  secret_file = %w(ca.crt hawkular-metrics.crt hawkular-metrics.keystore hawkular-metrics-keystore.pwd hawkular-metrics.truststore hawkular-metrics-truststore.pwd hawkular-metrics.pwd hawkular-metrics.htpasswd hawkular-jgroups.keystore hawkular-jgroups-keystore.pwd hawkular-cassandra.crt hawkular-cassandra.pem hawkular-cassandra.keystore hawkular-cassandra-keystore.pwd hawkular-cassandra.truststore hawkular-cassandra-truststore.pwd)
+  secret_hash = Hash[secret_file.collect { |item| [item, `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/#{item}`] }]
+
+  template 'Generate hawkular-metrics-secrets secret template' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular_metrics_secrets.yaml"
+    source 'secret.yaml.erb'
+    variables(
+      :name => 'hawkular-metrics-secrets',
+      :labels => { 'metrics-infra': 'hawkular-metrics' },
+      :data => { 
+        'hawkular-metrics.keystore': secret_hash['hawkular-metrics.keystore'],
+        'hawkular-metrics.keystore.password': secret_hash['hawkular-metrics-keystore.pwd'],
+        'hawkular-metrics.truststore': secret_hash['hawkular-metrics.truststore'],
+        'hawkular-metrics.truststore.password': secret_hash['hawkular-metrics-truststore.pwd'],
+        'hawkular-metrics.keystore.alias': `echo -n hawkular-metrics | base64`,
+        'hawkular-metrics.htpasswd.file': secret_hash['hawkular-metrics.htpasswd'],
+        'hawkular-metrics.jgroups.keystore': secret_hash['hawkular-jgroups.keystore'],
+        'hawkular-metrics.jgroups.keystore.password': secret_hash['hawkular-jgroups-keystore.pwd'],
+        'hawkular-metrics.jgroups.alias': `echo -n hawkular | base64`,
+      }
     )
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    only_if '[[ `oc get secrets/metrics-deployer -n openshift-infra --no-headers --config=admin.kubeconfig | wc -l` -eq 0 ]]'
   end
 
-  execute 'Create metrics-deployer Service Account' do
-    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} create serviceaccount metrics-deployer -n openshift-infra --config=admin.kubeconfig"
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    only_if '[[ `oc get sa/metrics-deployer -n openshift-infra --no-headers --config=admin.kubeconfig | wc -l` -eq 0 ]]'
-  end
-
-  execute 'Add edit permission to the openshift-infra project to metrics-deployer SA' do
-    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} adm policy add-role-to-user edit system:serviceaccount:openshift-infra:metrics-deployer -n openshift-infra --config=admin.kubeconfig"
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    not_if '[[ `oc get rolebindings -o jsonpath=\'{.items[?(@.metadata.name == "edit")].userNames}\' -n openshift-infra --config=admin.kubeconfig` =~ "system:serviceaccount:openshift-infra:metrics-deployer" ]]'
-  end
-
-  execute 'Add cluster-reader permission to the openshift-infra project to heapster SA' do
-    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} adm policy add-cluster-role-to-user cluster-reader system:serviceaccount:openshift-infra:heapster"
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    not_if '[[ `oc get clusterrolebindings -o jsonpath=\'{.items[?(@.metadata.name == "cluster-readers")].userNames}\' -n openshift-infra --config=admin.kubeconfig` =~ "system:serviceaccount:openshift-infra:heapster" ]]'
-  end
-
-  execute 'Add view permission to the openshift-infra project to hawkular SA' do
-    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} adm policy add-role-to-user view system:serviceaccount:openshift-infra:hawkular -n openshift-infra"
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    not_if '[[ `oc get rolebinding -o jsonpath=\'{.items[?(@.metadata.name == "view")].userNames}\' -n openshift-infra --config=admin.kubeconfig` =~ "system:serviceaccount:openshift-infra:hawkular" ]]'
-  end
-
-  execute 'Deploy Cluster Metrics' do
-    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} new-app --template=metrics-deployer-template ${service_account} #{new_resource.metrics_params.map { |opt, value| " -p #{opt}=#{value}" }.join(' ')} -n openshift-infra --config=admin.kubeconfig"
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    environment(
-      'service_account' => ose_major_version.split('.')[1].to_i.between?(3, 4) ? '--as=system:serviceaccount:openshift-infra:metrics-deployer' : ''
+  template 'Generate hawkular-metrics-certificate secret template' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular_metrics_certificate.yaml"
+    source 'secret.yaml.erb'
+    variables(
+      :name => 'hawkular-metrics-certificate',
+      :labels => { 'metrics-infra': 'hawkular-metrics' },
+      :data => { 
+        'hawkular-metrics.certificate': secret_hash['hawkular-metrics.crt'],
+        'hawkular-metrics-ca.certificate': secret_hash['ca.crt'],
+      }
     )
-    not_if '[ `oc get pod -l \'metrics-infra in (hawkular-cassandra,hawkular-metrics,heapster)\' --no-headers -n openshift-infra | grep -cw Running` -ge 3 ]'
+  end
+
+  template 'Generate hawkular-metrics-account secret template' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular_metrics_account.yaml"
+    source 'secret.yaml.erb'
+    variables(
+      :name => 'hawkular-metrics-account',
+      :labels => { 'metrics-infra': 'hawkular-metrics' },
+      :data => { 
+        'hawkular-metrics.username': `echo -n hawkular | base64`,
+        'hawkular-metrics.password': secret_hash['hawkular-metrics.pwd'],
+      }
+    )
+  end
+
+  template 'Generate cassandra secret template' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/cassandra_secrets.yaml"
+    source 'secret.yaml.erb'
+    variables(
+      :name => 'hawkular-cassandra-secrets',
+      :labels => { 'metrics-infra': 'hawkular-cassandra' },
+      :data => { 
+        'cassandra.keystore': secret_hash['hawkular-cassandra.keystore'],
+        'cassandra.keystore.password': secret_hash['hawkular-cassandra-keystore.pwd'],
+        'cassandra.keystore.alias': `echo -n hawkular-cassandra | base64`,
+        'cassandra.truststore': secret_hash['hawkular-cassandra.truststore'],
+        'cassandra.truststore.password': secret_hash['hawkular-cassandra-truststore.pwd'],
+        'cassandra.pem': secret_hash['hawkular-cassandra.pem'],
+      }
+    )
+  end
+
+  template 'Generate cassandra-certificate secret template' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/cassandra_certificate.yaml"
+    source 'secret.yaml.erb'
+    variables(
+      :name => 'hawkular-cassandra-certificate',
+      :labels => { 'metrics-infra': 'hawkular-cassandra' },
+      :data => {
+        'cassandra.certificate': secret_hash['hawkular-cassandra.crt'],
+        'cassandra-ca.certificate': secret_hash['hawkular-cassandra.pem'],
+      }
+    )
   end
   new_resource.updated_by_last_action(true)
 end
