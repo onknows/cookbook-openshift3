@@ -117,9 +117,9 @@ action :create do
           'hawkular-metrics.jgroups.keystore' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-jgroups.keystore`,
           'hawkular-metrics.jgroups.keystore.password' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-jgroups-keystore.pwd`,
           'hawkular-metrics.jgroups.alias' => `echo -n hawkular | base64`,
-        }
+        },
       }
-    }  
+    }
   end
 
   template 'Generate hawkular-metrics-certificate secret template' do
@@ -132,7 +132,7 @@ action :create do
         data: {
           'hawkular-metrics.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.crt`,
           'hawkular-metrics-ca.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt`,
-        }
+        },
       }
     }
   end
@@ -147,7 +147,7 @@ action :create do
         data: {
           'hawkular-metrics.username' => `echo -n hawkular | base64`,
           'hawkular-metrics.password' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.pwd`,
-        }
+        },
       }
     }
   end
@@ -166,7 +166,7 @@ action :create do
           'cassandra.truststore' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.truststore`,
           'cassandra.truststore.password' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra-truststore.pwd`,
           'cassandra.pem' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.pem`,
-        }
+        },
       }
     }
   end
@@ -181,12 +181,12 @@ action :create do
         data: {
           'cassandra.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.crt`,
           'cassandra-ca.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.pem`,
-        }
+        },
       }
     }
   end
 
-  [ {'name' => 'hawkular','labels' => {'metrics-infra' => 'support'},'secrets' => ['hawkular-metrics-secrets']} , {'name' => 'cassandra','labels' => {'metrics-infra' => 'support'},'secrets' => ['hawkular-cassandra-secrets']} ].each do |sa|
+  [{ 'name' => 'hawkular', 'labels' => { 'metrics-infra' => 'support' }, 'secrets' => ['hawkular-metrics-secrets'] }, { 'name' => 'cassandra', 'labels' => { 'metrics-infra' => 'support' }, 'secrets' => ['hawkular-cassandra-secrets'] }].each do |sa|
     template "Generating serviceaccounts for #{sa['name']}" do
       path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/metrics-#{sa['name']}-sa.yaml"
       source 'serviceaccount.yaml.erb'
@@ -194,7 +194,7 @@ action :create do
     end
   end
 
-  [ {'name' => 'hawkular-metrics','labels' => {'metrics-infra' => 'hawkular-metrics','name' => 'hawkular-metrics'},'selector' => {'name' => 'hawkular-metrics'},'ports' => [{'port' => 443,'targetPort' => 'https-endpoint'}]} , {'name' => 'hawkular-cassandra','labels' => {'metrics-infra' => 'hawkular-cassandra','name' => 'hawkular-cassandra'},'selector' => {'type' => 'hawkular-cassandra'},'ports' => [{'name' => 'cql-port','port' => 9042,'targetPort' => 'cql-port'},{'name' => 'thrift-port','port' => 9160,'targetPort' => 'thrift-port'},{'name' => 'tcp-port','port' => 7000,'targetPort' => 'tcp-port'},{'name' => 'ssl-port','port' => 7001,'targetPort' => 'ssl-port'}]} , {'name' => 'hawkular-cassandra-nodes','labels' => {'metrics-infra' => 'hawkular-cassandra-nodes','name' => 'hawkular-cassandra-nodes'},'selector' => {'type' => 'hawkular-cassandra-nodes'},'ports' => [{'name' => 'cql-port','port' => 9042,'targetPort' => 'cql-port'},{'name' => 'thrift-port','port' => 9160,'targetPort' => 'thrift-port'},{'name' => 'tcp-port','port' => 7000,'targetPort' => 'tcp-port'},{'name' => 'ssl-port','port' => 7001,'targetPort' => 'ssl-port'}],'headless' => true}].each do |svc|
+  [{ 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics', 'name' => 'hawkular-metrics' }, 'selector' => { 'name' => 'hawkular-metrics' }, 'ports' => [{ 'port' => 443, 'targetPort' => 'https-endpoint' }] }, { 'name' => 'hawkular-cassandra', 'labels' => { 'metrics-infra' => 'hawkular-cassandra', 'name' => 'hawkular-cassandra' }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }] }, { 'name' => 'hawkular-cassandra-nodes', 'labels' => { 'metrics-infra' => 'hawkular-cassandra-nodes', 'name' => 'hawkular-cassandra-nodes' }, 'selector' => { 'type' => 'hawkular-cassandra-nodes' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }], 'headless' => true }].each do |svc|
     template "Generating serviceaccounts for #{svc['name']}" do
       path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/metrics-#{svc['name']}-svc.yaml"
       source 'service.yaml.erb'
@@ -202,7 +202,7 @@ action :create do
     end
   end
 
-  [ {'name' => 'hawkular-view','labels' => {'metrics-infra' => 'hawkular'},'rolerefs' => {'name' => 'view'},'subjects' => [{'kind' => 'ServiceAccount','name' => 'hawkular'}]} ].each do |role|
+  [{ 'name' => 'hawkular-view', 'labels' => { 'metrics-infra' => 'hawkular' }, 'rolerefs' => { 'name' => 'view' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular' }] }].each do |role|
     template 'Generate view role binding for the hawkular service account' do
       path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular-rolebinding.yaml"
       source 'rolebinding.yaml.erb'
