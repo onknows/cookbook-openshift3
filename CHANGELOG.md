@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.55
+### Bug
+- Fix backticks in environment not working (#138)
+
 ## v1.10.54
 ### Bug
 - Fix CHEF-3694 warning that triggered while waiting for node registration
