@@ -136,15 +136,22 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
       source 'origin-dns.conf.erb'
     end
 
+    # On some systems, NetworkManager does not exist, so ignore_failure.
     cookbook_file '/etc/NetworkManager/dispatcher.d/99-origin-dns.sh' do
       source '99-origin-dns.sh'
       owner 'root'
       group 'root'
       mode '0755'
       action :create
+      ignore_failure true
       notifies :restart, 'service[NetworkManager]', :immediately
     end
 
+    # ignore_failure in case this fails/is not necessary
+    service 'dnsmasq' do
+      action [:enable, :start]
+      ignore_failure true
+    end
   end
 
   template node['cookbook-openshift3']['openshift_node_config_file'] do
