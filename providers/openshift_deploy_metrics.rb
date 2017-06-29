@@ -41,7 +41,7 @@ action :create do
             --name=metrics-signer@$(date +%s)"
   end
 
-  %w(hawkular-metrics hawkular-cassandra).each do |component|
+  %w(hawkular-metrics hawkular-cassandra heapster).each do |component|
     execute "Generate #{component} keys" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-server-cert \
               --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
@@ -186,7 +186,25 @@ action :create do
     }
   end
 
-  [{ 'name' => 'hawkular', 'labels' => { 'metrics-infra' => 'support' }, 'secrets' => ['hawkular-metrics-secrets'] }, { 'name' => 'cassandra', 'labels' => { 'metrics-infra' => 'support' }, 'secrets' => ['hawkular-cassandra-secrets'] }].each do |sa|
+  template 'Generate heapster secret template' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/heapster_secrets.yaml"
+    source 'secret.yaml.erb'
+    variables lazy {
+      {
+        name: 'heapster-secrets',
+        labels: { 'metrics-infra' => 'heapster' },
+        data: {
+          'heapster.cert' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/heapster.crt`,
+          'heapster.key' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/heapster.key`,
+          'heapster.client-ca' => `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt`,
+          'heapster.allowed-users' => `echo -n #{node['cookbook-openshift3']['openshift_metrics_heapster_allowed_users']} | base64
+`,
+        },
+      }
+    }
+  end
+
+  [{ 'name' => 'hawkular', 'labels' => { 'metrics-infra' => 'support' }, 'secrets' => ['hawkular-metrics-secrets'] }, { 'name' => 'cassandra', 'labels' => { 'metrics-infra' => 'support' }, 'secrets' => ['hawkular-cassandra-secrets'] }, { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'support' }, 'secrets' => ['heapster-secrets', 'hawkular-metrics-certificate', 'hawkular-metrics-account'] }].each do |sa|
     template "Generating serviceaccounts for #{sa['name']}" do
       path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/metrics-#{sa['name']}-sa.yaml"
       source 'serviceaccount.yaml.erb'
@@ -194,7 +212,7 @@ action :create do
     end
   end
 
-  [{ 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics', 'name' => 'hawkular-metrics' }, 'selector' => { 'name' => 'hawkular-metrics' }, 'ports' => [{ 'port' => 443, 'targetPort' => 'https-endpoint' }] }, { 'name' => 'hawkular-cassandra', 'labels' => { 'metrics-infra' => 'hawkular-cassandra', 'name' => 'hawkular-cassandra' }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }] }, { 'name' => 'hawkular-cassandra-nodes', 'labels' => { 'metrics-infra' => 'hawkular-cassandra-nodes', 'name' => 'hawkular-cassandra-nodes' }, 'selector' => { 'type' => 'hawkular-cassandra-nodes' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }], 'headless' => true }].each do |svc|
+  [{ 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics', 'name' => 'hawkular-metrics' }, 'selector' => { 'name' => 'hawkular-metrics' }, 'ports' => [{ 'port' => 443, 'targetPort' => 'https-endpoint' }] }, { 'name' => 'hawkular-cassandra', 'labels' => { 'metrics-infra' => 'hawkular-cassandra', 'name' => 'hawkular-cassandra' }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }] }, { 'name' => 'hawkular-cassandra-nodes', 'labels' => { 'metrics-infra' => 'hawkular-cassandra-nodes', 'name' => 'hawkular-cassandra-nodes' }, 'selector' => { 'type' => 'hawkular-cassandra-nodes' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }], 'headless' => true }, { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'heapster', 'name' => 'heapster' }, 'selector' => { 'name' => 'heapster' }, 'ports' => [{ 'port' => 80, 'targetPort' => 'http-endpoint' }] }].each do |svc|
     template "Generating serviceaccounts for #{svc['name']}" do
       path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/metrics-#{svc['name']}-svc.yaml"
       source 'service.yaml.erb'
@@ -202,12 +220,43 @@ action :create do
     end
   end
 
-  [{ 'name' => 'hawkular-view', 'labels' => { 'metrics-infra' => 'hawkular' }, 'rolerefs' => { 'name' => 'view' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular' }] }].each do |role|
-    template 'Generate view role binding for the hawkular service account' do
-      path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular-rolebinding.yaml"
+  [{ 'name' => 'hawkular-view', 'labels' => { 'metrics-infra' => 'hawkular' }, 'rolerefs' => { 'name' => 'view' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }] }, { 'name' => 'heapster-cluster-reader', 'labels' => { 'metrics-infra' => 'heapster' }, 'rolerefs' => { 'name' => 'cluster-reader', 'kind' => 'ClusterRole' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'heapster', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }], 'cluster' => true }].each do |role|
+    template "Generate view role binding for the #{role['name']} service account" do
+      path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/#{role['name']}-rolebinding.yaml"
       source 'rolebinding.yaml.erb'
       variables(role: role)
     end
+  end
+
+  [{ 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics' }, 'host' => node['cookbook-openshift3']['openshift_metrics_hawkular_hostname'], 'to' => { 'kind' => 'Service', 'name' => 'hawkular-metrics' }, 'tls' => true, 'tls_termination' => 'reencrypt' }].each do |route|
+    template "Generate the #{route['name']} route" do
+      path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/#{route['name']}-route.yaml"
+      source 'route.yaml.erb'
+      variables lazy {
+        {
+          route: route,
+          tls_key: node['cookbook-openshift3']['openshift_metrics_hawkular_key'].empty? ? '' : `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_metrics_hawkular_key']}`,
+          tls_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_cert'].empty? ? '' : `cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_cert']} | awk '{printf "%s\\n", $0}'`,
+          tls_ca_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_ca'].empty? ? '' : `cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_ca']} | awk '{printf "%s\\n", $0}'`,
+          tls_destination_ca_certificate: `cat #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt | awk '{printf "%s\\n", $0}'`,
+        }
+      }
+    end
+  end
+
+  template 'Generate heapster replication controller' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/metrics-heapster-rc.yaml"
+    source 'heapster.yaml.erb'
+  end
+
+  template 'Generate hawkular-metrics replication controller' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular_metrics_rc.yaml"
+    source 'hawkular_metrics_rc.yaml.erb'
+  end
+
+  template 'Generate cassandra replication controller' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular-cassandra-rc1.yaml"
+    source 'hawkular_cassandra_rc.yaml.erb'
   end
   new_resource.updated_by_last_action(true)
 end
