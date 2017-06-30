@@ -18,9 +18,9 @@ spec:
         name: heapster
     spec:
       serviceAccountName: heapster
-<% unless node['cookbook-openshift3']['openshift_hosted_heapster_selector'].empty? -%>
+<% unless node['cookbook-openshift3']['openshift_metrics_heapster_nodeselector'].empty? -%>
       nodeSelector:
-<% node['cookbook-openshift3']['openshift_hosted_heapster_selector'].each_pair do |k, v| %>
+<% node['cookbook-openshift3']['openshift_metrics_heapster_nodeselector'].each_pair do |k, v| %>
         <%= k %>: "<%= v %>"
 <%- end -%>
 <%- end -%>
