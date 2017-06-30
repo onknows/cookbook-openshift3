@@ -49,12 +49,12 @@ spec:
           value: "<%= node['cookbook-openshift3']['openshift_metrics_startup_timeout'] %>"
         resources:
           limits:
-<% if defined?(node['cookbook-openshift3']['openshift_metrics_heapster_limits_cpu']) %>
+<% unless node['cookbook-openshift3']['openshift_metrics_heapster_limits_cpu'].empty? %>
             cpu: "<%= node['cookbook-openshift3']['openshift_metrics_heapster_limits_cpu'] %>"
 <%- end -%>
             memory: "<%= node['cookbook-openshift3']['openshift_metrics_heapster_limits_memory'] %>"
           requests:
-<% if defined?(node['cookbook-openshift3']['openshift_metrics_heapster_requests_cpu']) %>
+<% unless node['cookbook-openshift3']['openshift_metrics_heapster_requests_cpu'].empty? %>
             cpu: "<%= node['cookbook-openshift3']['openshift_metrics_heapster_requests_cpu'] %>"
 <%- end -%>
             memory: "<%= node['cookbook-openshift3']['openshift_metrics_heapster_requests_memory'] %>"
