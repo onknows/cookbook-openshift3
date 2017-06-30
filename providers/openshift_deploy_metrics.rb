@@ -41,7 +41,7 @@ action :create do
             --name=metrics-signer@$(date +%s)"
   end
 
-  %w(hawkular-metrics hawkular-cassandra).each do |component|
+  %w(hawkular-metrics hawkular-cassandra heapster).each do |component|
     execute "Generate #{component} keys" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-server-cert \
               --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
@@ -181,6 +181,24 @@ action :create do
         data: {
           'cassandra.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.crt`,
           'cassandra-ca.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.pem`,
+        },
+      }
+    }
+  end
+
+  template 'Generate heapster secret template' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/heapster_secrets.yaml"
+    source 'secret.yaml.erb'
+    variables lazy {
+      {
+        name: 'heapster-secrets',
+        labels: { 'metrics-infra' => 'heapster' },
+        data: {
+          'heapster.cert' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/heapster.cert`,
+          'heapster.key' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/heapster.key`,
+          'heapster.client-ca' => `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt`,
+          'heapster.allowed-users' => `echo -n #{node['cookbook-openshift3']['openshift_metrics_heapster_allowed_users']} | base64
+`,
         },
       }
     }
