@@ -209,5 +209,10 @@ action :create do
       variables(role: role)
     end
   end
+
+  template 'Generate heapster replication controller' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/metrics-heapster-rc.yaml"
+    source 'heapster.yaml.erb'
+  end
   new_resource.updated_by_last_action(true)
 end
