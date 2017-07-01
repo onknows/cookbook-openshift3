@@ -194,7 +194,7 @@ action :create do
         name: 'heapster-secrets',
         labels: { 'metrics-infra' => 'heapster' },
         data: {
-          'heapster.cert' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/heapster.cert`,
+          'heapster.cert' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/heapster.crt`,
           'heapster.key' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/heapster.key`,
           'heapster.client-ca' => `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt`,
           'heapster.allowed-users' => `echo -n #{node['cookbook-openshift3']['openshift_metrics_heapster_allowed_users']} | base64
@@ -225,6 +225,14 @@ action :create do
       path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/#{role['name']}-rolebinding.yaml"
       source 'rolebinding.yaml.erb'
       variables(role: role)
+    end
+  end
+
+  [{ 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics' }, 'host' => node['cookbook-openshift3']['openshift_metrics_hawkular_hostname'], 'to' => [{ 'kind' => 'Service', 'name' => 'hawkular-metrics' }], 'tls' => true, 'tls_termination' => 'reencrypt', 'tls_key' => node['cookbook-openshift3']['openshift_metrics_hawkular_key'].empty? ? '' : `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_metrics_hawkular_key']}`, 'tls_certificate' => node['cookbook-openshift3']['openshift_metrics_hawkular_cert'].empty? ? '' : `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_metrics_hawkular_cert']}`, 'tls_ca_certificate' => node['cookbook-openshift3']['openshift_metrics_hawkular_ca'].empty? ? '' : `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_metrics_hawkular_ca']}`, 'tls_destination_ca_certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt` }].each do |route|
+    template "Generate the #{route['name']} route" do
+      path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/#{route['name']}-route.yaml"
+      source 'route.yaml.erb'
+      variables(route: route)
     end
   end
 
