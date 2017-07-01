@@ -232,7 +232,11 @@ action :create do
     template "Generate the #{route['name']} route" do
       path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/#{route['name']}-route.yaml"
       source 'route.yaml.erb'
-      variables(route: route)
+      variables lazy {
+        {
+          route: route,
+        }
+      }
     end
   end
 
