@@ -22,15 +22,12 @@ spec:
       <%= @tls_ca_certificate %>  
 <%- end -%>
 <% unless @tls_key.empty? %>
-    key: |
-      <%= @tls_key %>  
+    key: <%= @tls_key %>  
 <%- end -%>
 <% unless @tls_certificate.empty? %>
-    certificate: |
-      <%= @tls_certificate %>  
+    certificate: <%= @tls_certificate %>  
 <%- end -%>
 <% if @route['tls_termination'] == 'reencrypt' %>
-    destinationCACertificate: |
-      <%= @tls_destination_ca_certificate %>  
+    destinationCACertificate: <%= @tls_destination_ca_certificate %>  
 <%- end -%>
 <%- end -%>

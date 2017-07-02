@@ -236,8 +236,8 @@ action :create do
         {
           route: route,
           tls_key: node['cookbook-openshift3']['openshift_metrics_hawkular_key'].empty? ? '' : `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_metrics_hawkular_key']}`,
-          tls_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_cert'].empty? ? '' : `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_metrics_hawkular_cert']}`,
-          tls_ca_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_ca'].empty? ? '' : `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_metrics_hawkular_ca']}`,
+          tls_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_cert'].empty? ? '' : `cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_cert']} | awk '{printf "%s\\n", $0}'`,
+          tls_ca_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_ca'].empty? ? '' : `cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_ca']} | awk '{printf "%s\\n", $0}'`,
           tls_destination_ca_certificate: `cat #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt | awk '{printf "%s\\n", $0}'`,
         }
       }
