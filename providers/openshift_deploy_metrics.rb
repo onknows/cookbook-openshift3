@@ -220,7 +220,7 @@ action :create do
     end
   end
 
-  [{ 'name' => 'hawkular-view', 'labels' => { 'metrics-infra' => 'hawkular' }, 'rolerefs' => { 'name' => 'view' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular' }] }, { 'name' => 'heapster-cluster-reader', 'labels' => { 'metrics-infra' => 'heapster' }, 'rolerefs' => { 'name' => 'cluster-reader', 'kind' => 'ClusterRole' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'heapster', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }], 'cluster' => true }].each do |role|
+  [{ 'name' => 'hawkular-view', 'labels' => { 'metrics-infra' => 'hawkular' }, 'rolerefs' => { 'name' => 'view' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }] }, { 'name' => 'heapster-cluster-reader', 'labels' => { 'metrics-infra' => 'heapster' }, 'rolerefs' => { 'name' => 'cluster-reader', 'kind' => 'ClusterRole' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'heapster', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }], 'cluster' => true }].each do |role|
     template "Generate view role binding for the #{role['name']} service account" do
       path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/#{role['name']}-rolebinding.yaml"
       source 'rolebinding.yaml.erb'
