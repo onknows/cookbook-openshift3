@@ -56,7 +56,7 @@ spec:
         - "--cassandra_pem_file=/secret/cassandra.pem"
         env:
         - name: CASSANDRA_MASTER
-          value: "{{ master }}"
+          value: "true"
         - name: CASSANDRA_DATA_VOLUME
           value: "/cassandra_data"
         - name: JVM_OPTS
