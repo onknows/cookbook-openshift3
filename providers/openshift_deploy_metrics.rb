@@ -248,5 +248,15 @@ action :create do
     path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/metrics-heapster-rc.yaml"
     source 'heapster.yaml.erb'
   end
+
+  template 'Generate hawkular-metrics replication controller' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular_metrics_rc.yaml"
+    source 'hawkular_metrics_rc.yaml.erb'
+  end
+
+  template 'Generate cassandra replication controller' do
+    path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular-cassandra-rc1.yaml"
+    source 'hawkular_cassandra_rc.yaml.erb'
+  end
   new_resource.updated_by_last_action(true)
 end
