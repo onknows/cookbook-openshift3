@@ -29,7 +29,7 @@ spec:
 <%- end -%>
 <%- end -%>
       containers:
-      - image: "<%= node['cookbook-openshift3']['openshift_metrics_image_prefix'] %>metrics-hawkular-metrics:<%= node['cookbook-openshift3']['openshift_metrics_image_version'] %>"
+      - image: "<%= node['cookbook-openshift3']['openshift_metrics_image_prefix'] %>origin-metrics-cassandra:<%= node['cookbook-openshift3']['openshift_metrics_image_version'] %>"
         imagePullPolicy: Always
         name: hawkular-cassandra-1
         ports:
