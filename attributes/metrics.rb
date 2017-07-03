@@ -1,7 +1,7 @@
 default['cookbook-openshift3']['openshift_hosted_metrics_storage_kind'] = 'emptydir'
 default['cookbook-openshift3']['openshift_hosted_metrics_storage_volume_size'] = '10Gi'
 default['cookbook-openshift3']['openshift_hosted_metrics_storage_volume_name'] = 'metrics-cassandra'
-default['cookbook-openshift3']['openshift_hosted_metrics_storage_access_modes'] = "['ReadWriteOnce']"
+default['cookbook-openshift3']['openshift_hosted_metrics_storage_access_modes'] = %w(ReadWriteOnce)
 
 default['cookbook-openshift3']['openshift_metrics_image_prefix'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'registry.access.redhat.com/openshift3/' : 'docker.io/openshift/origin-'
 default['cookbook-openshift3']['openshift_metrics_image_version'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? '3.5.0' : 'latest'

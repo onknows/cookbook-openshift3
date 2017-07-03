@@ -259,6 +259,24 @@ action :create do
     source 'hawkular_cassandra_rc.yaml.erb'
   end
 
+  [{ 'name' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_prefix'], 'labels' => { 'metrics-infra' => 'hawkular-cassandra' }, 'selector' => { 'name' => 'hawkular-metrics' }, 'annotations' => { 'volume.alpha.kubernetes.io/storage-class' => 'dynamic' }, 'access_modes' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_access'] }].each do |pvc|
+    template 'Generate hawkular-cassandra persistent volume claims (dynamic)' do
+      path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/cassandra-#{pvc['name']}-pvc.yaml"
+      source 'pvc.yaml.erb'
+      variables(pvc: pvc)
+      only_if { node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type'] =~ /dynamic/i }
+    end
+  end
+
+  [{ 'name' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_prefix'], 'labels' => { 'metrics-infra' => 'hawkular-cassandra' }, 'selector' => { 'name' => 'hawkular-metrics' }, 'access_modes' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_access'] }].each do |pvc|
+    template 'Generate hawkular-cassandra persistent volume claims' do
+      path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/cassandra-#{pvc['name']}-pvc.yaml"
+      source 'pvc.yaml.erb'
+      variables(pvc: pvc)
+      not_if { node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type'] =~ /dynamic/i || node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type'] =~ /emptydir/i }
+    end
+  end
+
   execute 'Applying template files' do
     command "#{node['cookbook-openshift3']['openshift_common_client_binary']} apply -f \
             #{Chef::Config['file_cache_path']}/hosted_metric/templates \
@@ -280,6 +298,11 @@ action :create do
             --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']} | \
             xargs --no-run-if-empty #{node['cookbook-openshift3']['openshift_common_client_binary']} scale \
             --replicas=1 --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']}"
+  end
+
+  directory "#{Chef::Config['file_cache_path']}/hosted_metric" do
+    recursive true
+    action :delete
   end
   new_resource.updated_by_last_action(true)
 end
