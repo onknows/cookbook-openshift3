@@ -17,6 +17,12 @@ if node['cookbook-openshift3']['openshift_HA'] && node['cookbook-openshift3']['o
   Chef::Application.fatal!('A Cluster Name must be defined via "openshift_cluster_name"')
 end
 
+if node['cookbook-openshift3']['openshift_hosted_cluster_metrics']
+  unless node['cookbook-openshift3']['openshift_metrics_cassandra_storage_types'].any? { |t| t.casecmp(node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type']) == 0 }
+    Chef::Application.fatal!('Key openshift_metrics_cassandra_storage_types is not valid. Please refer to the documentation for supprted types')
+  end
+end
+
 if node['cookbook-openshift3']['etcd_add_additional_nodes']
   unless node['cookbook-openshift3']['etcd_add_additional_nodes'] && node['cookbook-openshift3']['etcd_servers'].any? { |key| key['new_node'] }
     Chef::Application.fatal!('A key named "new_node" must be defined when adding new members to ETCD cluster')

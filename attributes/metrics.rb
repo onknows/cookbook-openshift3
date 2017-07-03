@@ -1,3 +1,4 @@
+default['cookbook-openshift3']['openshift_metrics_cassandra_storage_types'] = %w(emptydir dynamic pv)
 default['cookbook-openshift3']['openshift_hosted_metrics_storage_kind'] = 'emptydir'
 default['cookbook-openshift3']['openshift_hosted_metrics_storage_volume_size'] = '10Gi'
 default['cookbook-openshift3']['openshift_hosted_metrics_storage_volume_name'] = 'metrics-cassandra'
