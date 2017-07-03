@@ -258,5 +258,28 @@ action :create do
     path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular-cassandra-rc1.yaml"
     source 'hawkular_cassandra_rc.yaml.erb'
   end
+
+  execute 'Applying template files' do
+    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} apply -f \
+            #{Chef::Config['file_cache_path']}/hosted_metric/templates \
+            --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
+            --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']}"
+  end
+
+  execute 'Scaling down cluster to recognize changes' do
+    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} get rc -l metrics-infra -o name \
+            --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
+            --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']} | \
+            xargs --no-run-if-empty #{node['cookbook-openshift3']['openshift_common_client_binary']} scale \
+            --replicas=0 --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']}"
+  end
+
+  execute 'Scaling up cluster' do
+    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} get rc -l metrics-infra -o name \
+            --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
+            --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']} | \
+            xargs --no-run-if-empty #{node['cookbook-openshift3']['openshift_common_client_binary']} scale \
+            --replicas=1 --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']}"
+  end
   new_resource.updated_by_last_action(true)
 end
