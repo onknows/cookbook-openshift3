@@ -28,6 +28,9 @@ spec:
     certificate: <%= @tls_certificate %>  
 <%- end -%>
 <% if @route['tls_termination'] == 'reencrypt' %>
-    destinationCACertificate: <%= @tls_destination_ca_certificate %>  
+    destinationCACertificate: |
+<%- @tls_destination_ca_certificate.split("\n").each do |cert| %>
+      <%= cert %>
+<%- end -%>
 <%- end -%>
 <%- end -%>
