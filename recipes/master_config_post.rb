@@ -135,7 +135,6 @@ openshift_deploy_registry 'Deploy Registry' do
 end
 
 openshift_deploy_metrics 'Deploy Cluster Metrics' do
-  metrics_params Hash[node['cookbook-openshift3']['openshift_hosted_metrics_parameters'].map { |k, v| [k.upcase, v] }]
   only_if do
     node['cookbook-openshift3']['openshift_hosted_cluster_metrics']
   end
