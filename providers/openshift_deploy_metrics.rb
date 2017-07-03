@@ -259,7 +259,7 @@ action :create do
     source 'hawkular_cassandra_rc.yaml.erb'
   end
 
-  [{ 'name' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_prefix'], 'labels' => { 'metrics-infra' => 'hawkular-cassandra' }, 'selector' => { 'name' => 'metrics-cassandra-1' }, 'annotations' => { 'volume.alpha.kubernetes.io/storage-class' => 'dynamic' }, 'access_modes' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_access'] }].each do |pvc|
+  [{ 'name' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_prefix'], 'labels' => { 'metrics-infra' => 'hawkular-cassandra' }, 'annotations' => { 'volume.alpha.kubernetes.io/storage-class' => 'dynamic' }, 'access_modes' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_access'] }].each do |pvc|
     template 'Generate hawkular-cassandra persistent volume claims (dynamic)' do
       path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/cassandra-#{pvc['name']}-pvc.yaml"
       source 'pvc.yaml.erb'
@@ -268,7 +268,7 @@ action :create do
     end
   end
 
-  [{ 'name' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_prefix'], 'labels' => { 'metrics-infra' => 'hawkular-cassandra' }, 'selector' => { 'name' => 'metrics-cassandra-1' }, 'access_modes' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_access'] }].each do |pvc|
+  [{ 'name' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_prefix'], 'labels' => { 'metrics-infra' => 'hawkular-cassandra' }, 'access_modes' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_access'] }].each do |pvc|
     template 'Generate hawkular-cassandra persistent volume claims' do
       path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/cassandra-#{pvc['name']}-pvc.yaml"
       source 'pvc.yaml.erb'
