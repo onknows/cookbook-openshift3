@@ -110,7 +110,7 @@ spec:
         emptyDir: {}
 <%- else -%>        
         persistentVolumeClaim:
-          claimName: "<%= node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_prefix'] %>-1"
+          claimName: "<%= node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_prefix'] %>"
 <%- end -%>          
       - name: hawkular-cassandra-secrets
         secret:
