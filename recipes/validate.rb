@@ -18,8 +18,8 @@ if node['cookbook-openshift3']['openshift_HA'] && node['cookbook-openshift3']['o
 end
 
 if node['cookbook-openshift3']['openshift_hosted_cluster_metrics']
-  unless node['cookbook-openshift3']['openshift_hosted_cluster_metrics'] && Hash[node['cookbook-openshift3']['openshift_hosted_metrics_parameters'].map { |k, v| [k.upcase, v] }].key?('HAWKULAR_METRICS_HOSTNAME')
-    Chef::Application.fatal!('Key HAWKULAR_METRICS_HOSTNAME must be defined when deploying cluster metrics ("openshift_hosted_metrics_parameters")')
+  unless node['cookbook-openshift3']['openshift_metrics_cassandra_storage_types'].any? { |t| t.casecmp(node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type']) == 0 }
+    Chef::Application.fatal!('Key openshift_metrics_cassandra_storage_types is not valid. Please refer to the documentation for supprted types')
   end
 end
 

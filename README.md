@@ -135,24 +135,22 @@ Any option can be set, as long as they are supported by the current [docker log 
   }
 }
 ```
-* `node['cookbook-openshift3']['openshift_hosted_metrics_parameters']`
+* `node['cookbook-openshift3']['openshift_hosted_cluster_metrics']`
 
-Any option can be set, as long as they are supported by the current [Metrics deployer template](https://docs.openshift.com/container-platform/latest/install_config/cluster_metrics.html#deployer-template-parameters).
+Any option can be set, as long as they are supported by the current [Metrics deployer template](https://docs.openshift.com/container-platform/latest/install_config/cluster_metrics.html#metrics-ansible-variables).
 
-The name of the key can be set in upper case or lower case
-
+We only support 1 cassandra POD.
+Example of options:
 ```json
 {
-  "openshift_master_metrics_public_url": "metrics.domain.local",
-  "openshift_hosted_metrics_parameters": {
-    "HAWKULAR_METRICS_HOSTNAME": "metric.domain.local",
-    "METRIC_DURATION": "30",
-    "IMAGE_VERSION": "v1.4.1"
-  }
+  "openshift_hosted_cluster_metrics": true,
+  "openshift_metrics_heapster_requests_memory": "1Gi",
+  "openshift_metrics_image_version": "v1.5.1",
+  "openshift_metrics_cassandra_storage_type": "dynamic",
+  "openshift_metrics_hawkular_user_write_access": false,
+  "....."
 }
 ```
-
-Remember to specify an `IMAGE_VERSION` or the `latest` version will be deployed, which may be incompatible with your openshift cluster version.
 
 ## Cloud Providers Integration
 

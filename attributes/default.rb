@@ -108,7 +108,6 @@ default['cookbook-openshift3']['openshift_master_embedded_dns'] = true
 default['cookbook-openshift3']['openshift_master_embedded_kube'] = true
 default['cookbook-openshift3']['openshift_master_debug_level'] = '2'
 default['cookbook-openshift3']['openshift_master_dns_port'] = node['cookbook-openshift3']['deploy_dnsmasq'] == true ? '8053' : '53'
-default['cookbook-openshift3']['openshift_master_metrics_public_url'] = nil
 default['cookbook-openshift3']['openshift_master_image_bulk_imported'] = 5
 default['cookbook-openshift3']['openshift_master_deserialization_cache_size'] = '50000'
 default['cookbook-openshift3']['openshift_master_pod_eviction_timeout'] = ''
@@ -165,8 +164,6 @@ default['cookbook-openshift3']['openshift_hosted_registry_selector'] = 'region=i
 default['cookbook-openshift3']['openshift_hosted_registry_namespace'] = 'default'
 
 default['cookbook-openshift3']['openshift_hosted_cluster_metrics'] = false
-default['cookbook-openshift3']['openshift_hosted_metrics_secrets'] = ''
-default['cookbook-openshift3']['openshift_hosted_metrics_parameters'] = {}
 
 default['cookbook-openshift3']['erb_corsAllowedOrigins'] = ['127.0.0.1', 'localhost', node['cookbook-openshift3']['openshift_common_hostname'], node['cookbook-openshift3']['openshift_common_api_hostname'], node['cookbook-openshift3']['openshift_common_public_hostname']].uniq + node['cookbook-openshift3']['openshift_common_svc_names']
 

@@ -158,8 +158,6 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_hosted_registry_selector']` -  Defaults to `region=infra`.
 * `node['cookbook-openshift3']['openshift_hosted_registry_namespace']` -  Defaults to `default`.
 * `node['cookbook-openshift3']['openshift_hosted_cluster_metrics']` -  Defaults to `false`.
-* `node['cookbook-openshift3']['openshift_hosted_metrics_secrets']` -  Defaults to ``.
-* `node['cookbook-openshift3']['openshift_hosted_metrics_parameters']` -  Defaults to `{ ... }`.
 * `node['cookbook-openshift3']['erb_corsAllowedOrigins']` -  Defaults to `[ ... ]`.
 * `node['cookbook-openshift3']['master_generated_certs_dir']` -  Defaults to `/var/www/html/master/generated_certs`.
 * `node['cookbook-openshift3']['etcd_add_additional_nodes']` -  Defaults to `false`.
