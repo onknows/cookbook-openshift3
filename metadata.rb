@@ -7,7 +7,7 @@ issues_url 'https://github.com/IshentRas/cookbook-openshift3/issues'
 description 'Installs/Configures Openshift 3.x (>= 3.2)'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 chef_version '>= 12.4' if respond_to?(:chef_version)
-version '1.10.55'
+version '1.10.56'
 supports 'redhat', '>= 7.1'
 supports 'centos', '>= 7.1'
 

@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.56
+### Improvement
+- Add the possibility of deploying Metrics according to https://docs.openshift.com/container-platform/latest/install_config/cluster_metrics.html
+
 ## v1.10.55
 ### Bug
 - Fix backticks in environment not working (#138)

@@ -139,6 +139,8 @@ Any option can be set, as long as they are supported by the current [docker log 
 
 Any option can be set, as long as they are supported by the current [Metrics deployer template](https://docs.openshift.com/container-platform/latest/install_config/cluster_metrics.html#metrics-ansible-variables).
 
+Full list of attributes can be found [here](https://raw.githubusercontent.com/IshentRas/cookbook-openshift3/master/attributes/metrics.rb).
+
 We only support 1 cassandra POD.
 Example of options:
 ```json
