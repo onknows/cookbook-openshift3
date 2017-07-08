@@ -37,18 +37,10 @@ servingInfo:
   keyFile: server.key
 volumeDirectory: <%= node['cookbook-openshift3']['openshift_data_dir'] %>/openshift.local.volumes
 kubeletArguments:
-  max-pods:
-    - "<%= node['cookbook-openshift3']['openshift_node_max_pod'] %>"
-  minimum-container-ttl-duration:
-    - "<%= node['cookbook-openshift3']['openshift_node_minimum_container_ttl_duration'] %>"
-  maximum-dead-containers-per-container:
-    - "<%= node['cookbook-openshift3']['openshift_node_maximum_dead_containers_per_container'] %>"
-  maximum-dead-containers:
-    - "<%= node['cookbook-openshift3']['openshift_node_maximum_dead_containers'] %>"
-  image-gc-high-threshold:
-    - "<%= node['cookbook-openshift3']['openshift_node_image_gc_high_threshold'] %>"
-  image-gc-low-threshold:
-    - "<%= node['cookbook-openshift3']['openshift_node_image_gc_low_threshold'] %>"
+<% @kubelet_args.each_pair do |k, v| %>
+  <%= k %>: 
+    - "<%= v %>"
+<%- end -%>
 <% if node['cookbook-openshift3']['openshift_node_cadvisor_port'] %>
   cadvisor-port:
     - "<%= node['cookbook-openshift3']['openshift_node_cadvisor_port'] %>"

@@ -142,7 +142,7 @@ Any option can be set, as long as they are supported by the current [Metrics dep
 Full list of attributes can be found [here](https://raw.githubusercontent.com/IshentRas/cookbook-openshift3/master/attributes/metrics.rb).
 
 We only support 1 cassandra POD.
-Example of options:
+Example of options for deploying metrics:
 ```json
 {
   "openshift_hosted_cluster_metrics": true,
@@ -153,6 +153,28 @@ Example of options:
   "....."
 }
 ```
+Example of removing metrics components:
+```json
+{
+  "openshift_hosted_cluster_metrics": true,
+  "openshift_metrics_install_metrics": false,
+  "....."
+}
+
+
+* `node['cookbook-openshift3']['openshift_node_kubelet_args_custom']`
+Any option can be set, as long as they are supported by current [Kubelet Options](https://kubernetes.io/docs/admin/kubelet/).
+
+Example of overriding the default kubelet options:
+```json
+{
+  "openshift_node_kubelet_args_custom": {
+    "pods-per-core": "5",
+    "image-gc-high-threshold": "85",
+    "resolv-conf": "/etc/resolv.conf"
+  },
+  "....."
+}
 
 ## Cloud Providers Integration
 

@@ -140,13 +140,13 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_node_docker-storage']` -  Defaults to `{ ... }`.
 * `node['cookbook-openshift3']['openshift_node_generated_configs_dir']` -  Defaults to `/var/www/html/node/generated-configs`.
 * `node['cookbook-openshift3']['openshift_node_iptables_sync_period']` -  Defaults to `5s`.
-* `node['cookbook-openshift3']['openshift_node_max_pod']` -  Defaults to `40`.
+* `node['cookbook-openshift3']['openshift_node_max_pod']` -  Defaults to `40`. (Deprecated use `openshift_node_kubelet_args_custom`)
 * `node['cookbook-openshift3']['openshift_node_sdn_mtu_sdn']` -  Defaults to `1450`.
-* `node['cookbook-openshift3']['openshift_node_minimum_container_ttl_duration']` -  Defaults to `10s`.
-* `node['cookbook-openshift3']['openshift_node_maximum_dead_containers_per_container']` -  Defaults to `2`.
-* `node['cookbook-openshift3']['openshift_node_maximum_dead_containers']` -  Defaults to `100`.
-* `node['cookbook-openshift3']['openshift_node_image_gc_high_threshold']` -  Defaults to `90`.
-* `node['cookbook-openshift3']['openshift_node_image_gc_low_threshold']` -  Defaults to `80`.
+* `node['cookbook-openshift3']['openshift_node_minimum_container_ttl_duration']` -  Defaults to `10s`. (Deprecated use `openshift_node_kubelet_args_custom`)
+* `node['cookbook-openshift3']['openshift_node_maximum_dead_containers_per_container']` -  Defaults to `2`. (Deprecated use `openshift_node_kubelet_args_custom`)
+* `node['cookbook-openshift3']['openshift_node_maximum_dead_containers']` -  Defaults to `100`. (Deprecated use `openshift_node_kubelet_args_custom`)
+* `node['cookbook-openshift3']['openshift_node_image_gc_high_threshold']` -  Defaults to `90`. (Deprecated use `openshift_node_kubelet_args_custom`)
+* `node['cookbook-openshift3']['openshift_node_image_gc_low_threshold']` -  Defaults to `80`. (Deprecated use `openshift_node_kubelet_args_custom`)
 * `node['cookbook-openshift3']['openshift_node_cadvisor_port']` -  Defaults to `nil`.
 * `node['cookbook-openshift3']['openshift_node_read_only_port']` -  Defaults to `nil`.
 * `node['cookbook-openshift3']['openshift_hosted_manage_router']` -  Defaults to `true`.

@@ -16,6 +16,39 @@ def random_password(length = 10)
   CHARS.sort_by { rand }.join[0...length]
 end
 
+action :delete do
+  directory "#{Chef::Config['file_cache_path']}/hosted_metric/templates" do
+    recursive true
+  end
+
+  remote_file "#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig" do
+    source "file://#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
+  end
+
+  execute 'Scaling down cluster before deletion' do
+    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} get rc -l metrics-infra -o name \
+            --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
+            --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']} | \
+            xargs --no-run-if-empty #{node['cookbook-openshift3']['openshift_common_client_binary']} scale \
+            --replicas=0 --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']}"
+  end
+
+  execute 'Remove metrics components' do
+    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} delete --ignore-not-found \
+            --selector=metrics-infra all,sa,secrets,templates,routes,pvc,rolebindings,clusterrolebindings \
+            --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
+            --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']}"
+  end
+
+  execute 'Remove rolebindings' do
+    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} delete \
+            --ignore-not-found rolebinding/hawkular-view clusterrolebinding/heapster-cluster-reader \
+            --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
+            --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']}"
+  end
+  new_resource.updated_by_last_action(true)
+end
+
 action :create do
   directory "#{Chef::Config['file_cache_path']}/hosted_metric/templates" do
     recursive true
