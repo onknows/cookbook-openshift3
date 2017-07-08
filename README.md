@@ -142,6 +142,7 @@ Any option can be set, as long as they are supported by the current [Metrics dep
 Full list of attributes can be found [here](https://raw.githubusercontent.com/IshentRas/cookbook-openshift3/master/attributes/metrics.rb).
 
 We only support 1 cassandra POD.
+
 Example of options for deploying metrics:
 ```json
 {
@@ -160,12 +161,12 @@ Example of removing metrics components:
   "openshift_metrics_install_metrics": false,
   "....."
 }
+```
 
-
+Example of overriding the default kubelet options:
 * `node['cookbook-openshift3']['openshift_node_kubelet_args_custom']`
 Any option can be set, as long as they are supported by current [Kubelet Options](https://kubernetes.io/docs/admin/kubelet/).
 
-Example of overriding the default kubelet options:
 ```json
 {
   "openshift_node_kubelet_args_custom": {
@@ -175,6 +176,7 @@ Example of overriding the default kubelet options:
   },
   "....."
 }
+```
 
 ## Cloud Providers Integration
 
