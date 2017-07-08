@@ -17,9 +17,7 @@
       "openshift_hosted_manage_registry": true,
       "openshift_hosted_cluster_metrics": true,
       "deploy_example": false,
-      "openshift_hosted_metrics_parameters": {
-        "IMAGE_VERSION": "v1.3.2"
-      }
+      "openshift_metrics_image_version": "v1.3.2"
     }
   },
   "chef_type": "role",
