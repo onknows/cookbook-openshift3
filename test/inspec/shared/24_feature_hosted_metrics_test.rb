@@ -17,7 +17,7 @@ describe command("oc get rc heapster -n openshift-infra --template '{{.metadata.
 end
 
 # should create rolebinding for hawkular service account
-describe command("oc get rolebinding -n openshift-infra --no-headers | grep -q hawkular-view") do
+describe command('oc get rolebinding -n openshift-infra --no-headers | grep -q hawkular-view') do
   its('exit_status') { should eq 0 }
 end
 
