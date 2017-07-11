@@ -141,29 +141,3 @@ suites:
         openshift_HA: true
         openshift_cluster_name: test-cluster.domain.local
         etcd_servers: *SERVERS
-
-  - name: standalone-ose12
-    run_list:
-      - role[openshift3-base-ose12]
-    verifier:
-      inspec_tests:
-        - test/inspec/standalone
-        - test/inspec/shared
-    attributes:
-      cookbook-openshift3:
-        << : *SHARED
-        openshift_HA: false
-
-  - name: cluster-native-ose12
-    run_list:
-      - role[openshift3-base-ose12]
-    verifier:
-      inspec_tests:
-        - test/inspec/cluster-native
-        - test/inspec/shared
-    attributes:
-      cookbook-openshift3:
-        << : *SHARED
-        openshift_HA: true
-        openshift_cluster_name: test-cluster.domain.local
-        etcd_servers: *SERVERS
