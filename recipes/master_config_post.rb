@@ -12,7 +12,7 @@ version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['co
 execute 'Wait for 30 secondes for node service to come up (Only for 1.3/3.3)' do
   command 'sleep 30'
   action :run
-  only_if { version == 1.3 } 
+  only_if { version == 1.3 }
 end
 
 service_accounts.each do |serviceaccount|
