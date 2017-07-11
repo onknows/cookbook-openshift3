@@ -142,7 +142,7 @@ default['cookbook-openshift3']['openshift_node_config_file'] = "#{node['cookbook
 default['cookbook-openshift3']['openshift_node_debug_level'] = '2'
 default['cookbook-openshift3']['openshift_node_docker-storage'] = {}
 default['cookbook-openshift3']['openshift_node_generated_configs_dir'] = '/var/www/html/node/generated-configs'
-default['cookbook-openshift3']['openshift_node_kubelet_args_default'] = { 'pods-per-core' => '10', 'max-pods' => '250', 'image-gc-high-threshold' => '90', 'image-gc-low-threshold' => '80' }
+default['cookbook-openshift3']['openshift_node_kubelet_args_default'] = { 'max-pods' => '250', 'image-gc-high-threshold' => '90', 'image-gc-low-threshold' => '80' }
 default['cookbook-openshift3']['openshift_node_kubelet_args_custom'] = {}
 default['cookbook-openshift3']['openshift_node_iptables_sync_period'] = '5s'
 default['cookbook-openshift3']['openshift_node_sdn_mtu_sdn'] = '1450'
