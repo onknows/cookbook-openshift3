@@ -1,6 +1,16 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.57
+### Improvement
+- Remove support for 1.2/3.2
+- Update openshift_example files
+- Add extra wait time for 1.3/3.3 installation
+
+### Bug
+- Change test for 1.3/3.3 to use docker 1.10.x
+- Adapt the kubelet args
+
 ## v1.10.56
 ### Improvement
 - Add the possibility of deploying Metrics according to https://docs.openshift.com/container-platform/latest/install_config/cluster_metrics.html
