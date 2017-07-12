@@ -7,6 +7,13 @@
 master_servers = node['cookbook-openshift3']['master_servers']
 node_servers = node['cookbook-openshift3']['node_servers']
 service_accounts = node['cookbook-openshift3']['openshift_common_service_accounts_additional'].any? ? node['cookbook-openshift3']['openshift_common_service_accounts'] + node['cookbook-openshift3']['openshift_common_service_accounts_additional'] : node['cookbook-openshift3']['openshift_common_service_accounts']
+version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'][1..-1].sub(/^3/, '1').to_f.round(1) : node['cookbook-openshift3']['ose_major_version'].sub(/^3/, '1').to_f.round(1)
+
+execute 'Wait for 30 secondes for node service to come up (Only for 1.3/3.3)' do
+  command 'sleep 30'
+  action :run
+  only_if { version == 1.3 }
+end
 
 service_accounts.each do |serviceaccount|
   execute "Creation service account: \"#{serviceaccount['name']}\" ; Namespace: \"#{serviceaccount['namespace']}\"" do
@@ -134,8 +141,17 @@ openshift_deploy_registry 'Deploy Registry' do
   end
 end
 
+openshift_deploy_metrics 'Remove Cluster Metrics' do
+  action :delete
+  only_if do
+    node['cookbook-openshift3']['openshift_hosted_cluster_metrics'] &&
+      !node['cookbook-openshift3']['openshift_metrics_install_metrics']
+  end
+end
+
 openshift_deploy_metrics 'Deploy Cluster Metrics' do
   only_if do
-    node['cookbook-openshift3']['openshift_hosted_cluster_metrics']
+    node['cookbook-openshift3']['openshift_hosted_cluster_metrics'] &&
+      node['cookbook-openshift3']['openshift_metrics_install_metrics']
   end
 end

@@ -7,6 +7,6 @@
 provides :openshift_deploy_metrics
 resource_name :openshift_deploy_metrics
 
-actions :create
+actions [:create, :delete]
 
 default_action :create
