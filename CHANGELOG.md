@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.58
+### Improvement
+- Remove support for 1.2/3.2 (README)
+
 ## v1.10.57
 ### Improvement
 - Remove support for 1.2/3.2
