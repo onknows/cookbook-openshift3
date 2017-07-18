@@ -5,13 +5,13 @@ admissionConfig:
         apiVersion: v1
         kind: BuildDefaultsConfig
 <% unless node['cookbook-openshift3']['openshift_builddefaults_git_http_proxy'].empty? -%>
-	gitHTTPProxy: "<%= node['cookbook-openshift3']['openshift_builddefaults_git_http_proxy'] %>"
+        gitHTTPProxy: "<%= node['cookbook-openshift3']['openshift_builddefaults_git_http_proxy'] %>"
 <%- end -%>
 <% unless node['cookbook-openshift3']['openshift_builddefaults_git_https_proxy'].empty? -%>
-	gitHTTPSProxy: "<%= node['cookbook-openshift3']['openshift_builddefaults_git_https_proxy'] %>"
+        gitHTTPSProxy: "<%= node['cookbook-openshift3']['openshift_builddefaults_git_https_proxy'] %>"
 <%- end -%>
 <% unless node['cookbook-openshift3']['openshift_builddefaults_git_no_proxy'].empty? -%>
-	gitNoProxy: "<%= node['cookbook-openshift3']['openshift_builddefaults_git_no_proxy'] %>"
+        gitNoProxy: "<%= node['cookbook-openshift3']['openshift_builddefaults_git_no_proxy'] %>"
 <%- end -%>
 <% unless node['cookbook-openshift3']['openshift_builddefaults_env'].empty? -%>
 	env:
@@ -32,7 +32,7 @@ admissionConfig:
 <%- end -%>
 <%- end -%>
 <% unless node['cookbook-openshift3']['openshift_builddefaults_nodeselectors'].empty? -%>
-	nodeSelector:
+        nodeSelector:
 <% node['cookbook-openshift3']['openshift_builddefaults_nodeselectors'].each_pair do |k,v| %>
           <%= k %>: <%= v %>
 <%- end -%>
