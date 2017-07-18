@@ -14,11 +14,11 @@ admissionConfig:
         gitNoProxy: "<%= node['cookbook-openshift3']['openshift_builddefaults_git_no_proxy'] %>"
 <%- end -%>
 <% unless node['cookbook-openshift3']['openshift_builddefaults_env'].empty? -%>
-	env:
+        env:
 <% node['cookbook-openshift3']['openshift_builddefaults_env'].each do |env| %>
 <% env.each_pair do |k,v| %>
-        - name: <%= k.upcase %>
-          value: <%= v %>
+        - <%= k %>
+          <%= v %>
 <%- end -%>
 <%- end -%>
 <%- end -%>
