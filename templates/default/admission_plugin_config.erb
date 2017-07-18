@@ -17,8 +17,8 @@ admissionConfig:
         env:
 <% node['cookbook-openshift3']['openshift_builddefaults_env'].each do |env| %>
 <% env.each_pair do |k,v| %>
-        - <%= k %>
-          <%= v %>
+        - name: <%= k.upcase %>
+          value: <%= v %>
 <%- end -%>
 <%- end -%>
 <%- end -%>
