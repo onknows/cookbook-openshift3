@@ -178,6 +178,54 @@ Any option can be set, as long as they are supported by current [Kubelet Options
 }
 ```
 
+Example of overriding the setting for global builds:
+Any option can be set, as long as they are supported by current [Global Build Defaults and Overrides](https://docs.openshift.com/container-platform/latest/install_config/build_defaults_overrides.html).
+* `node['cookbook-openshift3']['openshift_builddefaults_env']` is the preferred for setting custom environment variables. 
+
+```json
+{
+  "....."
+  "openshift_builddefaults_git_http_proxy": "http://USER:PASSWORD@HOST:PORT",
+  "openshift_builddefaults_git_https_proxy": "https://USER:PASSWORD@HOST:PORT",
+  "openshift_builddefaults_git_no_proxy": "mycorp.com",
+  "openshift_builddefaults_env": [
+    {
+      "http_proxy": "http://proxy.example.com.redhat.com:3128"
+    },
+    {
+      "NO_PROXY": "ose3-master.example.com"
+    }
+  ],
+  "openshift_builddefaults_image_labels": [
+    {
+      "name": "imagelabelname1",
+      "value": "imagelabelvalue1"
+    }
+  ],
+  "openshift_builddefaults_nodeselectors": {
+    "nodelabel1": "nodelabelvalue1",
+    "nodelabel2": "nodelabelvalue2"
+  },
+  "openshift_builddefaults_annotations": {
+    "annotationkey1": "annotationvalue1"
+  },
+  "openshift_buildoverrides_force_pull": "true",
+  "openshift_buildoverrides_image_labels": [
+    {
+      "name": "imagelabelname1",
+      "value": "imagelabelvalue1"
+    }
+  ],
+  "openshift_buildoverrides_nodeselectors": {
+    "nodelabel1": "nodelabelvalue1"
+  },
+  "openshift_buildoverrides_annotations": {
+    "annotationkey1": "annotationvalue1"
+  },
+  "....."
+}
+```
+
 ## Cloud Providers Integration
 
 Cloud providers integration requires passing some sensetive credentials to OpenShift. This cookbook uses encrypted data bags as the safest way to achieve this. Thus you should have: 
