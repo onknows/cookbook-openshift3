@@ -1,6 +1,16 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.59
+### Improvement
+- Add the possibilty for openshift_buildoverrides 
+- Add the possibilty of retrieving the OCP certs from a custom location/server 
+
+### Bug
+- Fix issue with cookstyle indentation
+- Improve the code for ignoring dnsmasq issues
+- Add missing dirs and files to be removed when uninstalling
+
 ## v1.10.58
 ### Improvement
 - Remove support for 1.2/3.2 (README)
