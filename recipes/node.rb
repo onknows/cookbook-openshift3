@@ -133,6 +133,8 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
   end
 
   if node['cookbook-openshift3']['deploy_dnsmasq']
+    package 'NetworkManager'
+
     template '/etc/dnsmasq.d/origin-dns.conf' do
       source 'origin-dns.conf.erb'
     end
@@ -146,6 +148,14 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
       action :create
       ignore_failure true
       notifies :restart, 'service[NetworkManager]', :immediately
+    end
+
+    ruby_block 'Setup dnsmasq' do
+      block do
+        f = Chef::Util::FileEdit.new('/etc/dnsmasq.conf')
+        f.insert_line_if_no_match(%r{^conf-dir=/etc/dnsmasq.d}, 'conf-dir=/etc/dnsmasq.d')
+        f.write_file
+      end
     end
 
     # ignore_failure in case this fails/is not necessary
