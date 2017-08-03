@@ -1,4 +1,5 @@
-certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? node['cookbook-openshift3']['master_servers'] : node['cookbook-openshift3']['master_servers'] << node['cookbook-openshift3']['certificate_server']
+master_servers = node['cookbook-openshift3']['master_servers']
+certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? node['cookbook-openshift3']['master_servers'] : master_servers << node['cookbook-openshift3']['certificate_server']
 
 if certificate_server.find { |server_master| server_master['fqdn'] == node['fqdn'] }
   if node['cookbook-openshift3']['deploy_containerized']
