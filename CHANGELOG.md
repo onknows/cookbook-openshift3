@@ -1,6 +1,15 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.60
+### Improvement
+- Update Example files (ImageStreams/Templates)
+- Update Hosted templates
+- Add more logic for dnsmasq (Install NetworkManager and add conf-dir line)
+
+### Bug
+- Fix issues with certificate_servers
+
 ## v1.10.59
 ### Improvement
 - Add the possibilty for openshift_buildoverrides 
