@@ -128,6 +128,7 @@ node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
 end
 
 openshift_deploy_router 'Deploy Router' do
+  deployer_options node['cookbook-openshift3']['openshift_hosted_router_options']
   only_if do
     node['cookbook-openshift3']['openshift_hosted_manage_router']
   end

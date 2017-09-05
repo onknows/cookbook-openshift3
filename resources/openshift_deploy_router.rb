@@ -10,3 +10,5 @@ resource_name :openshift_deploy_router
 actions :create
 
 default_action :create
+
+attribute :deployer_options, kind_of: [String, Array], default: []

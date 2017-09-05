@@ -15,3 +15,9 @@ describe command("oc get dc/router -n default --template '{{.spec.template.spec.
   its('exit_status') { should eq 0 }
   its('stdout') { should match(/region:infra/) }
 end
+
+# oc adm router was passed the custom option, resulting in metrics being exposed
+describe command(%[oc get dc/router -n default -o jsonpath='{ .spec.template.spec.containers[?(@.name == "metrics-exporter")].name }']) do
+  its('exit_status') { should eq 0 }
+  its('stdout') { should match(/metrics-exporter/) }
+end

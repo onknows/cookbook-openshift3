@@ -160,6 +160,7 @@ default['cookbook-openshift3']['openshift_node_read_only_port'] = nil # usually 
 default['cookbook-openshift3']['openshift_hosted_manage_router'] = true
 default['cookbook-openshift3']['openshift_hosted_router_selector'] = 'region=infra'
 default['cookbook-openshift3']['openshift_hosted_router_namespace'] = 'default'
+default['cookbook-openshift3']['openshift_hosted_router_options'] = []
 default['cookbook-openshift3']['openshift_hosted_router_certfile'] = "#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-router.crt"
 default['cookbook-openshift3']['openshift_hosted_router_keyfile'] = "#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-router.key"
 
