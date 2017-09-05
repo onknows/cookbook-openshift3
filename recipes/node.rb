@@ -20,7 +20,7 @@ end
 
 if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
   file '/usr/local/etc/.firewall_node_additional.txt' do
-    content node['cookbook-openshift3']['enabled_firewall_additional_rules_node'].join('\n')
+    content node['cookbook-openshift3']['enabled_firewall_additional_rules_node'].join("\n")
     owner 'root'
     group 'root'
   end

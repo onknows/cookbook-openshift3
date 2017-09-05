@@ -22,7 +22,7 @@ if !node['cookbook-openshift3']['openshift_HA'] && node['cookbook-openshift3']['
 end
 
 if node['cookbook-openshift3']['openshift_hosted_cluster_metrics']
-  unless node['cookbook-openshift3']['openshift_metrics_cassandra_storage_types'].any? { |t| t.casecmp(node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type']).zero? }
+  unless node['cookbook-openshift3']['openshift_metrics_cassandra_storage_types'].any? { |t| t.casecmp(node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type']) == 0 }
     Chef::Application.fatal!('Key openshift_metrics_cassandra_storage_types is not valid. Please refer to the documentation for supprted types')
   end
 end
