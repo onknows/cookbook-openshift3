@@ -1,6 +1,13 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.61
+### Improvement
+-  Allow passing custom arguments when deploying the hosted router
+
+### Bug
+- Fix issue with cookstyle indentation
+
 ## v1.10.60
 ### Improvement
 - Update Example files (ImageStreams/Templates)
