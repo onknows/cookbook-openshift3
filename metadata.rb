@@ -11,6 +11,7 @@ version '1.10.61'
 supports 'redhat', '>= 7.1'
 supports 'centos', '>= 7.1'
 
+depends 'yum', '>= 3.6.1'
 depends 'iptables', '>= 1.0.0'
 depends 'selinux_policy'
 
