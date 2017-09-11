@@ -64,7 +64,7 @@ RELEASE
 - git push --tag
 - knife cookbook site share cookbook-openshift3 # on rothko
 
-''', cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.tk', replyTo: '', subject: 'Build OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com'
+''', cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.tk', replyTo: '', subject: 'Build OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
   stage('cleanup') {
     node(nodename) {
       dir(builddir) {
@@ -77,7 +77,7 @@ RELEASE
 } catch(err) {
   mail bcc: '', body: '''See: http://jenkins.meirionconsulting.tk/job/cookbook-openshift3-pipeline
 
-''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.tk', replyTo: '', subject: 'Build failure', to: 'ian.miell@gmail.com, william17.burton@gmail.com'
+''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.tk', replyTo: '', subject: 'Build failure', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
   throw(err)
   stage('cleanup') {
     node(nodename) {
