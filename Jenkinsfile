@@ -31,7 +31,7 @@ try {
           sh 'git clone --recursive --depth 1 https://github.com/ianmiell/shutit-openshift-cluster'
           dir('shutit-openshift-cluster') {
             withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
-              sh 'COOKBOOK_VERSION=' + branch + ' ./run_tests.sh --interactive 0'
+              sh 'COOKBOOK_BRANCH=' + branch + ' ./run_tests.sh --interactive 0'
             }
           }
         }
