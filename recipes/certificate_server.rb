@@ -1,3 +1,9 @@
+#
+# Cookbook Name:: cookbook-openshift3
+# Recipe:: certificate_server
+#
+# Copyright (c) 2015 The Authors, All Rights Reserved.
+
 master_servers = node['cookbook-openshift3']['master_servers']
 certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? node['cookbook-openshift3']['master_servers'] : master_servers + [node['cookbook-openshift3']['certificate_server']]
 
