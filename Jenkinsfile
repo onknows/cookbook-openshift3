@@ -3,13 +3,18 @@
 
 try {
   properties([parameters([
-    string(name: 'branch',          defaultValue: env.BRANCH_NAME,                                description: 'Branch of cookbook-openshift3 to test'),
-    string(name: 'builddir',        defaultValue: 'cookbook-openshift3-test-' + env.BUILD_NUMBER, description: 'Build directory'),
-    string(name: 'nodename',        defaultValue: 'cage',                                         description: 'Node to build on'),
-    string(name: 'chefversion',     defaultValue: '12.16.42-1',                                   description: 'Chef version to use, eg 12.4.1-1'),
-    string(name: 'ose_versions',    defaultValue: '1.3 1.4 1.5',                                  description: 'OSE versions to build, separated by spaces'),
-    booleanParam(name: 'dokitchen', defaultValue: true,                                           description: 'Whether to run kitchen tests'),
-    booleanParam(name: 'doshutit',  defaultValue: true,                                           description: 'Whether to run shutit tests')
+    string(name: 'branch',                                       defaultValue: env.BRANCH_NAME,                                description: 'Branch of cookbook-openshift3 to test'),
+    string(name: 'builddir',                                     defaultValue: 'cookbook-openshift3-test-' + env.BUILD_NUMBER, description: 'Build directory'),
+    string(name: 'nodename',                                     defaultValue: 'cage',                                         description: 'Node to build on'),
+    string(name: 'chefversion',                                  defaultValue: '12.16.42-1',                                   description: 'Chef version to use, eg 12.4.1-1'),
+    string(name: 'ose_versions',                                 defaultValue: '1.3 1.4 1.5',                                  description: 'OSE versions to build, separated by spaces'),
+    string(name: 'chef_iptables_cookbook_version',               defaultValue: 'latest',                                       description: 'iptables cookbook version, eg 1.0.0'),
+    string(name: 'chef_selinux_cookbook_version',                defaultValue: 'latest',                                       description: 'selinux cookbook version, eg 0.7.2'),
+    string(name: 'chef_yum_cookbook_version',                    defaultValue: 'latest',                                       description: 'yum cookbook version, eg 3.6.1'),
+    string(name: 'chef_compat_resource_cookbook_version',        defaultValue: 'latest',                                       description: 'compat_resource cookbook version'),
+    string(name: 'chef_inject_compat_resource_cookbook_version', defaultValue: 'latest',                                       description: 'whether to inject compat_resource cookbook version (eg true for some envs)'),
+    booleanParam(name: 'dokitchen',                              defaultValue: true,                                           description: 'Whether to run kitchen tests'),
+    booleanParam(name: 'doshutit',                               defaultValue: true,                                           description: 'Whether to run shutit tests')
   ])])
   lock('cookbook_openshift3_tests') {
     stage('setupenv') {
@@ -34,7 +39,7 @@ try {
           dir(builddir) {
             sh 'git clone --recursive --depth 1 https://github.com/ianmiell/shutit-openshift-cluster'
             dir('shutit-openshift-cluster') {
-              withEnv(["SHUTIT=/usr/local/bin/shutit","COOKBOOK_VERSION="+branch,"CHEF_VERSION="+chefversion,"OSE_VERSIONS="+ose_versions]) {
+              withEnv(["SHUTIT=/usr/local/bin/shutit","COOKBOOK_VERSION="+branch,"CHEF_VERSION="+chefversion,"OSE_VERSIONS="+ose_versions,"CHEF_IPTABLES_COOKBOOK_VERSION="+chef_iptables_cookbook_version,"CHEF_COMPAT_RESOURCE_COOKBOOK_VERSION="+chef_compat_resource_cookbook_version,"CHEF_INJECT_COMPAT_RESOURCE_COOKBOOK_VERSION="+chef_inject_compat_resource_cookbook_version,"CHEF_YUM_COOKBOOK_VERSION="+chef_yum_cookbook_version]) {
                 sh './run_tests.sh --interactive 0'
               }
             }
