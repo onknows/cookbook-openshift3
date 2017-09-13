@@ -51,7 +51,10 @@ action :create do
         masters_size: new_resource.masters_size,
         ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
       )
-      notifies :run, 'ruby_block[Restart API]', :immediately
+      # This notify fails on older versions of Chef in providers. This is a workaround.
+      unless node['chef_packages']['chef']['version'] == node['cookbook-openshift3']['switch_off_provider_notify_version']
+        notifies :run, 'ruby_block[Restart API]', :immediately
+      end
     end
   else
     template new_resource.master_file do
@@ -64,7 +67,10 @@ action :create do
         masters_size: new_resource.masters_size,
         ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
       )
-      notifies :run, 'ruby_block[Restart Master]', :immediately
+      # This notify fails on older versions of Chef in providers. This is a workaround.
+      unless node['chef_packages']['chef']['version'] == node['cookbook-openshift3']['switch_off_provider_notify_version']
+        notifies :run, 'ruby_block[Restart Master]', :immediately
+      end
     end
   end
   new_resource.updated_by_last_action(true)
