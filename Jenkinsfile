@@ -12,7 +12,7 @@ try {
     string(name: 'chef_selinux_cookbook_version',                defaultValue: 'latest',                                       description: 'selinux cookbook version, eg 0.7.2'),
     string(name: 'chef_yum_cookbook_version',                    defaultValue: 'latest',                                       description: 'yum cookbook version, eg 3.6.1'),
     string(name: 'chef_compat_resource_cookbook_version',        defaultValue: 'latest',                                       description: 'compat_resource cookbook version'),
-    string(name: 'chef_inject_compat_resource_cookbook_version', defaultValue: 'latest',                                       description: 'whether to inject compat_resource cookbook version (eg true for some envs)'),
+    string(name: 'chef_inject_compat_resource_cookbook_version', defaultValue: 'false',                                        description: 'whether to inject compat_resource cookbook version (eg true for some envs)'),
     booleanParam(name: 'dokitchen',                              defaultValue: true,                                           description: 'Whether to run kitchen tests'),
     booleanParam(name: 'doshutit',                               defaultValue: true,                                           description: 'Whether to run shutit tests')
   ])])
