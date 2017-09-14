@@ -9,7 +9,7 @@
     "cookbook-openshift3": {
       "openshift_deployment_type": "origin",
       "ose_major_version": "1.5",
-      "ose_version": "1.5.0-1.el7",
+      "ose_version": "1.5.1-1.el7",
       "openshift_common_portal_net": "172.30.0.0/16",
       "openshift_master_sdn_cluster_network_cidr": "10.128.0.0/14",
       "openshift_master_sdn_host_subnet_length": 9,
