@@ -1,6 +1,16 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.62
+### Improvement
+- Jenkinsfile parameters added
+- New Centos yum repos added
+
+### Bug
+- Allow users to suppress ruby block call from provider code (breaks in older Chef client versions)
+- Make perms and ownership on tar.gz files explicit for more restrictive distributions
+- Kitchen tests updated for latest versions
+
 ## v1.10.61
 ### Improvement
 -  Allow passing custom arguments when deploying the hosted router
