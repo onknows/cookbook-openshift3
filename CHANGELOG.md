@@ -1,7 +1,11 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
-## v1.10.62
+## v1.10.63
+### Bug
+- Fixes error in v1.10.62 - file permissions on tar.gz
+
+## v1.10.62 - BROKEN
 ### Improvement
 - Jenkinsfile parameters added
 - New Centos yum repos added
