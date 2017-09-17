@@ -51,11 +51,8 @@ if certificate_server['fqdn'] == node['fqdn']
     end
 
     execute "Create a tarball of the etcd master certs for #{master_server['fqdn']}" do
-      command "tar czvf #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz -C #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']} . "
+      command "tar czvf #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz -C #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']} . && chown -R apache:apache #{node['cookbook-openshift3']['master_generated_certs_dir']} && chmod -R  0755 #{node['cookbook-openshift3']['master_generated_certs_dir']}"
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz"
-      mode '0774'
-      owner 'apache'
-      group 'apache'
     end
   end
 end
