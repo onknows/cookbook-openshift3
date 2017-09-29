@@ -6,8 +6,15 @@
 
 master_servers = node['cookbook-openshift3']['master_servers']
 node_servers = node['cookbook-openshift3']['node_servers']
-path_certificate = node['cookbook-openshift3']['use_wildcard_nodes'] ? 'wildcard_nodes.tgz' : "#{node['fqdn']}.tgz"
+path_certificate = node['cookbook-openshift3']['use_wildcard_nodes'] ? 'wildcard_nodes.tgz.enc' : "#{node['fqdn']}.tgz.enc"
 certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.first : node['cookbook-openshift3']['certificate_server']
+
+if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
+  secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
+  encrypted_file_password = Chef::EncryptedDataBagItem.load(node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'], node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name'], secret_file)
+else
+  encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
+end
 
 # Use ruby_block for copying OpenShift CA to system CA trust
 ruby_block 'Update ca trust' do
@@ -99,12 +106,18 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
   end
 
   remote_file "Retrieve certificate from Master[#{certificate_server['fqdn']}]" do
-    path "#{node['cookbook-openshift3']['openshift_node_config_dir']}/#{node['fqdn']}.tgz"
+    path "#{node['cookbook-openshift3']['openshift_node_config_dir']}/#{node['fqdn']}.tgz.enc"
     source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/node/generated-configs/#{path_certificate}"
     action :create_if_missing
+    notifies :run, 'execute[Un-encrypt node certificate tgz files]', :immediately
     notifies :run, 'execute[Extract certificate to Node folder]', :immediately
     retries 12
     retry_delay 5
+  end
+
+  execute 'Un-encrypt node certificate tgz files' do
+    command "openssl enc -d -aes-256-cbc -in #{node['cookbook-openshift3']['openshift_node_config_dir']}/#{node['fqdn']}.tgz.enc -out #{node['cookbook-openshift3']['openshift_node_config_dir']}/#{node['fqdn']}.tgz -k '#{encrypted_file_password}'"
+    action :nothing
   end
 
   execute 'Extract certificate to Node folder' do

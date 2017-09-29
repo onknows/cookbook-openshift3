@@ -18,7 +18,7 @@ action :redeploy do
     only_if "[ -a #{node['cookbook-openshift3']['etcd_conf_dir']} ]"
   end
   execute 'Delete etcd Peer/Server certs' do
-    command "rm -rf peer* server* etcd-#{node['fqdn']}.tgz || true"
+    command "rm -rf peer* server* etcd-#{node['fqdn']}.tgz etcd-#{node['fqdn']}.tgz.enc || true"
     cwd node['cookbook-openshift3']['etcd_conf_dir']
     only_if "[ -a #{node['cookbook-openshift3']['etcd_conf_dir']} ]"
   end
