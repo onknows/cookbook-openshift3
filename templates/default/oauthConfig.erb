@@ -91,7 +91,7 @@ oauthConfig:
       bindDN: <%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_bind_dn'] %>
       bindPassword: <%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_bind_password'] %>
       insecure: <%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_insecure'] %>
-      url: "ldap://<%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_server'] %>/<%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_base_ou'] %>?<%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_preferred_username'] %>?sub?(objectClass=*)"
+      url: "<%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_insecure'] ? 'ldap' : 'ldaps' %>://<%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_server'] %>/<%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_base_ou'] %>?<%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_preferred_username'] %>?sub?(objectClass=*)"
   <% end -%>
 <% end -%>
   masterPublicURL: <%= node['cookbook-openshift3']['openshift_master_public_api_url'] %>
