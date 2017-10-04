@@ -202,4 +202,4 @@ default['cookbook-openshift3']['docker_dns_search_option'] = %w()
 
 default['cookbook-openshift3']['switch_off_provider_notify_version'] = '12.4.1'
 # If a secret is desired, store the password in a data bag, or override the default.
-default['cookbook-openshift3']['encrypted_file_password'] = { 'data_bag_name' => nil, 'data_bag_item_name' => nil, 'secret_file' => nil , 'default' => 'defaultpass'}
+default['cookbook-openshift3']['encrypted_file_password'] = { 'data_bag_name' => nil, 'data_bag_item_name' => nil, 'secret_file' => nil, 'default' => 'defaultpass' }

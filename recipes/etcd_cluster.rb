@@ -113,7 +113,6 @@ if certificate_server['fqdn'] == node['fqdn']
     end
   end
 
-
   openshift_add_etcd 'Add additional etcd nodes to cluster' do
     etcd_servers etcd_servers
     only_if { node['cookbook-openshift3']['etcd_add_additional_nodes'] }
