@@ -8,6 +8,13 @@ etcd_servers = node['cookbook-openshift3']['etcd_servers']
 master_servers = node['cookbook-openshift3']['master_servers']
 certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.first : node['cookbook-openshift3']['certificate_server']
 
+if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
+  secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
+  encrypted_file_password = Chef::EncryptedDataBagItem.load(node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'], node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name'], secret_file)
+else
+  encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
+end
+
 if certificate_server['fqdn'] == node['fqdn']
   package 'httpd' do
     notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
@@ -100,7 +107,12 @@ if certificate_server['fqdn'] == node['fqdn']
       command "tar czvf #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz -C #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']} . && chown apache: #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz"
       creates "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz"
     end
+
+    execute 'Encrypt etcd certificate tgz files' do
+      command "openssl enc -aes-256-cbc -in #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz -out #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz.enc -k '#{encrypted_file_password}'  && chmod -R  0755 #{node['cookbook-openshift3']['etcd_generated_certs_dir']} && chown -R apache: #{node['cookbook-openshift3']['etcd_generated_certs_dir']}"
+    end
   end
+
 
   openshift_add_etcd 'Add additional etcd nodes to cluster' do
     etcd_servers etcd_servers
@@ -145,12 +157,19 @@ if etcd_servers.find { |server_etcd| server_etcd['fqdn'] == node['fqdn'] }
   end
 
   remote_file "Retrieve certificate from ETCD Master[#{certificate_server['fqdn']}]" do
-    path "#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd-#{node['fqdn']}.tgz"
-    source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd-#{node['fqdn']}.tgz"
+    path "#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd-#{node['fqdn']}.tgz.enc"
+    source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd-#{node['fqdn']}.tgz.enc"
     action :create_if_missing
+    notifies :run, 'execute[Un-encrypt etcd certificate tgz files]', :immediately
     notifies :run, 'execute[Extract certificate to ETCD folder]', :immediately
     retries 12
     retry_delay 5
+  end
+
+  execute 'Un-encrypt etcd certificate tgz files' do
+    command "openssl enc -d -aes-256-cbc -in etcd-#{node['fqdn']}.tgz.enc -out etcd-#{node['fqdn']}.tgz -k '#{encrypted_file_password}'"
+    cwd node['cookbook-openshift3']['etcd_conf_dir']
+    action :nothing
   end
 
   execute 'Extract certificate to ETCD folder' do
