@@ -1,6 +1,14 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.64
+### Improvement
+- All tgz files are encrypted with a default passphrase, and decrypted at the other end after downloading.
+
+### Bug
+- Fixes error in v1.10.62 - file permissions on tar.gz
+- Fix bug with LDAP Provider (Enforce LDAPS when selecting secure)
+
 ## v1.10.63
 ### Bug
 - Fixes error in v1.10.62 - file permissions on tar.gz
