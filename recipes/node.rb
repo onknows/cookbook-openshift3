@@ -16,15 +16,6 @@ else
   encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
 end
 
-# Use ruby_block for copying OpenShift CA to system CA trust
-ruby_block 'Update ca trust' do
-  block do
-    Mixlib::ShellOut.new('update-ca-trust').run_command
-  end
-  notifies :restart, 'service[docker]', :delayed
-  action :nothing
-end
-
 if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
   file '/usr/local/etc/.firewall_node_additional.txt' do
     content node['cookbook-openshift3']['enabled_firewall_additional_rules_node'].join("\n")
@@ -148,6 +139,21 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
   remote_file '/etc/pki/ca-trust/source/anchors/openshift-ca.crt' do
     source "file://#{node['cookbook-openshift3']['openshift_node_config_dir']}/ca.crt"
     notifies :run, 'ruby_block[Update ca trust]', :immediately
+  end
+
+  # Use ruby_block for copying OpenShift CA to system CA trust
+  ruby_block 'Update ca trust' do
+    block do
+      Mixlib::ShellOut.new('update-ca-trust').run_command
+    end
+    notifies :restart, 'service[docker]', :immediately
+    notifies :run, 'execute[Wait for 30 secondes for docker services to come up]', :immediately
+    action :nothing
+  end
+
+  execute 'Wait for 30 secondes for docker services to come up' do
+    command 'sleep 30'
+    action :nothing
   end
 
   if node['cookbook-openshift3']['deploy_dnsmasq']

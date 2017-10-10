@@ -136,7 +136,6 @@ default['cookbook-openshift3']['openshift_master_public_api_url'] = "https://#{n
 default['cookbook-openshift3']['openshift_master_loopback_api_url'] = "https://#{node['fqdn']}:#{node['cookbook-openshift3']['openshift_master_api_port']}"
 default['cookbook-openshift3']['openshift_master_api_url'] = "https://#{node['cookbook-openshift3']['openshift_common_api_hostname']}:#{node['cookbook-openshift3']['openshift_master_api_port']}"
 default['cookbook-openshift3']['openshift_master_loopback_api_url'] = "https://#{node['fqdn']}:#{node['cookbook-openshift3']['openshift_master_api_port']}"
-default['cookbook-openshift3']['openshift_master_loopback_context_name'] = "https://#{node['fqdn']}:#{node['cookbook-openshift3']['openshift_master_api_port']}"
 default['cookbook-openshift3']['openshift_master_loopback_context_name'] = "current-context: default/#{node['fqdn']}:#{node['cookbook-openshift3']['openshift_master_api_port']}/system:openshift-master".tr('.', '-')
 default['cookbook-openshift3']['openshift_master_console_url'] = "https://#{node['cookbook-openshift3']['openshift_common_public_hostname']}:#{node['cookbook-openshift3']['openshift_master_console_port']}/console"
 default['cookbook-openshift3']['openshift_master_policy'] = "#{node['cookbook-openshift3']['openshift_master_config_dir']}/policy.json"
@@ -181,7 +180,7 @@ default['cookbook-openshift3']['openshift_hosted_registry_namespace'] = 'default
 
 default['cookbook-openshift3']['openshift_hosted_cluster_metrics'] = false
 
-default['cookbook-openshift3']['erb_corsAllowedOrigins'] = ['127.0.0.1', 'localhost', node['cookbook-openshift3']['openshift_common_hostname'], node['cookbook-openshift3']['openshift_common_api_hostname'], node['cookbook-openshift3']['openshift_common_public_hostname']].uniq + node['cookbook-openshift3']['openshift_common_svc_names']
+default['cookbook-openshift3']['erb_corsAllowedOrigins'] = ['127.0.0.1', 'localhost', node['cookbook-openshift3']['openshift_common_public_hostname']].uniq + node['cookbook-openshift3']['openshift_common_svc_names']
 
 default['cookbook-openshift3']['master_generated_certs_dir'] = '/var/www/html/master/generated_certs'
 default['cookbook-openshift3']['etcd_add_additional_nodes'] = false
