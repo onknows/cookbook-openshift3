@@ -17,6 +17,7 @@ Installs/Configures Openshift 3.x (>= 3.2)
 # Attributes
 
 * `node['cookbook-openshift3']['openshift_adhoc_reboot_node']` -  Defaults to `false`.
+* `node['cookbook-openshift3']['openshift_push_via_dns']` -  Defaults to `false`.
 * `node['cookbook-openshift3']['openshift_master_asset_config']` -  Defaults to `nil`.
 * `node['cookbook-openshift3']['use_wildcard_nodes']` -  Defaults to `false`.
 * `node['cookbook-openshift3']['wildcard_domain']` -  Defaults to ``.
@@ -91,6 +92,8 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_docker_node_image']` -  Defaults to `node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/node' : 'openshift/node`.
 * `node['cookbook-openshift3']['openshift_docker_ovs_image']` -  Defaults to `node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/openvswitch' : 'openshift/openvswitch`.
 * `node['cookbook-openshift3']['openshift_master_config_dir']` -  Defaults to `#{node['cookbook-openshift3']['openshift_common_master_dir']}/master`.
+* `node['cookbook-openshift3']['openshift_master_external_ip_network_cidrs']` -  Defaults to `[0.0.0.0/0]`.
+* `node['cookbook-openshift3']['openshift_master_ingress_ip_network_cidr']` -  Defaults to `nil`.
 * `node['cookbook-openshift3']['openshift_master_bind_addr']` -  Defaults to `0.0.0.0`.
 * `node['cookbook-openshift3']['openshift_master_auditconfig']` -  Defaults to `false`.
 * `node['cookbook-openshift3']['openshift_master_api_port']` -  Defaults to `8443`.
@@ -108,6 +111,8 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_master_image_bulk_imported']` -  Defaults to `5`.
 * `node['cookbook-openshift3']['openshift_master_deserialization_cache_size']` - Defaults to `50000` (for small deployments a value of `1000` may be more appropriate).
 * `node['cookbook-openshift3']['openshift_master_pod_eviction_timeout']` -  Defaults to ``.
+* `node['cookbook-openshift3']['openshift_master_min_tls_version']` -  Defaults to `nil`.
+* `node['cookbook-openshift3']['openshift_master_cipher_suites']` -  Defaults to `nil`.
 * `node['cookbook-openshift3']['openshift_master_project_request_message']` -  Defaults to ``.
 * `node['cookbook-openshift3']['openshift_master_project_request_template']` -  Defaults to ``.
 * `node['cookbook-openshift3']['openshift_master_logging_public_url']` -  Defaults to `nil`.
@@ -136,6 +141,8 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_master_managed_names_additional']` -  Defaults to `%w()`.
 * `node['cookbook-openshift3']['openshift_node_config_dir']` -  Defaults to `#{node['cookbook-openshift3']['openshift_common_node_dir']}/node`.
 * `node['cookbook-openshift3']['openshift_node_config_file']` -  Defaults to `#{node['cookbook-openshift3']['openshift_node_config_dir']}/node-config.yaml`.
+* `node['cookbook-openshift3']['openshift_node_min_tls_version']` -  Defaults to `nil`.
+* `node['cookbook-openshift3']['openshift_node_cipher_suites']` -  Defaults to `nil`.
 * `node['cookbook-openshift3']['openshift_node_debug_level']` -  Defaults to `2`.
 * `node['cookbook-openshift3']['openshift_node_docker-storage']` -  Defaults to `{ ... }`.
 * `node['cookbook-openshift3']['openshift_node_generated_configs_dir']` -  Defaults to `/var/www/html/node/generated-configs`.

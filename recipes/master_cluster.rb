@@ -134,6 +134,38 @@ if certificate_server['fqdn'] == node['fqdn']
     creates "#{node['cookbook-openshift3']['openshift_master_config_dir']}/master.server.key"
   end
 
+  unless ::File.readlines("#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-master.kubeconfig").grep(/current-context/).grep(/^node['cookbook-openshift3']['openshift_master_loopback_context_name']/).empty?
+    execute 'Create temp directory for loopback master client config' do
+      command "mkdir -p #{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir"
+    end
+
+    execute "Generate the loopback master client config for #{master_servers.first['fqdn']}" do
+      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} create-api-client-config \
+              --certificate-authority=#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt \
+              --master=#{node['cookbook-openshift3']['openshift_master_loopback_api_url']} \
+              --public-master=#{node['cookbook-openshift3']['openshift_master_loopback_api_url']} \
+              --client-dir=#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir \
+              --groups=system:masters,system:openshift-master \
+              --signer-cert=#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt \
+              --signer-key=#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.key \
+              --signer-serial=#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.serial.txt \
+              --user=system:openshift-master --basename=openshift-master"
+    end
+
+    %w(openshift-master.crt openshift-master.key openshift-master.kubeconfig).each do |loopback_master_client|
+      remote_file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{loopback_master_client}" do
+        source "file://#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir/#{loopback_master_client}"
+        only_if { ::File.file?("#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir/#{loopback_master_client}") }
+      end
+    end
+
+    directory 'Delete temp directory for loopback master client config' do
+      path "#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir"
+      recursive true
+      action :delete
+    end
+  end
+
   master_peers.each do |peer_server|
     directory "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{peer_server['fqdn']}" do
       mode '0755'
@@ -156,8 +188,8 @@ if certificate_server['fqdn'] == node['fqdn']
     execute "Generate master client configuration for #{peer_server['fqdn']}" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} create-api-client-config \
               --certificate-authority=#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt \
-              --master=#{node['cookbook-openshift3']['openshift_master_api_url']} \
-              --public-master=#{node['cookbook-openshift3']['openshift_master_public_api_url']} \
+              --master=#{node['cookbook-openshift3']['openshift_master_loopback_api_url']} \
+              --public-master=#{node['cookbook-openshift3']['openshift_master_loopback_api_url']} \
               --client-dir=#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{peer_server['fqdn']} \
               --groups=system:masters,system:openshift-master \
               --signer-cert=#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt \

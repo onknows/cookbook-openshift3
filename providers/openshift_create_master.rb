@@ -5,7 +5,6 @@
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
 require 'openssl'
-require 'resolv'
 
 use_inline_resources
 provides :openshift_create_master if defined? provides
@@ -44,7 +43,7 @@ action :create do
     template new_resource.master_file do
       source 'master.yaml.erb'
       variables(
-        erb_corsAllowedOrigins: new_resource.origins + Resolv.getaddresses(node['cookbook-openshift3']['openshift_common_public_hostname']).sort,
+        erb_corsAllowedOrigins: new_resource.origins + [node['cookbook-openshift3']['openshift_common_public_ip']],
         standalone_registry: new_resource.standalone_registry,
         erb_master_named_certificates: named_certificates,
         etcd_servers: new_resource.etcd_servers,

@@ -21,7 +21,7 @@ ruby_block 'Update ca trust' do
   block do
     Mixlib::ShellOut.new('update-ca-trust').run_command
   end
-  notifies :restart, 'service[docker]', :immediately
+  notifies :restart, 'service[docker]', :delayed
   action :nothing
 end
 
@@ -105,6 +105,11 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
   end
 
+  package 'conntrack-tools' do
+    action :install
+    not_if { node['cookbook-openshift3']['deploy_containerized'] }
+  end
+
   remote_file "Retrieve certificate from Master[#{certificate_server['fqdn']}]" do
     path "#{node['cookbook-openshift3']['openshift_node_config_dir']}/#{node['fqdn']}.tgz.enc"
     source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/node/generated-configs/#{path_certificate}"
@@ -148,8 +153,13 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
   if node['cookbook-openshift3']['deploy_dnsmasq']
     package 'NetworkManager'
 
+    template '/etc/origin/node/node-dnsmasq.conf' do
+      source 'node-dnsmasq.conf.erb'
+    end
+
     template '/etc/dnsmasq.d/origin-dns.conf' do
       source 'origin-dns.conf.erb'
+      notifies :restart, 'service[dnsmasq]', :immediately
     end
 
     # On some systems, NetworkManager does not exist, so ignore_failure.
@@ -181,6 +191,7 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
   template node['cookbook-openshift3']['openshift_node_config_file'] do
     source 'node.yaml.erb'
     variables(
+      node_labels: node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }['labels'].to_s.split(' '),
       ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version'],
       kubelet_args: node['cookbook-openshift3']['openshift_node_kubelet_args_default'].merge(node['cookbook-openshift3']['openshift_node_kubelet_args_custom'])
     )

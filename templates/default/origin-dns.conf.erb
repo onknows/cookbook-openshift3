@@ -1,5 +1,7 @@
-strict-order
 no-resolv
 domain-needed
-server=/cluster.local/<%=node['cookbook-openshift3']['openshift_common_first_svc_ip'] %>
-
+no-negcache
+max-cache-ttl=1
+enable-dbus
+bind-interfaces
+listen-address=<%= node['cookbook-openshift3']['openshift_common_ip'] %>
