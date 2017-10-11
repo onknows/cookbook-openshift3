@@ -166,7 +166,7 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
 
     template '/etc/dnsmasq.d/origin-dns.conf' do
       source 'origin-dns.conf.erb'
-      variables(default_gw)
+      variables default_gw: default_gw
       notifies :restart, 'service[dnsmasq]', :immediately
     end
 
