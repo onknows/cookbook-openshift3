@@ -8,6 +8,7 @@ master_servers = node['cookbook-openshift3']['master_servers']
 node_servers = node['cookbook-openshift3']['node_servers']
 path_certificate = node['cookbook-openshift3']['use_wildcard_nodes'] ? 'wildcard_nodes.tgz.enc' : "#{node['fqdn']}.tgz.enc"
 certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.first : node['cookbook-openshift3']['certificate_server']
+default_gw = `ip route show`[/default.*/][/\d+\.\d+\.\d+\.\d+/]
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
@@ -165,6 +166,7 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
 
     template '/etc/dnsmasq.d/origin-dns.conf' do
       source 'origin-dns.conf.erb'
+      variables(default_gw)
       notifies :restart, 'service[dnsmasq]', :immediately
     end
 

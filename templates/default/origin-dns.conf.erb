@@ -4,4 +4,4 @@ no-negcache
 max-cache-ttl=1
 enable-dbus
 bind-interfaces
-listen-address=<%= node['cookbook-openshift3']['openshift_common_ip'] %>
+listen-address=<%= @default_gw %>
