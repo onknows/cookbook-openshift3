@@ -8,7 +8,7 @@ master_servers = node['cookbook-openshift3']['master_servers']
 node_servers = node['cookbook-openshift3']['node_servers']
 service_accounts = node['cookbook-openshift3']['openshift_common_service_accounts_additional'].any? ? node['cookbook-openshift3']['openshift_common_service_accounts'] + node['cookbook-openshift3']['openshift_common_service_accounts_additional'] : node['cookbook-openshift3']['openshift_common_service_accounts']
 
-execute 'Check Matser API' do
+execute 'Check Master API' do
   command "[[ $(curl --silent #{node['cookbook-openshift3']['openshift_master_api_url']}/healthz/ready --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt) =~ \"ok\" ]]"
   retries 120
   retry_delay 1
@@ -80,12 +80,12 @@ openshift_create_pv 'Create Persistent Storage' do
 end
 
 execute "Wait up to 30s for node registrations (Best Effort) [Expected number of Nodes: #{node_servers.size.to_i}]" do
-   command "for ((i = 0 ; i < 6 ; i++)); do [[ `oc get node --no-headers --config=admin.kubeconfig 2> /dev/null | wc -l` -eq #{node_servers.size.to_i} ]] && break || sleep 5; done"
-   cwd node['cookbook-openshift3']['openshift_master_config_dir']
-   only_if "[[ `oc get node --no-headers --config=admin.kubeconfig 2> /dev/null | wc -l` -ne #{node_servers.size.to_i} ]]"
+  command "for ((i = 0 ; i < 6 ; i++)); do [[ `oc get node --no-headers --config=admin.kubeconfig 2> /dev/null | wc -l` -eq #{node_servers.size.to_i} ]] && break || sleep 5; done"
+  cwd node['cookbook-openshift3']['openshift_master_config_dir']
+  only_if "[[ `oc get node --no-headers --config=admin.kubeconfig 2> /dev/null | wc -l` -ne #{node_servers.size.to_i} ]]"
 end
 
-if `[[ $(oc get node --no-headers --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig 2> /dev/null | wc -l) -ge 1 ]]`
+if "[[ $(oc get node --no-headers --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig 2> /dev/null | wc -l) -ge 1 ]]"
   node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
     execute "Set schedulability for Master node : #{nodes['fqdn']}" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} manage-node #{nodes['fqdn']} --schedulable=${schedulability} --config=admin.kubeconfig"
@@ -98,7 +98,7 @@ if `[[ $(oc get node --no-headers --config=#{node['cookbook-openshift3']['opensh
           !Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
       end
     end
-  
+
     execute "Set schedulability for node : #{nodes['fqdn']}" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} manage-node #{nodes['fqdn']} --schedulable=${schedulability} --config=admin.kubeconfig"
       environment(
@@ -110,7 +110,7 @@ if `[[ $(oc get node --no-headers --config=#{node['cookbook-openshift3']['opensh
           Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
       end
     end
-  
+
     execute "Set Labels for node : #{nodes['fqdn']}" do
       command "#{node['cookbook-openshift3']['openshift_common_client_binary']} label node #{nodes['fqdn']} ${labels} --overwrite --config=admin.kubeconfig"
       environment(
@@ -123,14 +123,14 @@ if `[[ $(oc get node --no-headers --config=#{node['cookbook-openshift3']['opensh
       end
     end
   end
-  
+
   openshift_deploy_router 'Deploy Router' do
     deployer_options node['cookbook-openshift3']['openshift_hosted_router_options']
     only_if do
       node['cookbook-openshift3']['openshift_hosted_manage_router']
     end
   end
-  
+
   openshift_deploy_registry 'Deploy Registry' do
     persistent_registry node['cookbook-openshift3']['registry_persistent_volume'].empty? ? false : true
     persistent_volume_claim_name "#{node['cookbook-openshift3']['registry_persistent_volume']}-claim"
@@ -138,7 +138,7 @@ if `[[ $(oc get node --no-headers --config=#{node['cookbook-openshift3']['opensh
       node['cookbook-openshift3']['openshift_hosted_manage_registry']
     end
   end
-  
+
   openshift_deploy_metrics 'Remove Cluster Metrics' do
     action :delete
     only_if do
@@ -146,7 +146,7 @@ if `[[ $(oc get node --no-headers --config=#{node['cookbook-openshift3']['opensh
         !node['cookbook-openshift3']['openshift_metrics_install_metrics']
     end
   end
-  
+
   openshift_deploy_metrics 'Deploy Cluster Metrics' do
     only_if do
       node['cookbook-openshift3']['openshift_hosted_cluster_metrics'] &&
