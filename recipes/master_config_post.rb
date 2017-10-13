@@ -85,7 +85,7 @@ execute "Wait up to 30s for node registrations (Best Effort) [Expected number of
   only_if "[[ `oc get node --no-headers --config=admin.kubeconfig 2> /dev/null | wc -l` -ne #{node_servers.size.to_i} ]]"
 end
 
-if "[[ $(oc get node --no-headers --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig 2> /dev/null | wc -l) -ge 1 ]]"
+if `oc get node --no-headers --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig 2> /dev/null | wc -l`.to_i >= 1
   node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
     execute "Set schedulability for Master node : #{nodes['fqdn']}" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} manage-node #{nodes['fqdn']} --schedulable=${schedulability} --config=admin.kubeconfig"
