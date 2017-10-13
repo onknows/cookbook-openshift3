@@ -51,7 +51,7 @@ openshift3-shared-attributes: &SHARED
     claim:
       namespace: default
   registry_persistent_volume: registry-storage
-  openshift_hosted_router_options: '--expose-metrics'
+  openshift_hosted_router_options: '--expose-metrics --metrics-image=prom/haproxy-exporter:v0.7.1'
   openshift_hosted_metrics_parameters:
     HAWKULAR_METRICS_HOSTNAME: metrics.10.0.2.15.nip.io
     METRIC_DURATION: "30"
