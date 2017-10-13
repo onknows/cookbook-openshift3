@@ -8,6 +8,12 @@ master_servers = node['cookbook-openshift3']['master_servers']
 node_servers = node['cookbook-openshift3']['node_servers']
 service_accounts = node['cookbook-openshift3']['openshift_common_service_accounts_additional'].any? ? node['cookbook-openshift3']['openshift_common_service_accounts'] + node['cookbook-openshift3']['openshift_common_service_accounts_additional'] : node['cookbook-openshift3']['openshift_common_service_accounts']
 
+execute 'Check Matser API' do
+  command "[[ $(curl --silent #{node['cookbook-openshift3']['openshift_master_api_url']}/healthz/ready --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt) =~ \"ok\" ]]"
+  retries 120
+  retry_delay 1
+end
+
 service_accounts.each do |serviceaccount|
   execute "Creation service account: \"#{serviceaccount['name']}\" ; Namespace: \"#{serviceaccount['namespace']}\"" do
     command 'oc create sa ${serviceaccount} -n ${namespace} --config=admin.kubeconfig'
@@ -73,78 +79,78 @@ openshift_create_pv 'Create Persistent Storage' do
   persistent_storage node['cookbook-openshift3']['persistent_storage']
 end
 
-execute "Wait up to 60s for nodes registration [Size : #{node_servers.size.to_i}]" do
-  command "[[ `oc get node --no-headers --config=admin.kubeconfig 2> /dev/null | wc -l` -eq #{node_servers.size.to_i} ]]"
-  cwd node['cookbook-openshift3']['openshift_master_config_dir']
-  only_if "[[ `oc get node --no-headers --config=admin.kubeconfig 2> /dev/null | wc -l` -ne #{node_servers.size.to_i} ]]"
-  retries 12
-  retry_delay 5
+execute "Wait up to 30s for node registrations (Best Effort) [Expected number of Nodes: #{node_servers.size.to_i}]" do
+   command "for ((i = 0 ; i < 6 ; i++)); do [[ `oc get node --no-headers --config=admin.kubeconfig 2> /dev/null | wc -l` -eq #{node_servers.size.to_i} ]] && break || sleep 5; done"
+   cwd node['cookbook-openshift3']['openshift_master_config_dir']
+   only_if "[[ `oc get node --no-headers --config=admin.kubeconfig 2> /dev/null | wc -l` -ne #{node_servers.size.to_i} ]]"
 end
 
-node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
-  execute "Set schedulability for Master node : #{nodes['fqdn']}" do
-    command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} manage-node #{nodes['fqdn']} --schedulable=${schedulability} --config=admin.kubeconfig"
-    environment(
-      'schedulability' => !nodes.key?(:schedulable) && master_servers.find { |server_node| server_node['fqdn'] == nodes['fqdn'] } ? 'False' : nodes['schedulable'].to_s
-    )
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
+if `[[ $(oc get node --no-headers --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig 2> /dev/null | wc -l) -ge 1 ]]`
+  node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
+    execute "Set schedulability for Master node : #{nodes['fqdn']}" do
+      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} manage-node #{nodes['fqdn']} --schedulable=${schedulability} --config=admin.kubeconfig"
+      environment(
+        'schedulability' => !nodes.key?(:schedulable) && master_servers.find { |server_node| server_node['fqdn'] == nodes['fqdn'] } ? 'False' : nodes['schedulable'].to_s
+      )
+      cwd node['cookbook-openshift3']['openshift_master_config_dir']
+      only_if do
+        master_servers.find { |server_node| server_node['fqdn'] == nodes['fqdn'] } &&
+          !Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
+      end
+    end
+  
+    execute "Set schedulability for node : #{nodes['fqdn']}" do
+      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} manage-node #{nodes['fqdn']} --schedulable=${schedulability} --config=admin.kubeconfig"
+      environment(
+        'schedulability' => !nodes.key?(:schedulable) && node_servers.find { |server_node| server_node['fqdn'] == nodes['fqdn'] } ? 'True' : nodes['schedulable'].to_s
+      )
+      cwd node['cookbook-openshift3']['openshift_master_config_dir']
+      not_if do
+        master_servers.find { |server_node| server_node['fqdn'] == nodes['fqdn'] } ||
+          Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
+      end
+    end
+  
+    execute "Set Labels for node : #{nodes['fqdn']}" do
+      command "#{node['cookbook-openshift3']['openshift_common_client_binary']} label node #{nodes['fqdn']} ${labels} --overwrite --config=admin.kubeconfig"
+      environment(
+        'labels' => nodes['labels'].to_s
+      )
+      cwd node['cookbook-openshift3']['openshift_master_config_dir']
+      only_if do
+        nodes.key?('labels') &&
+          !Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
+      end
+    end
+  end
+  
+  openshift_deploy_router 'Deploy Router' do
+    deployer_options node['cookbook-openshift3']['openshift_hosted_router_options']
     only_if do
-      master_servers.find { |server_node| server_node['fqdn'] == nodes['fqdn'] } &&
-        !Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
+      node['cookbook-openshift3']['openshift_hosted_manage_router']
     end
   end
-
-  execute "Set schedulability for node : #{nodes['fqdn']}" do
-    command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} manage-node #{nodes['fqdn']} --schedulable=${schedulability} --config=admin.kubeconfig"
-    environment(
-      'schedulability' => !nodes.key?(:schedulable) && node_servers.find { |server_node| server_node['fqdn'] == nodes['fqdn'] } ? 'True' : nodes['schedulable'].to_s
-    )
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    not_if do
-      master_servers.find { |server_node| server_node['fqdn'] == nodes['fqdn'] } ||
-        Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
-    end
-  end
-
-  execute "Set Labels for node : #{nodes['fqdn']}" do
-    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} label node #{nodes['fqdn']} ${labels} --overwrite --config=admin.kubeconfig"
-    environment(
-      'labels' => nodes['labels'].to_s
-    )
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
+  
+  openshift_deploy_registry 'Deploy Registry' do
+    persistent_registry node['cookbook-openshift3']['registry_persistent_volume'].empty? ? false : true
+    persistent_volume_claim_name "#{node['cookbook-openshift3']['registry_persistent_volume']}-claim"
     only_if do
-      nodes.key?('labels') &&
-        !Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
+      node['cookbook-openshift3']['openshift_hosted_manage_registry']
     end
   end
-end
-
-openshift_deploy_router 'Deploy Router' do
-  deployer_options node['cookbook-openshift3']['openshift_hosted_router_options']
-  only_if do
-    node['cookbook-openshift3']['openshift_hosted_manage_router']
+  
+  openshift_deploy_metrics 'Remove Cluster Metrics' do
+    action :delete
+    only_if do
+      node['cookbook-openshift3']['openshift_hosted_cluster_metrics'] &&
+        !node['cookbook-openshift3']['openshift_metrics_install_metrics']
+    end
   end
-end
-
-openshift_deploy_registry 'Deploy Registry' do
-  persistent_registry node['cookbook-openshift3']['registry_persistent_volume'].empty? ? false : true
-  persistent_volume_claim_name "#{node['cookbook-openshift3']['registry_persistent_volume']}-claim"
-  only_if do
-    node['cookbook-openshift3']['openshift_hosted_manage_registry']
-  end
-end
-
-openshift_deploy_metrics 'Remove Cluster Metrics' do
-  action :delete
-  only_if do
-    node['cookbook-openshift3']['openshift_hosted_cluster_metrics'] &&
-      !node['cookbook-openshift3']['openshift_metrics_install_metrics']
-  end
-end
-
-openshift_deploy_metrics 'Deploy Cluster Metrics' do
-  only_if do
-    node['cookbook-openshift3']['openshift_hosted_cluster_metrics'] &&
-      node['cookbook-openshift3']['openshift_metrics_install_metrics']
+  
+  openshift_deploy_metrics 'Deploy Cluster Metrics' do
+    only_if do
+      node['cookbook-openshift3']['openshift_hosted_cluster_metrics'] &&
+        node['cookbook-openshift3']['openshift_metrics_install_metrics']
+    end
   end
 end
