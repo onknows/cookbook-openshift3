@@ -64,6 +64,11 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
       source 'service_openvswitch.sysconfig.erb'
       notifies :restart, 'service[openvswitch]', :immediately
     end
+  else
+    template "/etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-node.service" do
+      source 'service_node.service.erb'
+      notifies :run, 'execute[daemon-reload]', :immediately
+    end
   end
 
   sysconfig_vars = {}
@@ -155,6 +160,7 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
   execute 'Wait for 30 secondes for docker services to come up' do
     command 'sleep 30'
     action :nothing
+    only_if { node['cookbook-openshift3']['deploy_containerized'] }
   end
 
   if node['cookbook-openshift3']['deploy_dnsmasq']
