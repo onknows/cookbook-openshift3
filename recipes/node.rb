@@ -8,21 +8,13 @@ master_servers = node['cookbook-openshift3']['master_servers']
 node_servers = node['cookbook-openshift3']['node_servers']
 path_certificate = node['cookbook-openshift3']['use_wildcard_nodes'] ? 'wildcard_nodes.tgz.enc' : "#{node['fqdn']}.tgz.enc"
 certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.first : node['cookbook-openshift3']['certificate_server']
+default_interface = `/sbin/ip route get to 8.8.8.8`[/src.*/][/\d+\.\d+\.\d+\.\d+/]
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
   encrypted_file_password = Chef::EncryptedDataBagItem.load(node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'], node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name'], secret_file)
 else
   encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
-end
-
-# Use ruby_block for copying OpenShift CA to system CA trust
-ruby_block 'Update ca trust' do
-  block do
-    Mixlib::ShellOut.new('update-ca-trust').run_command
-  end
-  notifies :restart, 'service[docker]', :immediately
-  action :nothing
 end
 
 if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
@@ -72,6 +64,11 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
       source 'service_openvswitch.sysconfig.erb'
       notifies :restart, 'service[openvswitch]', :immediately
     end
+  else
+    template "/etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-node.service" do
+      source 'service_node.service.erb'
+      notifies :run, 'execute[daemon-reload]', :immediately
+    end
   end
 
   sysconfig_vars = {}
@@ -102,6 +99,11 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
     action :install
     version node['cookbook-openshift3']['ose_version'] unless node['cookbook-openshift3']['ose_version'].nil?
     only_if { node['cookbook-openshift3']['openshift_common_use_openshift_sdn'] == true }
+    not_if { node['cookbook-openshift3']['deploy_containerized'] }
+  end
+
+  package 'conntrack-tools' do
+    action :install
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
   end
 
@@ -145,11 +147,33 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
     notifies :run, 'ruby_block[Update ca trust]', :immediately
   end
 
+  # Use ruby_block for copying OpenShift CA to system CA trust
+  ruby_block 'Update ca trust' do
+    block do
+      Mixlib::ShellOut.new('update-ca-trust').run_command
+    end
+    notifies :restart, 'service[docker]', :immediately
+    notifies :run, 'execute[Wait for 30 secondes for docker services to come up]', :immediately
+    action :nothing
+  end
+
+  execute 'Wait for 30 secondes for docker services to come up' do
+    command 'sleep 30'
+    action :nothing
+    only_if { node['cookbook-openshift3']['deploy_containerized'] }
+  end
+
   if node['cookbook-openshift3']['deploy_dnsmasq']
     package 'NetworkManager'
 
+    template '/etc/origin/node/node-dnsmasq.conf' do
+      source 'node-dnsmasq.conf.erb'
+    end
+
     template '/etc/dnsmasq.d/origin-dns.conf' do
       source 'origin-dns.conf.erb'
+      variables default_interface: default_interface
+      notifies :restart, 'service[dnsmasq]', :immediately
     end
 
     # On some systems, NetworkManager does not exist, so ignore_failure.
@@ -181,6 +205,7 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
   template node['cookbook-openshift3']['openshift_node_config_file'] do
     source 'node.yaml.erb'
     variables(
+      node_labels: node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }['labels'].to_s.split(' '),
       ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version'],
       kubelet_args: node['cookbook-openshift3']['openshift_node_kubelet_args_default'].merge(node['cookbook-openshift3']['openshift_node_kubelet_args_custom'])
     )

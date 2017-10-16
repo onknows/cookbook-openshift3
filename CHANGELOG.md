@@ -1,6 +1,16 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.65
+### Improvement
+- Initial support for 3.6
+- Capability for Overriding master and node servingInfo.minTLSVersion and .cipherSuites [openshift_(master|node)_cipher_suites, openshift_(master|node)_min_tls_version]
+- Capability for defining ExternalIPNetworkCIDRs controls what values are acceptable for the service external IP field [openshift_master_external_ip_network_cidrs]
+- Capability for defining IngressIPNetworkCIDR controls the range to assign ingress IPs [openshift_master_ingress_ip_network_cidr]
+- Capability for defining mcs_allocator_range, mcs_labels_per_project and uid_allocator_range [openshift_master_NAME]
+- Capability for referencing the registry by a stable name (not IP) [openshift_push_via_dns]
+- Add etcd_debug and etcd_log_package_levels capabilities 
+
 ## v1.10.64
 ### Improvement
 - All tgz files are encrypted with a default passphrase, and decrypted at the other end after downloading.

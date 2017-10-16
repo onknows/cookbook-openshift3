@@ -29,7 +29,7 @@ end
 
 execute 'Create the master certificates' do
   command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-master-certs \
-          --hostnames=#{(node['cookbook-openshift3']['erb_corsAllowedOrigins'] + [node['cookbook-openshift3']['openshift_common_ip']]).uniq.join(',')} \
+          --hostnames=#{(node['cookbook-openshift3']['erb_corsAllowedOrigins'] + [node['cookbook-openshift3']['openshift_common_ip'], node['cookbook-openshift3']['openshift_common_api_hostname']]).uniq.join(',')} \
           --master=#{node['cookbook-openshift3']['openshift_master_api_url']} \
           --public-master=#{node['cookbook-openshift3']['openshift_master_public_api_url']} \
           --cert-dir=#{node['cookbook-openshift3']['openshift_master_config_dir']} --overwrite=false"
@@ -55,7 +55,6 @@ if node['cookbook-openshift3']['openshift_cloud_provider'] == 'aws'
   if node['cookbook-openshift3']['openshift_cloud_providers']['aws']['data_bag_name'] && node['cookbook-openshift3']['openshift_cloud_providers']['aws']['data_bag_item_name']
     secret_file = node['cookbook-openshift3']['openshift_cloud_providers']['aws']['secret_file'] || nil
     aws_vars = Chef::EncryptedDataBagItem.load(node['cookbook-openshift3']['openshift_cloud_providers']['aws']['data_bag_name'], node['cookbook-openshift3']['openshift_cloud_providers']['aws']['data_bag_item_name'], secret_file)
-
     sysconfig_vars['aws_access_key_id'] = aws_vars['access_key_id']
     sysconfig_vars['aws_secret_access_key'] = aws_vars['secret_access_key']
   end

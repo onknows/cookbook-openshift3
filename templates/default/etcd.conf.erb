@@ -19,14 +19,33 @@ ETCD_INITIAL_CLUSTER_TOKEN=<%= node['cookbook-openshift3']['etcd_initial_cluster
 #ETCD_DISCOVERY_FALLBACK="proxy"
 #ETCD_DISCOVERY_PROXY=""
 ETCD_ADVERTISE_CLIENT_URLS=https://<%= @etcd_servers.find{ |etcd| etcd['fqdn'] == node['fqdn']}['ipaddress'] %>:<%= node['cookbook-openshift3']['etcd_client_port'] %>
+#ETCD_STRICT_RECONFIG_CHECK="false"
+#ETCD_AUTO_COMPACTION_RETENTION="0"
+#ETCD_ENABLE_V2="true"
+ETCD_QUOTA_BACKEND_BYTES=<%= node['cookbook-openshift3']['etcd_quota_backend_bytes'] %>
 #[proxy]
 #ETCD_PROXY="off"
 
 #[security]
-ETCD_CA_FILE=<%= node['cookbook-openshift3']['etcd_ca_cert'] %>
+ETCD_TRUSTED_CA_FILE=<%= node['cookbook-openshift3']['etcd_ca_cert'] %>
+ETCD_CLIENT_CERT_AUTH="true"
 ETCD_CERT_FILE=<%= node['cookbook-openshift3']['etcd_cert_file'] %>
 ETCD_KEY_FILE=<%= node['cookbook-openshift3']['etcd_cert_key'] %>
-ETCD_PEER_CA_FILE=<%= node['cookbook-openshift3']['etcd_ca_cert'] %>
+#ETCD_AUTO_TLS="false"
+ETCD_PEER_TRUSTED_CA_FILE=<%= node['cookbook-openshift3']['etcd_ca_cert'] %>
+ETCD_PEER_CLIENT_CERT_AUTH="true"
 ETCD_PEER_CERT_FILE=<%= node['cookbook-openshift3']['etcd_peer_file'] %>
 ETCD_PEER_KEY_FILE=<%= node['cookbook-openshift3']['etcd_peer_key'] %>
+#ETCD_PEER_AUTO_TLS="false"
 
+#[logging]
+ETCD_DEBUG="<%= node['cookbook-openshift3']['etcd_debug'] %>"
+<% if !(defined?(node['cookbook-openshift3']['etcd_log_package_levels'])).nil? %>
+ETCD_LOG_PACKAGE_LEVELS="<%= node['cookbook-openshift3']['etcd_log_package_levels'] %>"
+<% end -%>
+#[profiling]
+#ETCD_ENABLE_PPROF="false"
+#ETCD_METRICS="basic"
+#
+#[auth]
+#ETCD_AUTH_TOKEN="simple"

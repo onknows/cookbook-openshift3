@@ -8,7 +8,7 @@ master_servers = node['cookbook-openshift3']['master_servers']
 version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'][1..-1].sub(/^3/, '1').to_f.round(1) : node['cookbook-openshift3']['ose_major_version'].sub(/^3/, '1').to_f.round(1)
 certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.first : node['cookbook-openshift3']['certificate_server']
 
-include_recipe 'cookbook-openshift3::etcd_cluster'
+include_recipe 'cookbook-openshift3::etcd_cluster' if node['cookbook-openshift3']['etcd_servers'].any?
 
 if certificate_server['fqdn'] == node['fqdn']
   package 'httpd' do

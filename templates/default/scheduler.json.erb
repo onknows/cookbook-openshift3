@@ -34,7 +34,7 @@
         {"name": "CheckNodeMemoryPressure"},
         {"name": "CheckNodeDiskPressure"},
         {"name": "MatchInterPodAffinity"},
-<% when 5 %>
+<% when 5,6 %>
         {"name": "NoVolumeZoneConflict"},
         {"name": "MaxEBSVolumeCount"},
         {"name": "MaxGCEPDVolumeCount"},
@@ -81,7 +81,7 @@
         {"name": "NodeAffinityPriority", "weight": 1},
         {"name": "TaintTolerationPriority", "weight": 1},
         {"name": "InterPodAffinityPriority", "weight": 1},
-<% when 5 %>
+<% when 5,6 %>
         {"name": "SelectorSpreadPriority", "weight": 1},
         {"name": "InterPodAffinityPriority", "weight": 1},
         {"name": "LeastRequestedPriority", "weight": 1},

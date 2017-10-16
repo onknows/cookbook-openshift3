@@ -51,7 +51,7 @@ openshift3-shared-attributes: &SHARED
     claim:
       namespace: default
   registry_persistent_volume: registry-storage
-  openshift_hosted_router_options: '--expose-metrics'
+  openshift_hosted_router_options: '--expose-metrics --metrics-image=prom/haproxy-exporter:v0.7.1'
   openshift_hosted_metrics_parameters:
     HAWKULAR_METRICS_HOSTNAME: metrics.10.0.2.15.nip.io
     METRIC_DURATION: "30"
@@ -65,6 +65,32 @@ openshift3-shared-attributes: &SHARED
   node_servers: *SERVERS
 
 suites:
+  - name: standalone-ose36
+    run_list:
+      - role[openshift3-base-ose36]
+    verifier:
+      inspec_tests:
+        - test/inspec/standalone
+        - test/inspec/shared
+    attributes:
+      cookbook-openshift3:
+        << : *SHARED
+        openshift_HA: false
+
+  - name: cluster-native-ose36
+    run_list:
+      - role[openshift3-base-ose36]
+    verifier:
+      inspec_tests:
+        - test/inspec/cluster-native
+        - test/inspec/shared
+    attributes:
+      cookbook-openshift3:
+        << : *SHARED
+        openshift_HA: true
+        openshift_cluster_name: test-cluster.domain.local
+        etcd_servers: *SERVERS
+
   - name: standalone-ose15
     run_list:
       - role[openshift3-base-ose15]

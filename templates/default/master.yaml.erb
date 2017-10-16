@@ -5,7 +5,7 @@ apiVersion: v1
 assetConfig:
 <%= render "custom_assetConfig.erb" , :local => false -%>
   logoutURL: ""
-  masterPublicURL:  <%= node['cookbook-openshift3']['openshift_master_public_api_url'] %>
+  masterPublicURL: <%= node['cookbook-openshift3']['openshift_master_public_api_url'] %>
   publicURL: <%= node['cookbook-openshift3']['openshift_master_console_url'] %>/
 <% if node['cookbook-openshift3']['openshift_master_metrics_public_url'] %>
   metricsPublicURL: https://<%= node['cookbook-openshift3']['openshift_metrics_hawkular_hostname'] %>/hawkular/metrics
@@ -15,24 +15,34 @@ assetConfig:
 <%- end -%>
   servingInfo:
     bindAddress: <%= node['cookbook-openshift3']['openshift_master_bind_addr'] %>:<%= node['cookbook-openshift3']['openshift_master_console_port'] %>
+    bindNetwork: tcp4
     certFile: master.server.crt
     clientCA: ""
     keyFile: master.server.key
     maxRequestsInFlight: 0
     requestTimeoutSeconds: 0
+<% unless node['cookbook-openshift3']['openshift_master_min_tls_version'].empty? %>
+    minTLSVersion: <%= node['cookbook-openshift3']['openshift_master_min_tls_version'] %>
+<% end -%>
+<% unless node['cookbook-openshift3']['openshift_master_cipher_suites'].empty? %>
+    cipherSuites:
+<% node['cookbook-openshift3']['openshift_master_cipher_suites'].each do |cipher_suite| %>
+    - <%= cipher_suite %>
+<%- end -%>
+<% end -%>
 auditConfig:
   enabled: <%= node['cookbook-openshift3']['openshift_master_auditconfig'] %>
 <% if node['cookbook-openshift3']['openshift_HA'] %>
 controllerLeaseTTL: <%= node['cookbook-openshift3']['openshift_master_controller_lease_ttl'] %>
 <% end -%>
-controllers: '*'
-<% if @ose_major_version.split('.')[1].to_i.between?(3,5) %>
+<% if @ose_major_version.split('.')[1].to_i >= 3 %>
 controllerConfig:
   serviceServingCert:
     signer:
       certFile: service-signer.crt
       keyFile: service-signer.key
 <%- end -%>
+controllers: '*'
 corsAllowedOrigins:
 <%- @erb_corsAllowedOrigins.each do |origin| -%>
 <% if ! origin.to_s.empty? %>
@@ -96,7 +106,7 @@ kubeletClientInfo:
 kubernetesMasterConfig:
   apiLevels:
   - v1
-<% if @ose_major_version.split('.')[1].to_i.between?(3,5) %>
+<% if @ose_major_version.split('.')[1].to_i >= 3%>
   apiServerArguments:
     deserialization-cache-size:
     - "<%= node['cookbook-openshift3']['openshift_master_deserialization_cache_size'] %>"
@@ -105,6 +115,12 @@ kubernetesMasterConfig:
     - <%= node['cookbook-openshift3']['openshift_cloud_provider'] %>
     cloud-config:
     - <%= node['cookbook-openshift3']['openshift_cloud_provider_config_dir']%>/<%= node['cookbook-openshift3']['openshift_cloud_provider'] %>.conf
+<%- end -%>
+<% if @ose_major_version.split('.')[1].to_i >= 6 %>
+    storage-backend:
+    - etcd3
+    storage-media-type:
+    - application/vnd.kubernetes.protobuf
 <%- end -%>
 <%- end -%>
   controllerArguments: 
@@ -124,13 +140,14 @@ kubernetesMasterConfig:
   proxyClientInfo:
     certFile: master.proxy-client.crt
     keyFile: master.proxy-client.key
+  schedulerArguments:
   schedulerConfigFile: <%= node['cookbook-openshift3']['openshift_master_scheduler_conf'] %>
   servicesNodePortRange: ""
   servicesSubnet: <%= node['cookbook-openshift3']['openshift_common_portal_net'] %>
   staticNodeNames: []
 <%- end -%>
 masterClients:
-<% if @ose_major_version.split('.')[1].to_i.between?(3,5) %>
+<% if @ose_major_version.split('.')[1].to_i >= 3 %>
   externalKubernetesClientConnectionOverrides:
     acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
     contentType: application/vnd.kubernetes.protobuf
@@ -138,7 +155,7 @@ masterClients:
     qps: 200
 <%- end -%>
   externalKubernetesKubeConfig: ""
-<% if @ose_major_version.split('.')[1].to_i.between?(3,5) %>
+  <% if @ose_major_version.split('.')[1].to_i >= 3 %>
   openshiftLoopbackClientConnectionOverrides:
     acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
     contentType: application/vnd.kubernetes.protobuf
@@ -149,9 +166,17 @@ masterClients:
 masterPublicURL: <%= node['cookbook-openshift3']['openshift_master_public_api_url'] %>
 networkConfig:
   clusterNetworkCIDR: <%= node['cookbook-openshift3']['openshift_master_sdn_cluster_network_cidr'] %>
-  serviceNetworkCIDR: <%= node['cookbook-openshift3']['openshift_common_portal_net'] %>
   hostSubnetLength: <%= node['cookbook-openshift3']['openshift_master_sdn_host_subnet_length'] %>
   networkPluginName: <%= node['cookbook-openshift3']['openshift_common_sdn_network_plugin_name'] %>
+# serviceNetworkCIDR must match kubernetesMasterConfig.servicesSubnet
+  serviceNetworkCIDR: <%= node['cookbook-openshift3']['openshift_common_portal_net'] %>
+  externalIPNetworkCIDRs:
+<% node['cookbook-openshift3']['openshift_master_external_ip_network_cidrs'].each do |extCIDR| %>
+  - <%= extCIDR %>
+<%- end -%>
+<% unless node['cookbook-openshift3']['openshift_master_ingress_ip_network_cidr'].empty? %>
+  ingressIPNetworkCIDR: <%= node['cookbook-openshift3']['openshift_master_ingress_ip_network_cidr']%>
+<% end -%>
 <%= render "oauthConfig.erb" , :local => false-%>
 pauseControllers: false
 policyConfig:
@@ -160,16 +185,16 @@ policyConfig:
   openshiftSharedResourcesNamespace: openshift
 projectConfig:
   defaultNodeSelector: "<%= node['cookbook-openshift3']['openshift_common_default_nodeSelector'] %>"
-  projectRequestMessage: <%= node['cookbook-openshift3']['openshift_master_project_request_message'] %>
-  projectRequestTemplate: <%= node['cookbook-openshift3']['openshift_master_project_request_template'] %>
+  projectRequestMessage: "<%= node['cookbook-openshift3']['openshift_master_project_request_message'] %>"
+  projectRequestTemplate: "<%= node['cookbook-openshift3']['openshift_master_project_request_template'] %>"
   securityAllocator:
-    mcsAllocatorRange: "s0:/2"
-    mcsLabelsPerProject: 5
-    uidAllocatorRange: 1000000000-1999999999/10000
+    mcsAllocatorRange: "<%= node['cookbook-openshift3']['openshift_master_mcs_allocator_range'] %>"
+    mcsLabelsPerProject: <%= node['cookbook-openshift3']['openshift_master_mcs_labels_per_project'] %>
+    uidAllocatorRange: "<%= node['cookbook-openshift3']['openshift_master_uid_allocator_range'] %>"
 routingConfig:
-  subdomain: <%= node['cookbook-openshift3']['openshift_master_router_subdomain'] %>
+  subdomain: "<%= node['cookbook-openshift3']['openshift_master_router_subdomain'] %>"
 serviceAccountConfig:
-  limitSecretReferences: false
+  limitSecretReferences: False
   managedNames:
 <% node['cookbook-openshift3']['openshift_master_managed_names_additional'].each do |managed_name| %>
   - <%= managed_name %>
@@ -198,6 +223,15 @@ servingInfo:
 <% for names in named['names'] %>
     - "<%= names %>"
 <%- end -%>
+<%- end -%>
+<%- end -%>
+<% unless node['cookbook-openshift3']['openshift_master_min_tls_version'].empty? %>
+    minTLSVersion: <%= node['cookbook-openshift3']['openshift_master_min_tls_version'] %>
+<% end -%>
+<% unless node['cookbook-openshift3']['openshift_master_cipher_suites'].empty? %>
+    cipherSuites:
+<% node['cookbook-openshift3']['openshift_master_cipher_suites'].each do |cipher_suite| %>
+    - <%= cipher_suite %>
 <%- end -%>
 <%- end -%>
 volumeConfig:
