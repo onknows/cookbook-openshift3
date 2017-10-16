@@ -19,9 +19,9 @@ verifier:
   name: inspec
 
 platforms:
-  - name: centos-7.2
+  - name: centos-7.4
     driver:
-      vm_hostname: origin-centos-72
+      vm_hostname: origin-centos-74
 
 openshift3-shared-attributes: &SHARED
   # uncomment to use experimental CentOS PaaS repository for integration tests
@@ -59,7 +59,7 @@ openshift3-shared-attributes: &SHARED
     USE_PERSISTENT_STORAGE: "false"
   master_servers: &SERVERS
    - ipaddress: 10.0.2.15
-     fqdn: origin-centos-72
+     fqdn: origin-centos-74
      labels: region=infra custom=label
      schedulable: false
   node_servers: *SERVERS
