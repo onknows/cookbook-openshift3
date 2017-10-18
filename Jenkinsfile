@@ -35,7 +35,7 @@ try {
             sh 'echo ' + dorubocop
         }
     }
-    if (dorubocop) {
+    if (params.dorubocop) {
       stage('rubocop') {
         node(nodename) {
           dir(builddir) {
@@ -44,7 +44,7 @@ try {
         }
       }
     }
-    if (doshutit) {
+    if (params.doshutit) {
       stage('shutit_tests') {
         node(nodename) {
           dir(builddir) {
@@ -58,7 +58,7 @@ try {
         }
       }
     }
-    if (dokitchen) {
+    if (params.dokitchen) {
       stage('kitchen') {
         node(nodename) {
           dir(builddir) {
@@ -102,7 +102,7 @@ RELEASE
 
 ''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.tk', replyTo: '', subject: 'Build failure', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
   throw(err)
-  if (doshutit) {
+  if (params.doshutit) {
     stage('cleanup') {
       node(nodename) {
         dir(builddir) {
