@@ -35,7 +35,7 @@ try {
             sh 'echo ' + dorubocop
         }
     }
-    if (dorubocop == 'true') {
+    if (dorubocop) {
       stage('rubocop') {
         node(nodename) {
           dir(builddir) {
@@ -44,7 +44,7 @@ try {
         }
       }
     }
-    if (doshutit == 'true') {
+    if (doshutit) {
       stage('shutit_tests') {
         node(nodename) {
           dir(builddir) {
@@ -58,7 +58,7 @@ try {
         }
       }
     }
-    if (dokitchen == 'true') {
+    if (dokitchen) {
       stage('kitchen') {
         node(nodename) {
           dir(builddir) {
@@ -102,11 +102,13 @@ RELEASE
 
 ''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.tk', replyTo: '', subject: 'Build failure', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
   throw(err)
-  stage('cleanup') {
-    node(nodename) {
-      dir(builddir) {
-        dir('shutit-openshift-cluster') {
-          sh('yes | ./destroy_vms.sh || true')
+  if (doshutit) {
+    stage('cleanup') {
+      node(nodename) {
+        dir(builddir) {
+          dir('shutit-openshift-cluster') {
+            sh('yes | ./destroy_vms.sh || true')
+          }
         }
       }
     }
