@@ -27,17 +27,24 @@ try {
         }
       }
     }
-	if (dorubocop == true) {
+    stage('debug') {
+        node(nodename) {
+            sh 'env'
+            sh 'echo ' + dokitchen
+            sh 'echo ' + doshutit
+            sh 'echo ' + dorubocop
+        }
+    }
+    if (dorubocop == true) {
       stage('rubocop') {
         node(nodename) {
           dir(builddir) {
-            sh 'echo ' + rubocop
             sh 'rubocop -r cookstyle -D'
           }
         }
       }
     }
-	if (doshutit == true) {
+    if (doshutit == true) {
       stage('shutit_tests') {
         node(nodename) {
           dir(builddir) {
@@ -51,7 +58,7 @@ try {
         }
       }
     }
-	if (dokitchen == true) {
+    if (dokitchen == true) {
       stage('kitchen') {
         node(nodename) {
           dir(builddir) {
