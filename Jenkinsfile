@@ -35,7 +35,7 @@ try {
             sh 'echo ' + dorubocop
         }
     }
-    if (dorubocop == true) {
+    if (dorubocop == 'true') {
       stage('rubocop') {
         node(nodename) {
           dir(builddir) {
@@ -44,7 +44,7 @@ try {
         }
       }
     }
-    if (doshutit == true) {
+    if (doshutit == 'true') {
       stage('shutit_tests') {
         node(nodename) {
           dir(builddir) {
@@ -58,7 +58,7 @@ try {
         }
       }
     }
-    if (dokitchen == true) {
+    if (dokitchen == 'true') {
       stage('kitchen') {
         node(nodename) {
           dir(builddir) {
