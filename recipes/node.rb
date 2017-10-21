@@ -170,7 +170,7 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
 
     template '/etc/origin/node/node-dnsmasq.conf' do
       source 'node-dnsmasq.conf.erb'
-    only_if { ose_major_version.split('.')[1].to_i >= 6 }
+      only_if { ose_major_version.split('.')[1].to_i >= 6 }
     end
 
     template '/etc/dnsmasq.d/origin-dns.conf' do
