@@ -175,7 +175,7 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
 
     template '/etc/dnsmasq.d/origin-dns.conf' do
       source 'origin-dns.conf.erb'
-      variables (
+      variables(
         default_interface: default_interface,
         ose_major_version: ose_major_version
       )
