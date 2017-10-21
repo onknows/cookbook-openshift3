@@ -70,7 +70,7 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
     template "/etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-node.service" do
       source 'service_node.service.erb'
       notifies :run, 'execute[daemon-reload]', :immediately
-      variables(ose_major_version)
+      variables(ose_major_version: ose_major_version)
       only_if { ose_major_version.split('.')[1].to_i >= 6 }
     end
   end
