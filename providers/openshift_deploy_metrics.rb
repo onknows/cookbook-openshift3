@@ -12,7 +12,6 @@ def whyrun_supported?
 end
 
 CHARS = ('0'..'9').to_a + ('A'..'Z').to_a + ('a'..'z').to_a
-ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
 
 def random_password(length = 10)
   CHARS.sort_by { rand }.join[0...length]
@@ -52,6 +51,8 @@ action :delete do
 end
 
 action :create do
+  ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
+
   directory "#{Chef::Config['file_cache_path']}/hosted_metric/templates" do
     recursive true
   end
