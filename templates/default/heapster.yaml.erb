@@ -52,7 +52,7 @@ spec:
 <% if @ose_major_version.split('.')[1].to_i < 6 %>          
         - "--sink=hawkular:https://hawkular-metrics:443?tenant=_system&labelToTenant=pod_namespace&labelNodeId=<%= node['cookbook-openshift3']['openshift_metrics_node_id'] %>&caCert=/hawkular-cert/hawkular-metrics-ca.certificate&user=%username%&pass=%password%&filter=label(container_name:^system.slice.*|^user.slice)"
 <%- else -%>          
-        - "--sink=hawkular:https://hawkular-metrics:443?tenant=_system&labelToTenant=pod_namespace&labelNodeId={{openshift_metrics_node_id}}&caCert=/hawkular-metrics-certs/tls.crt&user=%username%&pass=%password%&filter=label(container_name:^system.slice.*|^user.slice)"
+        - "--sink=hawkular:https://hawkular-metrics:443?tenant=_system&labelToTenant=pod_namespace&labelNodeId=<%= node['cookbook-openshift3']['openshift_metrics_node_id'] %>&caCert=/hawkular-metrics-certs/tls.crt&user=%username%&pass=%password%&filter=label(container_name:^system.slice.*|^user.slice)"
 <%- end -%>
         env:
         - name: STARTUP_TIMEOUT
