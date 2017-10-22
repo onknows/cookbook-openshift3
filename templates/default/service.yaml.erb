@@ -8,9 +8,9 @@ metadata:
     <%= k %>: <%= v %>
   <%- end -%>
 <%- end -%>
-<% if defined?(@annotations) %>
+<% if @svc.has_key?('annotations') %>
   annotations:
-<%- @annotations.each do |annotation| %>
+<%- @svc['annotations'].each do |annotation| %>
     <%= annotation %>
 <%- end -%>
 <%- end -%>
