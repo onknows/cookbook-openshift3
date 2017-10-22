@@ -348,11 +348,16 @@ action :create do
   template 'Generate hawkular-metrics replication controller' do
     path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular_metrics_rc.yaml"
     source 'hawkular_metrics_rc.yaml.erb'
+    variables(
+      ose_major_version: ose_major_version,
+      random_word: random_password
+    )
   end
 
   template 'Generate cassandra replication controller' do
     path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/hawkular-cassandra-rc1.yaml"
     source 'hawkular_cassandra_rc.yaml.erb'
+    variables(ose_major_version: ose_major_version)
   end
 
   [{ 'name' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_prefix'], 'labels' => { 'metrics-infra' => 'hawkular-cassandra' }, 'annotations' => { 'volume.alpha.kubernetes.io/storage-class' => 'dynamic' }, 'access_modes' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_access'] }].each do |pvc|
