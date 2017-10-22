@@ -41,14 +41,22 @@ spec:
         - "-Dhawkular.metrics.cassandra.nodes=hawkular-cassandra"
         - "-Dhawkular.metrics.cassandra.use-ssl"
         - "-Dhawkular.metrics.openshift.auth-methods=openshift-oauth,htpasswd"
+<% if @ose_major_version.split('.')[1].to_i < 6 %>
         - "-Dhawkular.metrics.openshift.htpasswd-file=/secrets/hawkular-metrics.htpasswd.file"
+<%- else -%>        
+        - "-Dhawkular.metrics.openshift.htpasswd-file=/hawkular-account/hawkular-metrics.htpasswd"
+<%- end -%>        
         - "-Dhawkular.metrics.allowed-cors-access-control-allow-headers=authorization"
         - "-Dhawkular.metrics.default-ttl=<%= node['cookbook-openshift3']['openshift_metrics_duration'] %>"
         - "-Dhawkular.metrics.admin-tenant=_hawkular_admin"
         - "-Dhawkular-alerts.cassandra-nodes=hawkular-cassandra"
         - "-Dhawkular-alerts.cassandra-use-ssl"
         - "-Dhawkular.alerts.openshift.auth-methods=openshift-oauth,htpasswd"
+<% if @ose_major_version.split('.')[1].to_i < 6 %>
         - "-Dhawkular.alerts.openshift.htpasswd-file=/secrets/hawkular-metrics.htpasswd.file"
+<%- else -%>        
+        - "-Dhawkular.alerts.openshift.htpasswd-file=/hawkular-account/hawkular-metrics.htpasswd"
+<%- end -%>        
         - "-Dhawkular.alerts.allowed-cors-access-control-allow-headers=authorization"
         - "-Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true"
         - "-Dorg.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH=true"
