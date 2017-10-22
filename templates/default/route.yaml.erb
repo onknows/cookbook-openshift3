@@ -8,6 +8,12 @@ metadata:
     <%= k %>: <%= v %>
   <%- end -%>
 <%- end -%>
+<% unless @annotations.empty? %>
+  annotations:
+<%- @annotations.each do |annotation| %>
+    <%= annotation %>
+<%- end -%>
+<%- end -%>
 spec:
   host: <% @route['host'] %>
   to:
@@ -18,7 +24,7 @@ spec:
   tls:
     termination: <%= @route['tls_termination'] %>
 <% unless @tls_ca_certificate.empty? %>
-    CACertificate: |
+    caCertificate: |
 <%- @tls_ca_certificate.split("\n").each do |ca| %>
       <%= ca %>
 <%- end -%>
