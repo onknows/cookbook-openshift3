@@ -358,6 +358,7 @@ action :create do
   template 'Generate heapster replication controller' do
     path "#{Chef::Config['file_cache_path']}/hosted_metric/templates/metrics-heapster-rc.yaml"
     source 'heapster.yaml.erb'
+    variables(ose_major_version: ose_major_version)
   end
 
   template 'Generate hawkular-metrics replication controller' do
