@@ -8,6 +8,12 @@ metadata:
     <%= k %>: <%= v %>
   <%- end -%>
 <%- end -%>
+<% if @svc.has_key?('annotations') %>
+  annotations:
+<%- @svc['annotations'].each do |annotation| %>
+    <%= annotation %>
+<%- end -%>
+<%- end -%>
 spec:
 <% if @svc.has_key?('headless') %>
   portalIP: None
