@@ -69,9 +69,9 @@ spec:
 <%- end -%>
             memory: "<%= node['cookbook-openshift3']['openshift_metrics_heapster_requests_memory'] %>"
         volumeMounts:
-<% if @ose_major_version.split('.')[1].to_i < 6 %>          
         - name: heapster-secrets
           mountPath: "/secrets"
+<% if @ose_major_version.split('.')[1].to_i < 6 %>          
         - name: hawkular-metrics-certificate
           mountPath: "/hawkular-cert"
 <%- else -%>          
@@ -87,10 +87,10 @@ spec:
             command:
             - "/opt/heapster-readiness.sh"
       volumes:
-<% if @ose_major_version.split('.')[1].to_i < 6 %>          
         - name: heapster-secrets
           secret:
             secretName: heapster-secrets
+<% if @ose_major_version.split('.')[1].to_i < 6 %>          
         - name: hawkular-metrics-certificate
           secret:
             secretName: hawkular-metrics-certificate
