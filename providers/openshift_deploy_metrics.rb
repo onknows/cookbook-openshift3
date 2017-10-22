@@ -272,7 +272,7 @@ action :create do
       variables lazy {
         {
           route: route,
-	  annotations: node['cookbook-openshift3']['openshift_metrics_hawkular_route_annotations'],
+          annotations: node['cookbook-openshift3']['openshift_metrics_hawkular_route_annotations'],
           tls_key: node['cookbook-openshift3']['openshift_metrics_hawkular_key'].empty? ? '' : `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_metrics_hawkular_key']}`,
           tls_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_cert'].empty? ? '' : `cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_cert']} | awk '{printf "%s\\n", $0}'`,
           tls_ca_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_ca'].empty? ? '' : `cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_ca']} | awk '{printf "%s\\n", $0}'`,
