@@ -4,11 +4,22 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-master_servers = node['cookbook-openshift3']['master_servers']
-etcd_servers = node['cookbook-openshift3']['etcd_servers']
+if node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'] != nil && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
+  master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
+  first_master = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0]
+  certificate_server = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
+  etcd_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_etcd_duty")
+  master_peers = certificate_server == nil ? master_servers.reject { |h| h['fqdn'] == first_master['fqdn'] } : master_servers
+  certificate_server = certificate_server == nil ? first_master : certificate_server
+else
+  master_servers = node['cookbook-openshift3']['master_servers']
+  etcd_servers = node['cookbook-openshift3']['etcd_servers']
+  master_peers = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.reject { |h| h['fqdn'] == master_servers[0]['fqdn'] } : master_servers
+  first_master = master_servers.first
+  certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? first_master : node['cookbook-openshift3']['certificate_server']
+end
+
 ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
-master_peers = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.reject { |h| h['fqdn'] == master_servers[0]['fqdn'] } : master_servers
-certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.first : node['cookbook-openshift3']['certificate_server']
 
 node['cookbook-openshift3']['enabled_firewall_rules_master_cluster'].each do |rule|
   iptables_rule rule do
@@ -46,6 +57,14 @@ if certificate_server['fqdn'] == node['fqdn']
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.csr"
     end
 
+
+    execute "ETCD Create the CLIENT csr for #{master_server['fqdn']}" do
+      command "openssl req -new -keyout #{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.key -config #{node['cookbook-openshift3']['etcd_openssl_conf']} -out #{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.csr -reqexts #{node['cookbook-openshift3']['etcd_req_ext']} -batch -nodes -subj /CN=#{master_server['fqdn']}"
+      environment 'SAN' => "IP:#{master_server['ipaddress']}"
+      cwd "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}"
+      creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.csr"
+    end
+
     execute "ETCD Sign and create the CLIENT crt for #{master_server['fqdn']}" do
       command "openssl ca -name #{node['cookbook-openshift3']['etcd_ca_name']} -config #{node['cookbook-openshift3']['etcd_openssl_conf']} -out #{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.crt -in #{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.csr -batch"
       environment 'SAN' => ''
@@ -68,36 +87,34 @@ if certificate_server['fqdn'] == node['fqdn']
   end
 end
 
-# Download the certs if there is no separate cert server set, or this is not the cert server.
-if node['cookbook-openshift3']['certificate_server'] == {} || node['fqdn'] != certificate_server['fqdn']
-  remote_file "Retrieve client certificate from Master[#{certificate_server['fqdn']}]" do
-    path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-master-#{node['fqdn']}.tgz.enc"
-    source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/master/generated_certs/openshift-master-#{node['fqdn']}.tgz.enc"
-    action :create_if_missing
-    notifies :run, 'execute[Un-encrypt master certificate tgz files]', :immediately
-    notifies :run, 'execute[Extract certificate to Master folder]', :immediately
-    retries 12
-    retry_delay 5
-  end
+# Download the certs
+remote_file "Retrieve client certificate from Master[#{certificate_server['fqdn']}]" do
+  path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-master-#{node['fqdn']}.tgz.enc"
+  source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/master/generated_certs/openshift-master-#{node['fqdn']}.tgz.enc"
+  action :create_if_missing
+  notifies :run, 'execute[Un-encrypt master certificate tgz files]', :immediately
+  notifies :run, 'execute[Extract certificate to Master folder]', :immediately
+  retries 12
+  retry_delay 5
+end
 
-  execute 'Un-encrypt master certificate tgz files' do
-    command "openssl enc -d -aes-256-cbc -in openshift-master-#{node['fqdn']}.tgz.enc -out openshift-master-#{node['fqdn']}.tgz -k '#{encrypted_file_password}'"
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    action :nothing
-  end
+execute 'Un-encrypt master certificate tgz files' do
+  command "openssl enc -d -aes-256-cbc -in openshift-master-#{node['fqdn']}.tgz.enc -out openshift-master-#{node['fqdn']}.tgz -k '#{encrypted_file_password}'"
+  cwd node['cookbook-openshift3']['openshift_master_config_dir']
+  action :nothing
+end
 
-  execute 'Extract certificate to Master folder' do
-    command "tar xzf openshift-master-#{node['fqdn']}.tgz"
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    action :nothing
-  end
+execute 'Extract certificate to Master folder' do
+  command "tar xzf openshift-master-#{node['fqdn']}.tgz"
+  cwd node['cookbook-openshift3']['openshift_master_config_dir']
+  action :nothing
+end
 
-  %w(client.crt client.key ca.crt).each do |certificate_type|
-    file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}#{certificate_type}" do
-      owner 'root'
-      group 'root'
-      mode '0600'
-    end
+%w(client.crt client.key ca.crt).each do |certificate_type|
+  file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}#{certificate_type}" do
+    owner 'root'
+    group 'root'
+    mode '0600'
   end
 end
 
@@ -125,9 +142,9 @@ if certificate_server['fqdn'] == node['fqdn']
     end
   end
 
-  execute "Create the master certificates for #{master_servers.first['fqdn']}" do
+  execute "Create the master certificates for #{first_master['fqdn']}" do
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-master-certs \
-            --hostnames=#{(node['cookbook-openshift3']['erb_corsAllowedOrigins'] + [master_servers.first['ipaddress'], master_servers.first['fqdn'], node['cookbook-openshift3']['openshift_common_api_hostname']]).uniq.join(',')} \
+            --hostnames=#{(node['cookbook-openshift3']['erb_corsAllowedOrigins'] + [first_master['ipaddress'], first_master['fqdn'], node['cookbook-openshift3']['openshift_common_api_hostname']]).uniq.join(',')} \
             --master=#{node['cookbook-openshift3']['openshift_master_api_url']} \
             --public-master=#{node['cookbook-openshift3']['openshift_master_public_api_url']} \
             --cert-dir=#{node['cookbook-openshift3']['openshift_master_config_dir']} --overwrite=false"
@@ -137,10 +154,10 @@ if certificate_server['fqdn'] == node['fqdn']
   execute 'Create temp directory for loopback master client config' do
     command "mkdir -p #{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir"
     not_if "grep \'#{node['cookbook-openshift3']['openshift_master_loopback_context_name']}\' #{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-master.kubeconfig"
-    notifies :run, "execute[Generate the loopback master client config for #{master_servers.first['fqdn']}]", :immediately
+    notifies :run, "execute[Generate the loopback master client config for #{first_master['fqdn']}]", :immediately
   end
 
-  execute "Generate the loopback master client config for #{master_servers.first['fqdn']}" do
+  execute "Generate the loopback master client config for #{first_master['fqdn']}" do
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} create-api-client-config \
             --certificate-authority=#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt \
             --master=#{node['cookbook-openshift3']['openshift_master_loopback_api_url']} \
@@ -263,6 +280,7 @@ package "#{node['cookbook-openshift3']['openshift_service_type']}-master" do
   version node['cookbook-openshift3']['ose_version'] unless node['cookbook-openshift3']['ose_version'].nil?
   notifies :run, 'execute[daemon-reload]', :immediately
   not_if { node['cookbook-openshift3']['deploy_containerized'] }
+  retries 3
 end
 
 execute 'Create the policy file' do
@@ -277,7 +295,9 @@ template node['cookbook-openshift3']['openshift_master_scheduler_conf'] do
 end
 
 if node['cookbook-openshift3']['oauth_Identities'].include? 'HTPasswdPasswordIdentityProvider'
-  package 'httpd-tools'
+  package 'httpd-tools' do
+    retries 3
+  end
 
   template node['cookbook-openshift3']['openshift_master_identity_provider']['HTPasswdPasswordIdentityProvider']['filename'] do
     source 'htpasswd.erb'
@@ -337,12 +357,12 @@ openshift_create_master 'Create master configuration file' do
   cluster true
 end
 
-if node['cookbook-openshift3']['certificate_server'] == {} || node['cookbook-openshift3']['certificate_server']['fqdn'] != node['fqdn']
+if certificate_server['fqdn'] == first_master['fqdn'] || certificate_server['fqdn'] != node['fqdn']
   execute 'Activate services for Master API on first master' do
     command 'echo nothing to do specific'
     notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
     notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
-    only_if { master_servers.first['fqdn'] == node['fqdn'] }
+    only_if { first_master['fqdn'] == node['fqdn'] }
   end
 
   execute 'Wait for master api service to start on first master' do
@@ -355,7 +375,7 @@ if node['cookbook-openshift3']['certificate_server'] == {} || node['cookbook-ope
     command 'echo nothing to do specific'
     notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
     notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
-    only_if { master_servers.first['fqdn'] != node['fqdn'] }
+    only_if { first_master['fqdn'] != node['fqdn'] }
   end
 
   execute 'Wait for API to become available' do
@@ -368,7 +388,7 @@ if node['cookbook-openshift3']['certificate_server'] == {} || node['cookbook-ope
     command 'echo nothing to do specific'
     notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
     notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
-    only_if { master_servers.first['fqdn'] == node['fqdn'] }
+    only_if { first_master['fqdn'] == node['fqdn'] }
   end
 
   execute 'Wait for master controller service to start on first master' do
@@ -381,7 +401,7 @@ if node['cookbook-openshift3']['certificate_server'] == {} || node['cookbook-ope
     command 'echo nothing to do specific'
     notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
     notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
-    only_if { master_servers.first['fqdn'] != node['fqdn'] }
+    only_if { first_master['fqdn'] != node['fqdn'] }
   end
 
   execute 'Disable Master service on masters' do

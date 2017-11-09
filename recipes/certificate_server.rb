@@ -4,10 +4,18 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-master_servers = node['cookbook-openshift3']['master_servers']
-certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? node['cookbook-openshift3']['master_servers'] : master_servers + [node['cookbook-openshift3']['certificate_server']]
+if node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'] != nil && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
+  master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
+  first_master = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0]
+  certificate_server = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
+  certificate_server = certificate_server == nil ? first_master : certificate_server
+else
+  master_servers = node['cookbook-openshift3']['master_servers']
+  first_master = master_servers.first
+  certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? first_master : node['cookbook-openshift3']['certificate_server']       
+end
 
-if certificate_server.find { |server_master| server_master['fqdn'] == node['fqdn'] }
+if certificate_server['fqdn'] == node['fqdn']
   if node['cookbook-openshift3']['deploy_containerized']
     execute 'Pull CLI docker image' do
       command "docker pull #{node['cookbook-openshift3']['openshift_docker_cli_image']}:#{node['cookbook-openshift3']['openshift_docker_image_version']}"
@@ -48,5 +56,6 @@ if certificate_server.find { |server_master| server_master['fqdn'] == node['fqdn
   package node['cookbook-openshift3']['openshift_service_type'] do
     version node['cookbook-openshift3'] ['ose_version'] unless node['cookbook-openshift3']['ose_version'].nil?
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
+    retries 3
   end
 end
