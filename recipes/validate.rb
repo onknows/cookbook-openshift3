@@ -3,6 +3,13 @@
 # Recipe:: validate
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
+
+if node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'] != nil && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
+  etcd_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_etcd_duty")
+else
+  etcd_servers = node['cookbook-openshift3']['etcd_servers']
+end
+
 if node['cookbook-openshift3']['ose_version']
   if node['cookbook-openshift3']['ose_version'].to_f.round(1) != node['cookbook-openshift3']['ose_major_version'].to_f.round(1)
     Chef::Application.fatal!("\"ose_version\" #{node['cookbook-openshift3']['ose_version']} should be a subset of \"ose_major_version\" #{node['cookbook-openshift3']['ose_major_version']}")
@@ -28,7 +35,7 @@ if node['cookbook-openshift3']['openshift_hosted_cluster_metrics']
 end
 
 if node['cookbook-openshift3']['etcd_add_additional_nodes']
-  unless node['cookbook-openshift3']['etcd_add_additional_nodes'] && node['cookbook-openshift3']['etcd_servers'].any? { |key| key['new_node'] }
+  unless node['cookbook-openshift3']['etcd_add_additional_nodes'] && etcd_servers.any? { |key| key['new_node'] }
     Chef::Application.fatal!('A key named "new_node" must be defined when adding new members to ETCD cluster')
   end
 end
@@ -37,4 +44,40 @@ end
   unless node['cookbook-openshift3'][deprecated].empty?
     Chef::Log.warn("The attributes #{deprecated} has been deprecated, please use \"openshift_node_kubelet_args_custom\",")
   end
+end
+
+if node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'] != nil && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
+  master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
+  lb_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_lb_duty")
+  etcd_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_etcd_duty")
+  first_master = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0]
+  certificate_server = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
+  certificate_server = certificate_server == nil ? first_master : certificate_server
+  master_peers = certificate_server == nil ? master_servers.reject { |h| h['fqdn'] == first_master['fqdn'] } : master_servers
+else
+  master_servers = node['cookbook-openshift3']['master_servers']
+  lb_servers = node['cookbook-openshift3']['lb_servers']
+  etcd_servers = node['cookbook-openshift3']['etcd_servers']
+  first_master = master_servers.first
+  certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? first_master : node['cookbook-openshift3']['certificate_server']
+  master_peers = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.reject { |h| h['fqdn'] == master_servers[0]['fqdn'] } : master_servers
+end
+
+if !master_servers.is_a?(Array)
+  Chef::Application.fatal!('master_servers not an array')
+end
+if !lb_servers.is_a?(Array)
+  Chef::Application.fatal!('lb_servers not an array')
+end
+if !etcd_servers.is_a?(Array)
+  Chef::Application.fatal!('etcd_servers not an array')
+end
+if first_master == nil
+  Chef::Application.fatal!('first_master not set')
+end
+if certificate_server == nil
+  Chef::Application.fatal!('certificate_server not set')
+end
+if master_servers.length < 1
+  Chef::Application.fatal!('No master_servers set')
 end

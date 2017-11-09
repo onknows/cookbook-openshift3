@@ -4,9 +4,19 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-etcd_servers = node['cookbook-openshift3']['etcd_servers']
-master_servers = node['cookbook-openshift3']['master_servers']
-certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.first : node['cookbook-openshift3']['certificate_server']
+if node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'] != nil && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
+  etcd_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_etcd_duty")
+  master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
+  first_master = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0]
+  certificate_server = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
+  certificate_server = certificate_server == nil ? first_master : certificate_server
+  etcd_remove_servers = node['cookbook-openshift3']['etcd_remove_servers']
+else
+  etcd_servers = node['cookbook-openshift3']['etcd_servers']
+  master_servers = node['cookbook-openshift3']['master_servers']
+  certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.first : node['cookbook-openshift3']['certificate_server']
+  etcd_remove_servers = node['cookbook-openshift3']['etcd_remove_servers']
+end
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
@@ -19,6 +29,7 @@ if certificate_server['fqdn'] == node['fqdn']
   package 'httpd' do
     notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
     notifies :enable, 'service[httpd]', :immediately
+    retries 3
   end
 
   directory node['cookbook-openshift3']['etcd_ca_dir'] do
@@ -120,8 +131,8 @@ if certificate_server['fqdn'] == node['fqdn']
 
   openshift_add_etcd 'Remove additional etcd nodes to cluster' do
     etcd_servers etcd_servers
-    etcd_servers_to_remove node['cookbook-openshift3']['etcd_remove_servers']
-    not_if { node['cookbook-openshift3']['etcd_remove_servers'].empty? }
+    etcd_servers_to_remove etcd_remove_servers
+    not_if { etcd_remove_servers.empty? }
     action :remove_node
   end
 end
@@ -134,7 +145,9 @@ if etcd_servers.find { |server_etcd| server_etcd['fqdn'] == node['fqdn'] }
     end
   end
 
-  package 'etcd'
+  package 'etcd' do
+    retries 3
+  end
 
   if node['cookbook-openshift3']['deploy_containerized']
     execute 'Pull ETCD docker image' do

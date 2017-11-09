@@ -41,6 +41,7 @@ package "#{node['cookbook-openshift3']['openshift_service_type']}-master" do
   version node['cookbook-openshift3']['ose_version'] unless node['cookbook-openshift3']['ose_version'].nil?
   notifies :run, 'execute[daemon-reload]', :immediately
   not_if { node['cookbook-openshift3']['deploy_containerized'] }
+  retries 3
 end
 
 template "/etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-master.service" do
@@ -79,7 +80,9 @@ template node['cookbook-openshift3']['openshift_master_scheduler_conf'] do
 end
 
 if node['cookbook-openshift3']['oauth_Identities'].include? 'HTPasswdPasswordIdentityProvider'
-  package 'httpd-tools'
+  package 'httpd-tools' do
+    retries 3
+  end
 
   template node['cookbook-openshift3']['openshift_master_identity_provider']['HTPasswdPasswordIdentityProvider']['filename'] do
     source 'htpasswd.erb'

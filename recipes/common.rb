@@ -4,7 +4,19 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? node['cookbook-openshift3']['master_servers'].first : node['cookbook-openshift3']['certificate_server']
+if node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'] != nil && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
+  master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
+  first_master = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0]
+  lb_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_lb_duty")
+  certificate_server = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
+  certificate_server = certificate_server == nil ? first_master : certificate_server
+  etcd_servers = node['cookbook-openshift3']['etcd_servers']
+else
+  master_servers = node['cookbook-openshift3']['master_servers']
+  certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? node['cookbook-openshift3']['master_servers'].first : node['cookbook-openshift3']['certificate_server']
+  lb_servers = node['cookbook-openshift3']['lb_servers']
+  etcd_servers = node['cookbook-openshift3']['etcd_servers']
+end
 
 include_recipe 'iptables::default'
 include_recipe 'selinux_policy::default'
@@ -13,10 +25,11 @@ iptables_rule 'firewall_jump_rule' do
   action :enable
 end
 
-lb_servers = node['cookbook-openshift3']['lb_servers']
 
 if !lb_servers.nil? && lb_servers.find { |lb| lb['fqdn'] == node['fqdn'] }
-  package 'haproxy'
+  package 'haproxy' do
+    retries 3
+  end
 
   node['cookbook-openshift3']['enabled_firewall_rules_lb'].each do |rule|
     iptables_rule rule do
@@ -32,7 +45,7 @@ if !lb_servers.nil? && lb_servers.find { |lb| lb['fqdn'] == node['fqdn'] }
     source 'haproxy.conf.erb'
     variables lazy {
       {
-        master_servers: node['cookbook-openshift3']['master_servers'],
+        master_servers: master_servers,
         maxconn: node['cookbook-openshift3']['lb_default_maxconn'].nil? ? '20000' : node['cookbook-openshift3']['lb_default_maxconn'],
       }
     }
@@ -66,14 +79,19 @@ service 'firewalld' do
   action [:stop, :disable]
 end
 
-package 'deltarpm'
+package 'deltarpm' do
+  retries 3
+end
 
 node['cookbook-openshift3']['core_packages'].each do |pkg|
-  package pkg
+  package pkg do
+    retries 3
+  end
 end
 
 package 'docker' do
   version node['cookbook-openshift3']['docker_version'] unless node['cookbook-openshift3']['docker_version'].nil?
+  retries 3
 end
 
 bash "Configure Docker to use the default FS type for #{node['fqdn']}" do
@@ -128,7 +146,7 @@ ruby_block 'Change HTTPD port xfer' do
       attr_reader :contents, :original_pathname
     end
 
-    http_addresses = [node['cookbook-openshift3']['etcd_servers'], node['cookbook-openshift3']['master_servers'], [certificate_server]].each_with_object([]) do |candidate_servers, memo|
+    http_addresses = [etcd_servers, master_servers, [certificate_server]].each_with_object([]) do |candidate_servers, memo|
       this_server = candidate_servers.find { |server_candidate| server_candidate['fqdn'] == node['fqdn'] }
       memo << this_server['ipaddress'] if this_server
     end.sort.uniq
