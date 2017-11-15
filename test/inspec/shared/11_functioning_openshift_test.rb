@@ -62,3 +62,11 @@ describe command('host 172.30.0.1') do
   its('exit_status') { should eq 0 }
   its('stdout') { should include('kubernetes.default.svc.cluster.local') }
 end
+
+# in case the common_public_hostname and common_api_hostname are different,
+# then the master certificate should list both hostnames in its Subject Alternative Name.
+describe command('openssl x509 -in /etc/origin/master/master.server.crt -text | grep -A1 "Subject Alternative Name"') do
+  its('exit_status') { should eq 0 }
+  its('stdout') { should include('DNS:openshift.10.0.2.15.nip.io') } # public hostname
+  its('stdout') { should include('DNS:10.0.2.15.nip.io') }           # api hostname
+end
