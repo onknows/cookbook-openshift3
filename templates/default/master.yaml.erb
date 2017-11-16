@@ -122,6 +122,10 @@ kubernetesMasterConfig:
     storage-media-type:
     - application/vnd.kubernetes.protobuf
 <%- end -%>
+<% if node['cookbook-openshift3']['openshift_master_retain_events'] %>
+    event-ttl:
+    - "<%= node['cookbook-openshift3']['openshift_master_retain_events'] %>"    
+<%- end -%>
 <%- end -%>
   controllerArguments: 
 <% if node['cookbook-openshift3']['openshift_cloud_provider'] %>
