@@ -1,3 +1,7 @@
+# some features only apply starting at a given major version of OSE; parse that major version.
+ose_version_str = command('oc version').stdout.lines.grep(/^oc v/).first || ''
+ose_major_version = (match = ose_version_str.match(/^oc v(?<version>\d+\.\d+)\..*$/)) ? Float(match['version']) : 0
+
 # It produces a working cluster
 describe command('oc status') do
   its('exit_status') { should eq 0 }
@@ -58,9 +62,11 @@ describe command('host kubernetes.default.svc.cluster.local') do
   its('stdout') { should include('172.30.0.1') }
 end
 
-describe command('host 172.30.0.1') do
-  its('exit_status') { should eq 0 }
-  its('stdout') { should include('kubernetes.default.svc.cluster.local') }
+if ose_major_version.to_s.split('.')[1].to_i >= 6
+  describe command('host 172.30.0.1') do
+    its('exit_status') { should eq 0 }
+    its('stdout') { should include('kubernetes.default.svc.cluster.local') }
+  end
 end
 
 # in case the common_public_hostname and common_api_hostname are different,
