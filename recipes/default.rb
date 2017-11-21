@@ -3,11 +3,11 @@
 # Recipe:: default
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
-if node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'] != nil && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
-  master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
-else
-  master_servers = node['cookbook-openshift3']['master_servers']
-end
+master_servers = if !node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'].nil? && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
+                   search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
+                 else
+                   node['cookbook-openshift3']['master_servers']
+                 end
 
 service "#{node['cookbook-openshift3']['openshift_service_type']}-master"
 
