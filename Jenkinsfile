@@ -18,7 +18,7 @@ try {
     string(name: 'SHUTIT_CLUSTER_CONFIGS',                       defaultValue: 'test_multi_node_separate_etcd',                description: 'which cluster configs to test'),
     booleanParam(name: 'dokitchen',                              defaultValue: true,                                           description: 'Whether to run kitchen tests'),
     booleanParam(name: 'doshutit',                               defaultValue: true,                                           description: 'Whether to run shutit tests'),
-    booleanParam(name: 'dorubocop',                              defaultValue: false,                                          description: 'Whether to run rubocop tests')
+    booleanParam(name: 'dorubocop',                              defaultValue: true,                                          description: 'Whether to run rubocop tests')
   ])])
   lock('cookbook_openshift3_tests') {
     stage('setupenv') {
@@ -42,7 +42,7 @@ try {
       stage('rubocop') {
         node(nodename) {
           dir(builddir) {
-            sh 'rubocop -r cookstyle -D'
+            sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk rubocop -r cookstyle -D'
           }
         }
       }

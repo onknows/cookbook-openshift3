@@ -4,19 +4,18 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-if node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'] != nil && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
+if !node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'].nil? && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
   master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
   first_master = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0]
   lb_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_lb_duty")
   certificate_server = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
-  certificate_server = certificate_server == nil ? first_master : certificate_server
-  etcd_servers = node['cookbook-openshift3']['etcd_servers']
+  certificate_server = certificate_server.nil? ? first_master : certificate_server
 else
   master_servers = node['cookbook-openshift3']['master_servers']
   certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? node['cookbook-openshift3']['master_servers'].first : node['cookbook-openshift3']['certificate_server']
   lb_servers = node['cookbook-openshift3']['lb_servers']
-  etcd_servers = node['cookbook-openshift3']['etcd_servers']
 end
+etcd_servers = node['cookbook-openshift3']['etcd_servers']
 
 include_recipe 'iptables::default'
 include_recipe 'selinux_policy::default'
@@ -24,7 +23,6 @@ include_recipe 'selinux_policy::default'
 iptables_rule 'firewall_jump_rule' do
   action :enable
 end
-
 
 if !lb_servers.nil? && lb_servers.find { |lb| lb['fqdn'] == node['fqdn'] }
   package 'haproxy' do
