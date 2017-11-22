@@ -7,15 +7,18 @@ try {
     string(name: 'builddir',                                     defaultValue: 'cookbook-openshift3-test-' + env.BUILD_NUMBER, description: 'Build directory'),
     string(name: 'nodename',                                     defaultValue: 'cage',                                         description: 'Node to build on'),
     string(name: 'CHEF_VERSION',                                 defaultValue: '12.16.42-1',                                   description: 'Chef version to use, eg 12.4.1-1'),
-    string(name: 'OSE_VERSIONS',                                 defaultValue: '1.3 1.4 1.5 3.6',                                  description: 'OSE versions to build, separated by spaces'),
+    string(name: 'OSE_VERSIONS',                                 defaultValue: '1.3 1.4 1.5 3.6',                              description: 'OSE versions to build, separated by spaces'),
     string(name: 'CHEF_IPTABLES_COOKBOOK_VERSION',               defaultValue: 'latest',                                       description: 'iptables cookbook version, eg 1.0.0'),
     string(name: 'CHEF_SELINUX_COOKBOOK_VERSION',                defaultValue: 'latest',                                       description: 'selinux cookbook version, eg 0.7.2'),
     string(name: 'CHEF_YUM_COOKBOOK_VERSION',                    defaultValue: 'latest',                                       description: 'yum cookbook version, eg 3.6.1'),
     string(name: 'CHEF_COMPAT_RESOURCE_COOKBOOK_VERSION',        defaultValue: 'latest',                                       description: 'compat_resource cookbook version'),
     string(name: 'CHEF_INJECT_COMPAT_RESOURCE_COOKBOOK_VERSION', defaultValue: 'false',                                        description: 'whether to inject compat_resource cookbook version (eg true for some envs)'),
+    string(name: 'CHEF_DEPLOY_METHODS',                          defaultValue: 'server',                                       description: 'which deployment methods to use (server and/or solo)'),
+    string(name: 'LOG_LEVEL',                                    defaultValue: 'info',                                         description: 'shutit log level (debug, info, warning, critical)'),
+    string(name: 'SHUTIT_CLUSTER_CONFIGS',                       defaultValue: 'test_multi_node_separate_etcd',                description: 'which cluster configs to test'),
     booleanParam(name: 'dokitchen',                              defaultValue: true,                                           description: 'Whether to run kitchen tests'),
     booleanParam(name: 'doshutit',                               defaultValue: true,                                           description: 'Whether to run shutit tests'),
-    booleanParam(name: 'dorubocop',                              defaultValue: false,                                           description: 'Whether to run rubocop tests')
+    booleanParam(name: 'dorubocop',                              defaultValue: true,                                          description: 'Whether to run rubocop tests')
   ])])
   lock('cookbook_openshift3_tests') {
     stage('setupenv') {
@@ -39,7 +42,7 @@ try {
       stage('rubocop') {
         node(nodename) {
           dir(builddir) {
-            sh 'rubocop -r cookstyle -D'
+            sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk rubocop -r cookstyle -D'
           }
         }
       }
