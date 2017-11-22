@@ -10,12 +10,12 @@ if !node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'].nil? && n
   first_master = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0]
   certificate_server = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
   etcd_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_etcd_duty")
-  master_peers = certificate_server.nil? ? master_servers.reject { |h| h['fqdn'] == first_master['fqdn'] } : master_servers
+  master_peers = certificate_server.nil? ? server_info.master_servers.reject { |h| h['fqdn'] == first_master['fqdn'] } : server_info.master_servers
   certificate_server = certificate_server.nil? ? first_master : certificate_server
 else
   etcd_servers = node['cookbook-openshift3']['etcd_servers']
-  master_peers = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.reject { |h| h['fqdn'] == master_servers[0]['fqdn'] } : master_servers
-  first_master = master_servers.first
+  master_peers = node['cookbook-openshift3']['certificate_server'] == {} ? server_info.master_servers.reject { |h| h['fqdn'] == server_info.master_servers[0]['fqdn'] } : server_info.master_servers
+  first_master = server_info.master_servers.first
   certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? first_master : node['cookbook-openshift3']['certificate_server']
 end
 
