@@ -4,15 +4,15 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
+server_info = OpenShiftHelper::NodeHelper.new(node)
+
 if !node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'].nil? && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
-  master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
   first_master = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0]
   certificate_server = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
   etcd_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_etcd_duty")
   master_peers = certificate_server.nil? ? master_servers.reject { |h| h['fqdn'] == first_master['fqdn'] } : master_servers
   certificate_server = certificate_server.nil? ? first_master : certificate_server
 else
-  master_servers = node['cookbook-openshift3']['master_servers']
   etcd_servers = node['cookbook-openshift3']['etcd_servers']
   master_peers = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.reject { |h| h['fqdn'] == master_servers[0]['fqdn'] } : master_servers
   first_master = master_servers.first
@@ -43,7 +43,7 @@ if certificate_server['fqdn'] == node['fqdn']
     end
   end
 
-  master_servers.each do |master_server|
+  server_info.master_servers.each do |master_server|
     directory "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}" do
       mode '0755'
       owner 'apache'
@@ -350,7 +350,7 @@ openshift_create_master 'Create master configuration file' do
   origins node['cookbook-openshift3']['erb_corsAllowedOrigins'].uniq
   master_file node['cookbook-openshift3']['openshift_master_config_file']
   etcd_servers etcd_servers
-  masters_size master_servers.size
+  masters_size server_info.master_servers.size
   openshift_service_type node['cookbook-openshift3']['openshift_service_type']
   standalone_registry node['cookbook-openshift3']['deploy_standalone_registry']
   cluster true
