@@ -41,23 +41,23 @@ module OpenShiftHelper
       master_servers.reject { |server_master| server_master['fqdn'] == first_master['fqdn'] }
     end
 
-    def master_server?
+    def on_master_server?
       master_servers.find { |server_master| server_master['fqdn'] == node['fqdn'] }
     end
 
-    def node_server?
+    def on_node_server?
       node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
     end
 
-    def etcd_server?
+    def on_etcd_server?
       etcd_servers.find { |server_etcd| server_etcd['fqdn'] == node['fqdn'] }
     end
 
-    def first_master?
+    def on_first_master?
       first_master['fqnd'] == node['fqdn']
     end
 
-    def certificate_server?
+    def on_certificate_server?
       certificate_server['fqdn'] == node['fqdn']
     end
 

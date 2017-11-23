@@ -6,8 +6,8 @@
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 etcd_servers = server_info.etcd_servers
-is_certificate_server = server_info.certificate_server?
-is_master_server = server_info.master_server?
+is_certificate_server = server_info.on_certificate_server?
+is_master_server = server_info.on_master_server?
 
 version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'][1..-1].sub(/^3/, '1').to_f.round(1) : node['cookbook-openshift3']['ose_major_version'].sub(/^3/, '1').to_f.round(1)
 
