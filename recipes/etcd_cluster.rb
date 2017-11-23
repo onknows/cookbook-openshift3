@@ -24,6 +24,8 @@ if is_certificate_server
     notifies :enable, 'service[httpd]', :immediately
     retries 3
   end
+  # Do this immediately, so clients can connect (iptables cookbook delays).
+  execute '/usr/sbin/rebuild-iptables'
 
   directory node['cookbook-openshift3']['etcd_ca_dir'] do
     owner 'root'

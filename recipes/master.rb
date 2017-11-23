@@ -24,6 +24,8 @@ if is_certificate_server
       action :enable
     end
   end
+  # Do this immediately, so clients can connect (iptables cookbook delays).
+  execute '/usr/sbin/rebuild-iptables'
 end
 
 if is_master_server || is_certificate_server
