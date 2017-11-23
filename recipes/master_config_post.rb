@@ -4,13 +4,10 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-if !node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'].nil? && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
-  master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
-  node_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_node_duty")
-else
-  master_servers = node['cookbook-openshift3']['master_servers']
-  node_servers = node['cookbook-openshift3']['node_servers']
-end
+server_info = OpenShiftHelper::NodeHelper.new(node)
+master_servers = server_info.master_servers
+node_servers = server_info.node_servers
+
 service_accounts = node['cookbook-openshift3']['openshift_common_service_accounts_additional'].any? ? node['cookbook-openshift3']['openshift_common_service_accounts'] + node['cookbook-openshift3']['openshift_common_service_accounts_additional'] : node['cookbook-openshift3']['openshift_common_service_accounts']
 
 execute 'Check Master API' do

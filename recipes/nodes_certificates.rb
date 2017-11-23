@@ -4,11 +4,8 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-node_servers = if !node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'].nil? && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
-                 search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_node_duty")
-               else
-                 node['cookbook-openshift3']['node_servers']
-               end
+server_info = OpenShiftHelper::NodeHelper.new(node)
+node_servers = server_info.node_servers
 
 %W(/var/www/html/node #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}).each do |path|
   directory path do

@@ -10,7 +10,7 @@ master_servers = server_info.master_servers
 etcd_servers = server_info.etcd_servers
 master_peers = server_info.master_peers
 certificate_server = server_info.certificate_server
-on_certificate_server = server_info.on_certificate_server
+is_certificate_server = server_info.is_certificate_server?
 
 ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
 
@@ -27,7 +27,7 @@ else
   encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
 end
 
-if server_info.on_certificate_server
+if is_certificate_server
   %W(/var/www/html/master #{node['cookbook-openshift3']['master_generated_certs_dir']}).each do |path|
     directory path do
       mode '0755'
@@ -110,7 +110,7 @@ end
   end
 end
 
-if certificate_server['fqdn'] == node['fqdn']
+if is_certificate_server
   if node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'] && node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name']
     secret_file = node['cookbook-openshift3']['openshift_master_ca_certificate']['secret_file'] || nil
     ca_vars = Chef::EncryptedDataBagItem.load(node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'], node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name'], secret_file)
@@ -243,7 +243,7 @@ if certificate_server['fqdn'] == node['fqdn']
   end
 end
 
-if certificate_server['fqdn'] != node['fqdn']
+if !is_certificate_server['fqdn']
   remote_file "Retrieve peer certificate from Master[#{certificate_server['fqdn']}]" do
     path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-#{node['fqdn']}.tgz.enc"
     source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/master/generated_certs/openshift-#{node['fqdn']}.tgz.enc"
@@ -349,7 +349,7 @@ openshift_create_master 'Create master configuration file' do
   cluster true
 end
 
-if certificate_server['fqdn'] == first_master['fqdn'] || certificate_server['fqdn'] != node['fqdn']
+if certificate_server['fqdn'] == first_master['fqdn'] || !is_certificate_server
   execute 'Activate services for Master API on first master' do
     command 'echo nothing to do specific'
     notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately

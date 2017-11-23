@@ -4,17 +4,11 @@
 #
 # Copyright (c) 2017 The Authors, All Rights Reserved.
 
-if node['cookbook-openshift3']['openshift_cloud_provider']
-  if !node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'].nil? && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
-    master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
-    node_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_node_duty")
-  else
-    master_servers = node['cookbook-openshift3']['master_servers']
-    node_servers = node['cookbook-openshift3']['node_servers']
-  end
-  is_master_server = master_servers.find { |server_master| server_master['fqdn'] == node['fqdn'] }
-  is_node_server = node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
+server_info = OpenShiftHelper::NodeHelper.new(node)
+is_master_server = server_info.is_master_server
+is_node_server = server_info.is_node_server
 
+if node['cookbook-openshift3']['openshift_cloud_provider']
   if is_master_server || is_node_server
     directory node['cookbook-openshift3']['openshift_cloud_provider_config_dir'] do
       recursive true

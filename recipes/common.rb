@@ -4,18 +4,12 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-if !node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'].nil? && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
-  master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
-  first_master = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0]
-  lb_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_lb_duty")
-  certificate_server = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
-  certificate_server = certificate_server.nil? ? first_master : certificate_server
-else
-  master_servers = node['cookbook-openshift3']['master_servers']
-  certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? node['cookbook-openshift3']['master_servers'].first : node['cookbook-openshift3']['certificate_server']
-  lb_servers = node['cookbook-openshift3']['lb_servers']
-end
-etcd_servers = node['cookbook-openshift3']['etcd_servers']
+server_info = OpenShiftHelper::NodeHelper.new(node)
+master_servers = server_info.master_servers
+etcd_servers = server_info.etcd_servers
+lb_servers = server_info.lb_servers
+first_master = server_info.first_master
+certificate_server = server_info.certificate_server
 
 include_recipe 'iptables::default'
 include_recipe 'selinux_policy::default'
