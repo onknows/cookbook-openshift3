@@ -9,7 +9,7 @@ first_master = server_info.first_master
 master_servers = server_info.master_servers
 etcd_servers = server_info.etcd_servers
 master_peers = server_info.master_peers
-certificate_server = server_info.on_certificate_server
+certificate_server = server_info.certificate_server
 is_certificate_server = server_info.on_certificate_server?
 
 ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
