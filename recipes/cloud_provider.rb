@@ -5,7 +5,7 @@
 # Copyright (c) 2017 The Authors, All Rights Reserved.
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
-is_master_server = server_info.master_server?
+is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
 
 if node['cookbook-openshift3']['openshift_cloud_provider']
