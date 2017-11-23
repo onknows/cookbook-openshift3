@@ -9,8 +9,8 @@ master_servers = server_info.master_servers
 etcd_servers = server_info.etcd_servers
 first_master = server_info.first_master
 certificate_server = server_info.certificate_server
-is_certificate_server = server_info.is_certificate_server?
-is_master_server = server_info.is_master_server?
+is_certificate_server = server_info.certificate_server?
+is_master_server = server_info.master_server?
 
 version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'][1..-1].sub(/^3/, '1').to_f.round(1) : node['cookbook-openshift3']['ose_major_version'].sub(/^3/, '1').to_f.round(1)
 
