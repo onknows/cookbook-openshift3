@@ -7,7 +7,7 @@
 server_info = OpenShiftHelper::NodeHelper.new(node)
 first_master = server_info.first_master
 certificate_server = server_info.certificate_server
-is_certificate_server = server_info.is_certificate_server?
+is_certificate_server = server_info.certificate_server?
 
 if is_certificate_server
   if node['cookbook-openshift3']['deploy_containerized']

@@ -28,26 +28,26 @@ module OpenShiftHelper
       certificate_server = Chef::Search::Query.new.search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
       certificate_server.nil? ? first_master : certificate_server
     else
-      node['cookbook-openshift3']['certificate_server'] == {} ? first_master : node['cookbook-openshift3']['certificate_server'] 
+      node['cookbook-openshift3']['certificate_server'] == {} ? first_master : node['cookbook-openshift3']['certificate_server']
     end
 
     def master_peers
       master_servers.reject { |server_master| server_master['fqdn'] == first_master['fqdn'] }
     end
 
-    def is_master_server?
+    def master_server?
       master_servers.find { |server_master| server_master['fqdn'] == node['fqdn'] }
     end
 
-    def is_etcd_server?
+    def etcd_server?
       etcd_servers.find { |server_etcd| server_etcd['fqdn'] == node['fqdn'] }
     end
 
-    def is_first_master?
+    def first_master?
       first_master['fqnd'] == node['fqdn']
     end
 
-    def is_certificate_server?
+    def certificate_server?
       certificate_server['fqdn'] == node['fqdn']
     end
 
