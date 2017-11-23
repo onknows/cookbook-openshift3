@@ -5,9 +5,7 @@
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
-master_servers = server_info.master_servers
 node_servers = server_info.node_servers
-first_master = server_info.first_master
 certificate_server = server_info.certificate_server
 is_node_server = server_info.node_server?
 
