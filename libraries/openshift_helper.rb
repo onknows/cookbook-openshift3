@@ -54,7 +54,7 @@ module OpenShiftHelper
     end
 
     def on_first_master?
-      first_master['fqnd'] == node['fqdn']
+      first_master['fqdn'] == node['fqdn']
     end
 
     def on_certificate_server?
