@@ -8,7 +8,6 @@ server_info = OpenShiftHelper::NodeHelper.new(node)
 master_servers = server_info.master_servers
 etcd_servers = server_info.etcd_servers
 lb_servers = server_info.lb_servers
-first_master = server_info.first_master
 certificate_server = server_info.certificate_server
 
 include_recipe 'iptables::default'

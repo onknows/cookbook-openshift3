@@ -6,9 +6,6 @@
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 etcd_servers = server_info.etcd_servers
-master_servers = server_info.master_servers
-first_master = server_info.first_master
-certificate_server = server_info.certificate_server
 etcd_remove_servers = node['cookbook-openshift3']['etcd_remove_servers']
 is_certificate_server = server_info.certificate_server?
 is_etcd_server = server_info.etcd_server?

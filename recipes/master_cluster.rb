@@ -243,7 +243,7 @@ if is_certificate_server
   end
 end
 
-if !is_certificate_server['fqdn']
+unless is_certificate_server
   remote_file "Retrieve peer certificate from Master[#{certificate_server['fqdn']}]" do
     path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-#{node['fqdn']}.tgz.enc"
     source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/master/generated_certs/openshift-#{node['fqdn']}.tgz.enc"
