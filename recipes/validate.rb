@@ -4,11 +4,8 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-etcd_servers = if !node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'].nil? && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
-                 search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_etcd_duty")
-               else
-                 node['cookbook-openshift3']['etcd_servers']
-               end
+server_info = OpenShiftHelper::NodeHelper.new(node)
+etcd_servers = server_info.etcd_servers
 
 if node['cookbook-openshift3']['ose_version']
   if node['cookbook-openshift3']['ose_version'].to_f.round(1) != node['cookbook-openshift3']['ose_major_version'].to_f.round(1)
@@ -46,20 +43,12 @@ end
   end
 end
 
-if !node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'].nil? && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
-  master_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_master_duty")
-  lb_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_lb_duty")
-  etcd_servers = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_etcd_duty")
-  first_master = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0]
-  certificate_server = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
-  certificate_server = certificate_server.nil? ? first_master : certificate_server
-else
-  master_servers = node['cookbook-openshift3']['master_servers']
-  lb_servers = node['cookbook-openshift3']['lb_servers']
-  etcd_servers = node['cookbook-openshift3']['etcd_servers']
-  first_master = master_servers.first
-  certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? first_master : node['cookbook-openshift3']['certificate_server']
-end
+server_info = OpenShiftHelper::NodeHelper.new(node)
+first_master = server_info.first_master
+master_servers = server_info.master_servers
+lb_servers = server_info.lb_servers
+etcd_servers = server_info.etcd_servers
+certificate_server = server_info.certificate_server
 
 unless master_servers.is_a?(Array)
   Chef::Application.fatal!('master_servers not an array')

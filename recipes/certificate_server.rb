@@ -4,17 +4,12 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-if !node['cookbook-openshift3']['openshift_cluster_duty_discovery_id'].nil? && node.run_list.roles.include?("#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_use_role_based_duty_discovery")
-  first_master = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0]
-  certificate_server = search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0]
-  certificate_server = certificate_server.nil? ? first_master : certificate_server
-else
-  master_servers = node['cookbook-openshift3']['master_servers']
-  first_master = master_servers.first
-  certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? first_master : node['cookbook-openshift3']['certificate_server']
-end
+server_info = OpenShiftHelper::NodeHelper.new(node)
+first_master = server_info.first_master
+certificate_server = server_info.certificate_server
+is_certificate_server = server_info.is_certificate_server?
 
-if certificate_server['fqdn'] == node['fqdn']
+if is_certificate_server
   if node['cookbook-openshift3']['deploy_containerized']
     execute 'Pull CLI docker image' do
       command "docker pull #{node['cookbook-openshift3']['openshift_docker_cli_image']}:#{node['cookbook-openshift3']['openshift_docker_image_version']}"
