@@ -162,7 +162,7 @@ if is_node_server
       Mixlib::ShellOut.new('update-ca-trust').run_command
     end
     notifies :restart, 'service[docker]', :immediately
-    notifies :run, 'execute[Wait for 30 secondes for docker services to come up]', :immediately
+    notifies :run, 'execute[Wait for 30 seconds for docker services to come up]', :immediately
     action :nothing
   end
 
