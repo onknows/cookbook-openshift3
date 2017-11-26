@@ -4,25 +4,31 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-master_servers = node['cookbook-openshift3']['master_servers']
+server_info = OpenShiftHelper::NodeHelper.new(node)
+etcd_servers = server_info.etcd_servers
+is_certificate_server = server_info.on_certificate_server?
+is_master_server = server_info.on_master_server?
+
 version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'][1..-1].sub(/^3/, '1').to_f.round(1) : node['cookbook-openshift3']['ose_major_version'].sub(/^3/, '1').to_f.round(1)
-certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.first : node['cookbook-openshift3']['certificate_server']
 
-include_recipe 'cookbook-openshift3::etcd_cluster' if node['cookbook-openshift3']['etcd_servers'].any?
+include_recipe 'cookbook-openshift3::etcd_cluster' if etcd_servers.any?
 
-if certificate_server['fqdn'] == node['fqdn']
+if is_certificate_server
   package 'httpd' do
     notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
     notifies :enable, 'service[httpd]', :immediately
+    retries 3
   end
   node['cookbook-openshift3']['enabled_firewall_rules_master'].each do |rule|
     iptables_rule rule do
       action :enable
     end
   end
+  # Do this immediately, so clients can connect (iptables cookbook delays).
+  execute '/usr/sbin/rebuild-iptables'
 end
 
-if master_servers.find { |server_master| server_master['fqdn'] == node['fqdn'] } || certificate_server['fqdn'] == node['fqdn']
+if is_master_server || is_certificate_server
   node['cookbook-openshift3']['enabled_firewall_rules_master'].each do |rule|
     iptables_rule rule do
       action :enable
@@ -80,6 +86,6 @@ if master_servers.find { |server_master| server_master['fqdn'] == node['fqdn'] }
   end
 end
 
-if certificate_server['fqdn'] == node['fqdn']
+if is_certificate_server
   include_recipe 'cookbook-openshift3::nodes_certificates'
 end

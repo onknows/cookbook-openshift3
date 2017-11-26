@@ -3,7 +3,8 @@
 # Recipe:: default
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
-master_servers = node['cookbook-openshift3']['master_servers']
+server_info = OpenShiftHelper::NodeHelper.new(node)
+is_first_master = server_info.on_first_master?
 
 service "#{node['cookbook-openshift3']['openshift_service_type']}-master"
 
@@ -37,11 +38,7 @@ include_recipe 'cookbook-openshift3::common'
 include_recipe 'cookbook-openshift3::master'
 include_recipe 'cookbook-openshift3::node'
 
-if master_servers.find { |server_master| server_master['fqdn'] == node['fqdn'] }
-  if master_servers.first['fqdn'] == node['fqdn']
-    include_recipe 'cookbook-openshift3::master_config_post'
-  end
-end
+include_recipe 'cookbook-openshift3::master_config_post' if is_first_master
 
 # Use ruby_block for restarting master
 ruby_block 'Restart Master' do

@@ -4,7 +4,8 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-node_servers = node['cookbook-openshift3']['node_servers']
+server_info = OpenShiftHelper::NodeHelper.new(node)
+node_servers = server_info.node_servers
 
 %W(/var/www/html/node #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}).each do |path|
   directory path do

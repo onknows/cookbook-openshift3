@@ -4,10 +4,11 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-master_servers = node['cookbook-openshift3']['master_servers']
-certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? node['cookbook-openshift3']['master_servers'] : master_servers + [node['cookbook-openshift3']['certificate_server']]
+server_info = OpenShiftHelper::NodeHelper.new(node)
+is_certificate_server = server_info.on_certificate_server?
+is_master_server = server_info.on_master_server?
 
-if certificate_server.find { |server_master| server_master['fqdn'] == node['fqdn'] }
+if is_certificate_server || is_master_server
   if node['cookbook-openshift3']['deploy_containerized']
     execute 'Pull CLI docker image' do
       command "docker pull #{node['cookbook-openshift3']['openshift_docker_cli_image']}:#{node['cookbook-openshift3']['openshift_docker_image_version']}"
@@ -48,5 +49,6 @@ if certificate_server.find { |server_master| server_master['fqdn'] == node['fqdn
   package node['cookbook-openshift3']['openshift_service_type'] do
     version node['cookbook-openshift3'] ['ose_version'] unless node['cookbook-openshift3']['ose_version'].nil?
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
+    retries 3
   end
 end

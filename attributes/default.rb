@@ -11,6 +11,7 @@ default['cookbook-openshift3']['openshift_HA'] = false
 default['cookbook-openshift3']['master_servers'] = []
 default['cookbook-openshift3']['etcd_servers'] = []
 default['cookbook-openshift3']['node_servers'] = []
+default['cookbook-openshift3']['lb_servers'] = []
 default['cookbook-openshift3']['certificate_server'] = {}
 default['cookbook-openshift3']['openshift_push_via_dns'] = false
 
@@ -214,5 +215,20 @@ default['cookbook-openshift3']['etcd_peer_port'] = '2380'
 default['cookbook-openshift3']['docker_dns_search_option'] = %w()
 
 default['cookbook-openshift3']['switch_off_provider_notify_version'] = '12.4.1'
+
 # If a secret is desired, store the password in a data bag, or override the default.
 default['cookbook-openshift3']['encrypted_file_password'] = { 'data_bag_name' => nil, 'data_bag_item_name' => nil, 'secret_file' => nil, 'default' => 'defaultpass' }
+
+# Unique identifier for this cluster on chef server. Used for 'duty' discovery of node within cluster by introspecting node's role assignments according to a predefined scheme:
+# In below, <ID> == openshift_cluster_duty_discovery_id
+#
+#   role:<ID>_openshift_use_role_based_duty_discovery   - This must be assigned to the node to use role-based duty discovery
+#   role:<ID>_openshift_etcd_duty                       - If assigned, this is an etcd node
+#   role:<ID>_openshift_first_master_duty               - If assigned, this is the first master node
+#   role:<ID>_openshift_certificate_server_duty         - If assigned, this is the certificate server node
+#   role:<ID>_openshift_master_duty                     - If assigned, this is a master node
+#   role:<ID>_openshift_node_duty                       - If assigned, this is a node
+#   role:<ID>_openshift_lb_duty                         - If assigned, this is a load balancer
+#
+# If openshift_cluster_duty_discovery_id is nil, then the cluster uses duty discovery nowhere on the cluster.
+default['cookbook-openshift3']['openshift_cluster_duty_discovery_id'] = nil

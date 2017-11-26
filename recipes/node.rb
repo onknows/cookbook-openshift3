@@ -4,11 +4,13 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-master_servers = node['cookbook-openshift3']['master_servers']
-node_servers = node['cookbook-openshift3']['node_servers']
-path_certificate = node['cookbook-openshift3']['use_wildcard_nodes'] ? 'wildcard_nodes.tgz.enc' : "#{node['fqdn']}.tgz.enc"
-certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.first : node['cookbook-openshift3']['certificate_server']
+server_info = OpenShiftHelper::NodeHelper.new(node)
+node_servers = server_info.node_servers
+certificate_server = server_info.certificate_server
+is_node_server = server_info.on_node_server?
+
 ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
+path_certificate = node['cookbook-openshift3']['use_wildcard_nodes'] ? 'wildcard_nodes.tgz.enc' : "#{node['fqdn']}.tgz.enc"
 default_interface = `/sbin/ip route get to 8.8.8.8`[/src.*/][/\d+\.\d+\.\d+\.\d+/]
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
@@ -18,7 +20,7 @@ else
   encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
 end
 
-if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
+if is_node_server
   file '/usr/local/etc/.firewall_node_additional.txt' do
     content node['cookbook-openshift3']['enabled_firewall_additional_rules_node'].join("\n")
     owner 'root'
@@ -97,6 +99,7 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
     action :install
     version node['cookbook-openshift3']['ose_version'] unless node['cookbook-openshift3']['ose_version'].nil?
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
+    retries 3
   end
 
   package "#{node['cookbook-openshift3']['openshift_service_type']}-sdn-ovs" do
@@ -104,11 +107,13 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
     version node['cookbook-openshift3']['ose_version'] unless node['cookbook-openshift3']['ose_version'].nil?
     only_if { node['cookbook-openshift3']['openshift_common_use_openshift_sdn'] == true }
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
+    retries 3
   end
 
   package 'conntrack-tools' do
     action :install
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
+    retries 3
   end
 
   remote_file "Retrieve certificate from Master[#{certificate_server['fqdn']}]" do
@@ -161,14 +166,16 @@ if node_servers.find { |server_node| server_node['fqdn'] == node['fqdn'] }
     action :nothing
   end
 
-  execute 'Wait for 30 secondes for docker services to come up' do
+  execute 'Wait for 30 seconds for docker services to come up' do
     command 'sleep 30'
     action :nothing
     only_if { node['cookbook-openshift3']['deploy_containerized'] }
   end
 
   if node['cookbook-openshift3']['deploy_dnsmasq']
-    package 'NetworkManager'
+    package 'NetworkManager' do
+      retries 3
+    end
 
     template '/etc/origin/node/node-dnsmasq.conf' do
       source 'node-dnsmasq.conf.erb'

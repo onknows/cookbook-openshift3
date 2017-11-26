@@ -3,6 +3,10 @@
 # Recipe:: validate
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
+
+server_info = OpenShiftHelper::NodeHelper.new(node)
+etcd_servers = server_info.etcd_servers
+
 if node['cookbook-openshift3']['ose_version']
   if node['cookbook-openshift3']['ose_version'].to_f.round(1) != node['cookbook-openshift3']['ose_major_version'].to_f.round(1)
     Chef::Application.fatal!("\"ose_version\" #{node['cookbook-openshift3']['ose_version']} should be a subset of \"ose_major_version\" #{node['cookbook-openshift3']['ose_major_version']}")
@@ -28,7 +32,7 @@ if node['cookbook-openshift3']['openshift_hosted_cluster_metrics']
 end
 
 if node['cookbook-openshift3']['etcd_add_additional_nodes']
-  unless node['cookbook-openshift3']['etcd_add_additional_nodes'] && node['cookbook-openshift3']['etcd_servers'].any? { |key| key['new_node'] }
+  unless node['cookbook-openshift3']['etcd_add_additional_nodes'] && etcd_servers.any? { |key| key['new_node'] }
     Chef::Application.fatal!('A key named "new_node" must be defined when adding new members to ETCD cluster')
   end
 end
@@ -38,3 +42,25 @@ end
     Chef::Log.warn("The attributes #{deprecated} has been deprecated, please use \"openshift_node_kubelet_args_custom\",")
   end
 end
+
+server_info = OpenShiftHelper::NodeHelper.new(node)
+first_master = server_info.first_master
+master_servers = server_info.master_servers
+lb_servers = server_info.lb_servers
+etcd_servers = server_info.etcd_servers
+certificate_server = server_info.certificate_server
+
+unless master_servers.is_a?(Array)
+  Chef::Application.fatal!('master_servers not an array')
+end
+unless lb_servers.is_a?(Array)
+  Chef::Application.fatal!('lb_servers not an array')
+end
+unless etcd_servers.is_a?(Array)
+  Chef::Application.fatal!('etcd_servers not an array')
+end
+Chef::Application.fatal!('first_master not set') if first_master.nil?
+if certificate_server.nil?
+  Chef::Application.fatal!('certificate_server not set')
+end
+Chef::Application.fatal!('No master_servers set') if master_servers.empty?

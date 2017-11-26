@@ -4,9 +4,12 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-etcd_servers = node['cookbook-openshift3']['etcd_servers']
-master_servers = node['cookbook-openshift3']['master_servers']
-certificate_server = node['cookbook-openshift3']['certificate_server'] == {} ? master_servers.first : node['cookbook-openshift3']['certificate_server']
+server_info = OpenShiftHelper::NodeHelper.new(node)
+etcd_servers = server_info.etcd_servers
+certificate_server = server_info.certificate_server
+etcd_remove_servers = node['cookbook-openshift3']['etcd_remove_servers']
+is_certificate_server = server_info.on_certificate_server?
+is_etcd_server = server_info.on_etcd_server?
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
@@ -15,10 +18,11 @@ else
   encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
 end
 
-if certificate_server['fqdn'] == node['fqdn']
+if is_certificate_server
   package 'httpd' do
     notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
     notifies :enable, 'service[httpd]', :immediately
+    retries 3
   end
 
   directory node['cookbook-openshift3']['etcd_ca_dir'] do
@@ -120,21 +124,22 @@ if certificate_server['fqdn'] == node['fqdn']
 
   openshift_add_etcd 'Remove additional etcd nodes to cluster' do
     etcd_servers etcd_servers
-    etcd_servers_to_remove node['cookbook-openshift3']['etcd_remove_servers']
-    not_if { node['cookbook-openshift3']['etcd_remove_servers'].empty? }
+    etcd_servers_to_remove etcd_remove_servers
+    not_if { etcd_remove_servers.empty? }
     action :remove_node
   end
 end
 
-if etcd_servers.find { |server_etcd| server_etcd['fqdn'] == node['fqdn'] }
-
+if is_etcd_server
   node['cookbook-openshift3']['enabled_firewall_rules_etcd'].each do |rule|
     iptables_rule rule do
       action :enable
     end
   end
 
-  package 'etcd'
+  package 'etcd' do
+    retries 3
+  end
 
   if node['cookbook-openshift3']['deploy_containerized']
     execute 'Pull ETCD docker image' do

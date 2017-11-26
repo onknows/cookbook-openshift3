@@ -4,10 +4,11 @@
 #
 # Copyright (c) 2017 The Authors, All Rights Reserved.
 
-if node['cookbook-openshift3']['openshift_cloud_provider']
-  is_master_server = node['cookbook-openshift3']['master_servers'].find { |server_master| server_master['fqdn'] == node['fqdn'] }
-  is_node_server = node['cookbook-openshift3']['node_servers'].find { |server_node| server_node['fqdn'] == node['fqdn'] }
+server_info = OpenShiftHelper::NodeHelper.new(node)
+is_master_server = server_info.on_master_server?
+is_node_server = server_info.on_node_server?
 
+if node['cookbook-openshift3']['openshift_cloud_provider']
   if is_master_server || is_node_server
     directory node['cookbook-openshift3']['openshift_cloud_provider_config_dir'] do
       recursive true
