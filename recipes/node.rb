@@ -166,7 +166,7 @@ if is_node_server
     action :nothing
   end
 
-  execute 'Wait for 30 secondes for docker services to come up' do
+  execute 'Wait for 30 seconds for docker services to come up' do
     command 'sleep 30'
     action :nothing
     only_if { node['cookbook-openshift3']['deploy_containerized'] }
