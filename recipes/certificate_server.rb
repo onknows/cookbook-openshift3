@@ -6,8 +6,9 @@
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 is_certificate_server = server_info.on_certificate_server?
+is_master_server = server_info.on_master_server?
 
-if is_certificate_server
+if is_certificate_server || is_master_server
   if node['cookbook-openshift3']['deploy_containerized']
     execute 'Pull CLI docker image' do
       command "docker pull #{node['cookbook-openshift3']['openshift_docker_cli_image']}:#{node['cookbook-openshift3']['openshift_docker_image_version']}"
