@@ -199,6 +199,7 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_master_htpasswd_users']` -  Defaults to `[ ... ]`.
 * `node['cookbook-openshift3']['encrypted_file_password']`  - Defaults to `{ 'data_bag_name' => nil, 'data_bag_item_name' => nil, 'secret_file' => nil, 'default' => 'defaultpass' }`
 * `node['cookbook-openshift3']['openshift_cluster_chef_id']` - Defaults to `default`
+* `node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']` - Defaults to `nil`
 
 # Recipes
 
@@ -213,6 +214,10 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * cookbook-openshift3::etcd_cluster - Configure HA ETCD cluster
 * cookbook-openshift3::adhoc_uninstall - Adhoc action for uninstalling Openshit from server
 
+# Libraries
+
+* openshift_helper - abstracts node 'duty' identification code
+
 # Resources
 
 * [openshift_create_master](#openshift_create_master)
@@ -222,6 +227,7 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * [openshift_deploy_registry](#openshift_deploy_registry)
 * [openshift_deploy_router](#openshift_deploy_router)
 * [openshift_redeploy_certificate](#openshift_redeploy_certificate)
+
 
 ## openshift_create_master
 
@@ -300,4 +306,3 @@ Maintainer:: The Authors (<wburton@redhat.com>)
 Source:: https://github.com/IshentRas/cookbook-openshift3
 Issues:: https://github.com/IshentRas/cookbook-openshift3/issues
 
-License:: all_rights
