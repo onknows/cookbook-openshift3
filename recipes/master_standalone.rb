@@ -64,19 +64,19 @@ end
 template "/etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-master" do
   source 'service_master.sysconfig.erb'
   variables(sysconfig_vars)
-  notifies :run, 'ruby_block[Restart Master]', :immediately
+  notifies :restart, 'service[Restart Master]', :immediately
 end
 
 execute 'Create the policy file' do
   command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} create-bootstrap-policy-file --filename=#{node['cookbook-openshift3']['openshift_master_policy']}"
   creates node['cookbook-openshift3']['openshift_master_policy']
-  notifies :run, 'ruby_block[Restart Master]', :immediately
+  notifies :restart, 'service[Restart Master]', :immediately
 end
 
 template node['cookbook-openshift3']['openshift_master_scheduler_conf'] do
   source 'scheduler.json.erb'
   variables ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
-  notifies :run, 'ruby_block[Restart Master]', :immediately
+  notifies :restart, 'service[Restart Master]', :immediately
 end
 
 if node['cookbook-openshift3']['oauth_Identities'].include? 'HTPasswdPasswordIdentityProvider'

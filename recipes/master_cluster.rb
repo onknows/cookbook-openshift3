@@ -283,7 +283,7 @@ end
 template node['cookbook-openshift3']['openshift_master_scheduler_conf'] do
   source 'scheduler.json.erb'
   variables ose_major_version: ose_major_version
-  notifies :run, 'ruby_block[Restart API]', :immediately
+  notifies :restart, 'service[Restart API]', :immediately
 end
 
 if node['cookbook-openshift3']['oauth_Identities'].include? 'HTPasswdPasswordIdentityProvider'
@@ -312,8 +312,8 @@ end
 template "/etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-master" do
   source 'service_master.sysconfig.erb'
   variables(sysconfig_vars)
-  notifies :run, 'ruby_block[Restart API]', :immediately
-  notifies :run, 'ruby_block[Restart Controller]', :immediately
+  notifies :restart, 'service[Restart API]', :immediately
+  notifies :restart, 'service[Restart Controller]', :immediately
 end
 
 template node['cookbook-openshift3']['openshift_master_api_systemd'] do
@@ -329,13 +329,13 @@ end
 template node['cookbook-openshift3']['openshift_master_api_sysconfig'] do
   source 'service_master-api.sysconfig.erb'
   variables(sysconfig_vars)
-  notifies :run, 'ruby_block[Restart API]', :immediately
+  notifies :restart, 'service[Restart API]', :immediately
 end
 
 template node['cookbook-openshift3']['openshift_master_controllers_sysconfig'] do
   source 'service_master-controllers.sysconfig.erb'
   variables(sysconfig_vars)
-  notifies :run, 'ruby_block[Restart Controller]', :immediately
+  notifies :restart, 'service[Restart Controller]', :immediately
 end
 
 openshift_create_master 'Create master configuration file' do

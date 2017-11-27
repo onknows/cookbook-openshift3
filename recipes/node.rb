@@ -92,7 +92,7 @@ if is_node_server
   template "/etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-node" do
     source 'service_node.sysconfig.erb'
     variables(sysconfig_vars)
-    notifies :run, 'ruby_block[Restart Node]', :immediately
+    notifies :restart, 'service[Restart Node]', :immediately
   end
 
   package "#{node['cookbook-openshift3']['openshift_service_type']}-node" do
@@ -225,7 +225,7 @@ if is_node_server
       kubelet_args: node['cookbook-openshift3']['openshift_node_kubelet_args_default'].merge(node['cookbook-openshift3']['openshift_node_kubelet_args_custom'])
     )
     notifies :run, 'execute[daemon-reload]', :immediately
-    notifies :run, 'ruby_block[Restart Node]', :immediately
+    notifies :restart, 'service[Restart Node]', :immediately
     notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
   end
 

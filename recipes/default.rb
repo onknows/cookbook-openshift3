@@ -41,37 +41,62 @@ include_recipe 'cookbook-openshift3::node'
 include_recipe 'cookbook-openshift3::master_config_post' if is_first_master
 
 # Use ruby_block for restarting master
-ruby_block 'Restart Master' do
-  block do
-    Mixlib::ShellOut.new("systemctl restart #{node['cookbook-openshift3']['openshift_service_type']}-master").run_command
-    only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master"
-  end
-  action :nothing
+service 'Restart Master'
+  service_name "#{node['cookbook-openshift3']['openshift_service_type']}-master" do
+  action: restart
+  only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master"
 end
 
-# Use ruby_block for restarting master api
-ruby_block 'Restart API' do
-  block do
-    Mixlib::ShellOut.new("systemctl restart #{node['cookbook-openshift3']['openshift_service_type']}-master-api").run_command
-    only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-api"
-  end
-  action :nothing
+service 'Restart API'
+  service_name "#{node['cookbook-openshift3']['openshift_service_type']}-master-api" do
+  action: restart
+  only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-api"
 end
 
-# Use ruby_block for restarting master controller
-ruby_block 'Restart Controller' do
-  block do
-    Mixlib::ShellOut.new("systemctl restart #{node['cookbook-openshift3']['openshift_service_type']}-master-controller").run_command
-    only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-controller"
-  end
-  action :nothing
+service 'Restart Controller'
+  service_name "#{node['cookbook-openshift3']['openshift_service_type']}-master-controller" do
+  action: restart
+  only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-controller"
 end
 
-# Use ruby_block for restarting node
-ruby_block 'Restart Node' do
-  block do
-    Mixlib::ShellOut.new("systemctl restart #{node['cookbook-openshift3']['openshift_service_type']}-node").run_command
-    only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-node"
-  end
-  action :nothing
+service 'Restart Node'
+  service_name "#{node['cookbook-openshift3']['openshift_service_type']}-node" do
+  action: restart
+  only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-node"
 end
+
+## Use ruby_block for restarting master
+#ruby_block 'Restart Master' do
+#  block do
+#    Mixlib::ShellOut.new("systemctl restart #{node['cookbook-openshift3']['openshift_service_type']}-master").run_command
+#    only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master"
+#  end
+#  action :nothing
+#end
+
+## Use ruby_block for restarting master api
+#ruby_block 'Restart API' do
+#  block do
+#    Mixlib::ShellOut.new("systemctl restart #{node['cookbook-openshift3']['openshift_service_type']}-master-api").run_command
+#    only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-api"
+#  end
+#  action :nothing
+#end
+
+## Use ruby_block for restarting master controller
+#ruby_block 'Restart Controller' do
+#  block do
+#    Mixlib::ShellOut.new("systemctl restart #{node['cookbook-openshift3']['openshift_service_type']}-master-controller").run_command
+#    only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-controller"
+#  end
+#  action :nothing
+#end
+
+## Use ruby_block for restarting node
+#ruby_block 'Restart Node' do
+#  block do
+#    Mixlib::ShellOut.new("systemctl restart #{node['cookbook-openshift3']['openshift_service_type']}-node").run_command
+#    only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-node"
+#  end
+#  action :nothing
+#end
