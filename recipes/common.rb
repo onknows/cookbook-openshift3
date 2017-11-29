@@ -91,6 +91,7 @@ bash "Configure Docker to use the default FS type for #{node['fqdn']}" do
     sed -i "s/xfs/$correct_fs/" /usr/bin/docker-storage-setup
   EOF
   not_if "grep $(df -T /var | egrep -o 'xfs|ext4') /usr/bin/docker-storage-setup"
+  timeout 60
 end
 
 template '/etc/sysconfig/docker-storage-setup' do
