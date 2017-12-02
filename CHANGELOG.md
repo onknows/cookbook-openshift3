@@ -1,6 +1,11 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v1.10.66
+### Improvement
+- Add timeout to `du` call
+- Rewrite ruby blocks into Chef resources
+
 ## v1.10.65
 ### Improvement
 - Initial support for 3.6
