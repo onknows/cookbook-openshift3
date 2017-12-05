@@ -40,27 +40,26 @@ include_recipe 'cookbook-openshift3::node'
 
 include_recipe 'cookbook-openshift3::master_config_post' if is_first_master
 
-# Use ruby_block for restarting master
 service 'Restart Master' do
   service_name "#{node['cookbook-openshift3']['openshift_service_type']}-master"
-  action :restart
+  action :nothing
   only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master"
 end
 
 service 'Restart API' do
   service_name "#{node['cookbook-openshift3']['openshift_service_type']}-master-api"
-  action :restart
+  action :nothing
   only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-api"
 end
 
 service 'Restart Controller' do
   service_name "#{node['cookbook-openshift3']['openshift_service_type']}-master-controller"
-  action :restart
+  action :nothing
   only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-controller"
 end
 
 service 'Restart Node' do
   service_name "#{node['cookbook-openshift3']['openshift_service_type']}-node"
-  action :restart
+  action :nothing
   only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-node"
 end
