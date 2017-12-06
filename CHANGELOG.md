@@ -1,6 +1,13 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+
+## v1.10.67
+### Bug
+- Fixes error in v1.10.66 - use action ':nothing' on declaration, cf: https://serverfault.com/questions/587188/chef-how-to-run-a-resource-on-notification-only
+- admin.kubeconfig made unambiguous - file creation failures avoided
+
+
 ## v1.10.66
 ### Improvement
 - Add timeout to `du` call
