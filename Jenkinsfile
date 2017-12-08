@@ -22,7 +22,7 @@ try {
     booleanParam(name: 'doshutit',                               defaultValue: true,                                           description: 'Whether to run shutit tests'),
     booleanParam(name: 'dorubocop',                              defaultValue: true,                                           description: 'Whether to run rubocop tests')
   ])])
-//  lock('cookbook_openshift3_test_lock_1') {
+  lock('cookbook_openshift3_test_lock_1') {
     stage('setupenv') {
       node(nodename) {
         sh 'mkdir -p ' + builddir
@@ -80,7 +80,7 @@ try {
         }
       }
     }
-  //}
+  }
   mail bcc: '', body: '''See: http://jenkins.meirionconsulting.tk/job/cookbook-openshift3-pipeline
 
 RELEASE
