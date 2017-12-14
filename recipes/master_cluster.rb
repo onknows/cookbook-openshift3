@@ -96,13 +96,13 @@ unless is_certificate_server && node['fqdn'] != first_master['fqdn']
     cwd node['cookbook-openshift3']['openshift_master_config_dir']
     action :nothing
   end
- 
+
   execute 'Extract certificate to Master folder' do
     command "tar xzf openshift-master-#{node['fqdn']}.tgz"
     cwd node['cookbook-openshift3']['openshift_master_config_dir']
     action :nothing
   end
- 
+
   %w(client.crt client.key ca.crt).each do |certificate_type|
     file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}#{certificate_type}" do
       owner 'root'
