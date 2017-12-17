@@ -6,7 +6,6 @@
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 first_master = server_info.first_master
-is_first_master = server_info.on_first_master?
 master_servers = server_info.master_servers
 etcd_servers = server_info.etcd_servers
 certificate_server = server_info.certificate_server
