@@ -196,7 +196,6 @@ if is_certificate_server
               --signer-serial=#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.serial.txt \
               --overwrite=false"
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/master.server.crt"
-      not_if { is_first_master }
     end
 
     execute "Generate master client configuration for #{master_server['fqdn']}" do
