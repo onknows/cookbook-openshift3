@@ -10,9 +10,10 @@ is_master_server = server_info.on_master_server?
 
 if is_certificate_server || is_master_server
   if node['cookbook-openshift3']['deploy_containerized']
-    execute 'Pull CLI docker image' do
-      command "docker pull #{node['cookbook-openshift3']['openshift_docker_cli_image']}:#{node['cookbook-openshift3']['openshift_docker_image_version']}"
-      not_if "docker images  | grep #{node['cookbook-openshift3']['openshift_docker_cli_image']}.*#{node['cookbook-openshift3']['openshift_docker_image_version']}"
+
+    docker_image node['cookbook-openshift3']['openshift_docker_cli_image'] do
+      tag node['cookbook-openshift3']['openshift_docker_image_version']
+      action :pull_if_missing
     end
 
     bash 'Add CLI to master(s)' do
@@ -40,9 +41,9 @@ if is_certificate_server || is_master_server
       not_if { ::File.exist?('/etc/bash_completion.d/oc') || node['cookbook-openshift3']['openshift_docker_image_version'] =~ /v1.2/i }
     end
 
-    execute 'Pull MASTER docker image' do
-      command "docker pull #{node['cookbook-openshift3']['openshift_docker_master_image']}:#{node['cookbook-openshift3']['openshift_docker_image_version']}"
-      not_if "docker images  | grep #{node['cookbook-openshift3']['openshift_docker_master_image']}.*#{node['cookbook-openshift3']['openshift_docker_image_version']}"
+    docker_image node['cookbook-openshift3']['openshift_docker_master_image'] do
+      tag node['cookbook-openshift3']['openshift_docker_image_version']
+      action :pull_if_missing
     end
   end
 
