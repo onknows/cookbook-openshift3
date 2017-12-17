@@ -70,6 +70,11 @@ action :delete do
 
   Mixlib::ShellOut.new('systemctl daemon-reload').run_command
 
+  service 'docker' do
+    action :start
+    only_if { node['cookbook-openshift3']['deploy_containerized'] }
+  end
+
   reboot 'Uninstall require reboot' do
     action :request_reboot
     reason 'Need to reboot when the run completes successfully.'
