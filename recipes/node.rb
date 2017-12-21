@@ -38,14 +38,14 @@ if is_node_server
   end
 
   if node['cookbook-openshift3']['deploy_containerized']
-    execute 'Pull NODE docker image' do
-      command "docker pull #{node['cookbook-openshift3']['openshift_docker_node_image']}:#{node['cookbook-openshift3']['openshift_docker_image_version']}"
-      not_if "docker images  | grep #{node['cookbook-openshift3']['openshift_docker_node_image']}.*#{node['cookbook-openshift3']['openshift_docker_image_version']}"
+    docker_image node['cookbook-openshift3']['openshift_docker_node_image'] do
+      tag node['cookbook-openshift3']['openshift_docker_image_version']
+      action :pull_if_missing
     end
 
-    execute 'Pull OVS docker image' do
-      command "docker pull #{node['cookbook-openshift3']['openshift_docker_ovs_image']}:#{node['cookbook-openshift3']['openshift_docker_image_version']}"
-      not_if "docker images  | grep #{node['cookbook-openshift3']['openshift_docker_ovs_image']}.*#{node['cookbook-openshift3']['openshift_docker_image_version']}"
+    docker_image node['cookbook-openshift3']['openshift_docker_ovs_image'] do
+      tag node['cookbook-openshift3']['openshift_docker_image_version']
+      action :pull_if_missing
     end
 
     template "/etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-node-dep.service" do

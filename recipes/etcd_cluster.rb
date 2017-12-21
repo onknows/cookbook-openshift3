@@ -142,9 +142,8 @@ if is_etcd_server
   end
 
   if node['cookbook-openshift3']['deploy_containerized']
-    execute 'Pull ETCD docker image' do
-      command "docker pull #{node['cookbook-openshift3']['openshift_docker_etcd_image']}"
-      not_if "docker images  | grep #{node['cookbook-openshift3']['openshift_docker_etcd_image']}"
+    docker_image node['cookbook-openshift3']['openshift_docker_etcd_image'] do
+      action :pull_if_missing
     end
 
     template "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service" do
