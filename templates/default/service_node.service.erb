@@ -6,7 +6,7 @@ After=ovsdb-server.service
 After=ovs-vswitchd.service
 Wants=docker.service
 Documentation=https://github.com/openshift/origin
-Requires=dnsmasq.service
+Wants=dnsmasq.service
 After=dnsmasq.service
 
 [Service]

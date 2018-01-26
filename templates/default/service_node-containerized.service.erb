@@ -13,7 +13,7 @@ Wants=<%= node['cookbook-openshift3']['openshift_service_type'] %>-master.servic
 Requires=<%= node['cookbook-openshift3']['openshift_service_type'] %>-node-dep.service
 After=<%= node['cookbook-openshift3']['openshift_service_type'] %>-node-dep.service
 <% if @ose_major_version.split('.')[1].to_i >= 6 %>
-Requires=dnsmasq.service
+Wants=dnsmasq.service
 After=dnsmasq.service
 <%- end %>
 
