@@ -81,7 +81,7 @@ try {
       }
     }
   }
-  mail bcc: '', body: '''See: http://jenkins.meirionconsulting.com/job/cookbook-openshift3-pipeline
+  mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/job/cookbook-openshift3-pipeline
 
 RELEASE
 =======
@@ -103,7 +103,7 @@ RELEASE
     }
   }
 } catch(err) {
-  mail bcc: '', body: '''See: http://jenkins.meirionconsulting.com/job/cookbook-openshift3-pipeline
+  mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/job/cookbook-openshift3-pipeline
 
 ''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: 'Build failure', to: 'ian.miell@gmail.com'
   throw(err)
