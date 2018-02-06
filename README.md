@@ -178,6 +178,21 @@ Any option can be set, as long as they are supported by current [Kubelet Options
 }
 ```
 
+Example of enabling a specific "feature-gate": enabling the [persistent local volumes feature](https://docs.openshift.com/container-platform/3.7/install_config/configuring_local.html#local-volume-enabling-local-volumes) (OSE v3.7 and up):
+```json
+{
+  "openshift_master_api_server_args_custom": {
+    "feature-gates": ["PersistentLocalVolumes=true"]
+  },
+  "openshift_master_controller_args_custom": {
+    "feature-gates": ["PersistentLocalVolumes=true"]
+  },
+  "openshift_node_kubelet_args_custom": {
+    "feature-gates": ["PersistentLocalVolumes=true"]
+  }
+}
+```
+
 Example of overriding the setting for global builds:
 Any option can be set, as long as they are supported by current [Global Build Defaults and Overrides](https://docs.openshift.com/container-platform/latest/install_config/build_defaults_overrides.html).
 * `node['cookbook-openshift3']['openshift_builddefaults_env']` is the preferred for setting custom environment variables. 
