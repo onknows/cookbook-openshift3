@@ -118,7 +118,7 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_master_logging_public_url']` -  Defaults to `nil`.
 * `node['cookbook-openshift3']['openshift_master_router_subdomain']` -  Defaults to `cloudapps.domain.local`.
 * `node['cookbook-openshift3']['openshift_master_sdn_cluster_network_cidr']` -  Defaults to `10.1.0.0/16`.
-* `node['cookbook-openshift3']['openshift_master_sdn_host_subnet_length']` -  Defaults to `8`.
+* `node['cookbook-openshift3']['openshift_master_sdn_host_subnet_length']` -  Defaults to `9`.
 * `node['cookbook-openshift3']['openshift_master_oauth_grant_method']` -  Defaults to `auto`.
 * `node['cookbook-openshift3']['openshift_master_session_max_seconds']` -  Defaults to `3600`.
 * `node['cookbook-openshift3']['openshift_master_session_name']` -  Defaults to `ssn`.
