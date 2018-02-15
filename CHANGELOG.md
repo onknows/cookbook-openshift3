@@ -2,18 +2,18 @@
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
 
-## v1.10.67
+## v1.10.67
 ### Bug
 - Fixes error in v1.10.66 - use action ':nothing' on declaration, cf: https://serverfault.com/questions/587188/chef-how-to-run-a-resource-on-notification-only
 - admin.kubeconfig made unambiguous - file creation failures avoided
 
 
-## v1.10.66
+## v1.10.66
 ### Improvement
 - Add timeout to `du` call
 - Rewrite ruby blocks into Chef resources
 
-## v1.10.65
+## v1.10.65
 ### Improvement
 - Initial support for 3.6
 - Capability for Overriding master and node servingInfo.minTLSVersion and .cipherSuites [openshift_(master|node)_cipher_suites, openshift_(master|node)_min_tls_version]
@@ -23,7 +23,7 @@ This file is used to list changes made in each version of the Openshift 3 cookbo
 - Capability for referencing the registry by a stable name (not IP) [openshift_push_via_dns]
 - Add etcd_debug and etcd_log_package_levels capabilities 
 
-## v1.10.64
+## v1.10.64
 ### Improvement
 - All tgz files are encrypted with a default passphrase, and decrypted at the other end after downloading.
 
