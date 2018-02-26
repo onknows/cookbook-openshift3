@@ -11,7 +11,7 @@ dockerConfig:
 iptablesSyncPeriod: "<%= node['cookbook-openshift3']['openshift_node_iptables_sync_period'] %>"
 imageConfig:
   format: <%= node['cookbook-openshift3']['openshift_common_registry_url'] %>
-  latest: false
+  latest: <%= node['cookbook-openshift3']['openshift_node_image_config_latest'] %>
 kind: NodeConfig
 kubeletArguments:
 <% unless @node_labels.empty? -%>
