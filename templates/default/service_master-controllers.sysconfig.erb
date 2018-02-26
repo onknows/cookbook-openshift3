@@ -15,6 +15,26 @@ AWS_SECRET_ACCESS_KEY=<%= @aws_secret_access_key %>
 # Proxy configuration
 # Origin uses standard HTTP_PROXY environment variables. Be sure to set
 # NO_PROXY for your master
+<% if node['cookbook-openshift3']['openshift_no_proxy'].empty? -%>
 #NO_PROXY=master.example.com
+<% else -%>
+NO_PROXY=<%= [
+  node['cookbook-openshift3']['openshift_no_proxy'].split(','),
+  node['cookbook-openshift3']['openshift_common_api_hostname'],
+  node['cookbook-openshift3']['master_servers'].map { |server| server['fqdn'] },
+  node['cookbook-openshift3']['node_servers'].map { |server| server['fqdn'] },
+  ".#{node['cookbook-openshift3']['osn_cluster_dns_domain']}",
+  node['cookbook-openshift3']['openshift_common_portal_net'],
+  node['cookbook-openshift3']['openshift_master_sdn_cluster_network_cidr']
+].flatten.uniq.join(',') %>
+<% end %>
+<% if node['cookbook-openshift3']['openshift_http_proxy'].empty? -%>
 #HTTP_PROXY=http://USER:PASSWORD@IPADDR:PORT
+<% else -%>
+HTTP_PROXY=<%= node['cookbook-openshift3']['openshift_http_proxy'] %>
+<% end %>
+<% if node['cookbook-openshift3']['openshift_https_proxy'].empty? -%>
 #HTTPS_PROXY=https://USER:PASSWORD@IPADDR:PORT
+<% else -%>
+HTTPS_PROXY=<%= node['cookbook-openshift3']['openshift_https_proxy'] %>
+<% end %>

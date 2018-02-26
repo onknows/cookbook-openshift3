@@ -60,6 +60,9 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_service_type']` -  Defaults to `node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'atomic-openshift' : 'origin`.
 * `node['cookbook-openshift3']['registry_persistent_volume']` -  Defaults to ``.
 * `node['cookbook-openshift3']['yum_repositories']` -  Defaults to `node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? %w() : [{ 'name' => 'centos-openshift-origin', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin/', 'gpgcheck' => false }]`.
+* `node['cookbook-openshift3']['openshift_http_proxy']` -  Defaults to `""`.
+* `node['cookbook-openshift3']['openshift_https_proxy']` -  Defaults to `""`.
+* `node['cookbook-openshift3']['openshift_no_proxy']` -  Defaults to `""`.
 * `node['cookbook-openshift3']['openshift_data_dir']` -  Defaults to `/var/lib/origin`.
 * `node['cookbook-openshift3']['openshift_common_base_dir']` -  Defaults to `/etc/origin`.
 * `node['cookbook-openshift3']['openshift_common_master_dir']` -  Defaults to `/etc/origin`.
