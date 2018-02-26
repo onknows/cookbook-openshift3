@@ -44,9 +44,10 @@ controllerConfig:
 <%- end -%>
 controllers: '*'
 corsAllowedOrigins:
+  # anchor with start (\A) and end (\z) of the string, make the check case insensitive ((?i)) and escape hostname
 <%- @erb_corsAllowedOrigins.each do |origin| -%>
 <% if ! origin.to_s.empty? %>
-  - <%= origin %>
+  - (?i)//<%= origin %>(:|\z)
 <%- end -%>
 <% end -%>
 <% if @standalone_registry%>
