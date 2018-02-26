@@ -215,7 +215,7 @@ projectConfig:
 routingConfig:
   subdomain: "<%= node['cookbook-openshift3']['openshift_master_router_subdomain'] %>"
 serviceAccountConfig:
-  limitSecretReferences: False
+  limitSecretReferences: <%= node['cookbook-openshift3']['openshift_master_saconfig_limitsecretreferences'] %>
   managedNames:
 <% node['cookbook-openshift3']['openshift_master_managed_names_additional'].each do |managed_name| %>
   - <%= managed_name %>

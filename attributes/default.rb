@@ -133,6 +133,7 @@ default['cookbook-openshift3']['openshift_master_logging_public_url'] = nil
 default['cookbook-openshift3']['openshift_master_router_subdomain'] = 'cloudapps.domain.local'
 default['cookbook-openshift3']['openshift_master_sdn_cluster_network_cidr'] = '10.128.0.0/14'
 default['cookbook-openshift3']['openshift_master_sdn_host_subnet_length'] = '9'
+default['cookbook-openshift3']['openshift_master_saconfig_limitsecretreferences'] = false
 default['cookbook-openshift3']['openshift_master_oauth_grant_method'] = 'auto'
 default['cookbook-openshift3']['openshift_master_session_max_seconds'] = '3600'
 default['cookbook-openshift3']['openshift_master_session_name'] = 'ssn'
