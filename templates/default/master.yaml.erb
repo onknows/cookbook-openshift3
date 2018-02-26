@@ -172,7 +172,7 @@ masterClients:
     qps: 200
 <%- end -%>
   externalKubernetesKubeConfig: ""
-  <% if @ose_major_version.split('.')[1].to_i >= 3 %>
+<% if @ose_major_version.split('.')[1].to_i >= 3 %>
   openshiftLoopbackClientConnectionOverrides:
     acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
     contentType: application/vnd.kubernetes.protobuf
@@ -184,6 +184,11 @@ masterPublicURL: <%= node['cookbook-openshift3']['openshift_master_public_api_ur
 networkConfig:
   clusterNetworkCIDR: <%= node['cookbook-openshift3']['openshift_master_sdn_cluster_network_cidr'] %>
   hostSubnetLength: <%= node['cookbook-openshift3']['openshift_master_sdn_host_subnet_length'] %>
+<% if @ose_major_version.split('.')[1].to_i >= 7 %>
+  clusterNetworks: 
+  - cidr: <%= node['cookbook-openshift3']['openshift_master_sdn_cluster_network_cidr'] %>
+    hostSubnetLength: <%= node['cookbook-openshift3']['openshift_master_sdn_host_subnet_length'] %>
+<%- end -%>
   networkPluginName: <%= node['cookbook-openshift3']['openshift_common_sdn_network_plugin_name'] %>
 # serviceNetworkCIDR must match kubernetesMasterConfig.servicesSubnet
   serviceNetworkCIDR: <%= node['cookbook-openshift3']['openshift_common_portal_net'] %>
