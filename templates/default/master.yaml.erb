@@ -32,11 +32,10 @@ assetConfig:
 <% end -%>
 auditConfig:
   enabled: <%= node['cookbook-openshift3']['openshift_master_auditconfig'] %>
-<% if node['cookbook-openshift3']['openshift_HA'] %>
-controllerLeaseTTL: <%= node['cookbook-openshift3']['openshift_master_controller_lease_ttl'] %>
-<% end -%>
 <% if @ose_major_version.split('.')[1].to_i >= 3 %>
 controllerConfig:
+  election:
+    lockName: openshift-master-controllers
   serviceServingCert:
     signer:
       certFile: service-signer.crt
