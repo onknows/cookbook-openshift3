@@ -158,7 +158,7 @@ kubernetesMasterConfig:
     keyFile: master.proxy-client.key
   schedulerArguments:
   schedulerConfigFile: <%= node['cookbook-openshift3']['openshift_master_scheduler_conf'] %>
-  servicesNodePortRange: ""
+  servicesNodePortRange: <%= node['cookbook-openshift3']['openshift_node_port_range'] %>
   servicesSubnet: <%= node['cookbook-openshift3']['openshift_common_portal_net'] %>
   staticNodeNames: []
 <%- end -%>
