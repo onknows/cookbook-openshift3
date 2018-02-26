@@ -167,16 +167,16 @@ masterClients:
   externalKubernetesClientConnectionOverrides:
     acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
     contentType: application/vnd.kubernetes.protobuf
-    burst: 400
-    qps: 200
+    burst: <%= node['cookbook-openshift3']['openshift_master_external_ratelimit_burst'] %>
+    qps: <%= node['cookbook-openshift3']['openshift_master_external_ratelimit_qps'] %>
 <%- end -%>
   externalKubernetesKubeConfig: ""
 <% if @ose_major_version.split('.')[1].to_i >= 3 %>
   openshiftLoopbackClientConnectionOverrides:
     acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
     contentType: application/vnd.kubernetes.protobuf
-    burst: 600
-    qps: 300
+    burst: <%= node['cookbook-openshift3']['openshift_master_loopback_ratelimit_burst'] %>
+    qps: <%= node['cookbook-openshift3']['openshift_master_loopback_ratelimit_qps'] %>
 <%- end -%>
   openshiftLoopbackKubeConfig: openshift-master.kubeconfig
 masterPublicURL: <%= node['cookbook-openshift3']['openshift_master_public_api_url'] %>

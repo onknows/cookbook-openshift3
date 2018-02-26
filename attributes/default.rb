@@ -117,6 +117,10 @@ default['cookbook-openshift3']['openshift_master_dynamic_provisioning_enabled'] 
 default['cookbook-openshift3']['openshift_master_disabled_features'] = "['Builder', 'S2IBuilder', 'WebConsole']"
 default['cookbook-openshift3']['openshift_master_embedded_dns'] = true
 default['cookbook-openshift3']['openshift_master_embedded_kube'] = true
+default['cookbook-openshift3']['openshift_master_external_ratelimit_burst'] = 400
+default['cookbook-openshift3']['openshift_master_external_ratelimit_qps'] = 200
+default['cookbook-openshift3']['openshift_master_loopback_ratelimit_burst'] = 600
+default['cookbook-openshift3']['openshift_master_loopback_ratelimit_qps'] = 300
 default['cookbook-openshift3']['openshift_master_debug_level'] = '2'
 default['cookbook-openshift3']['openshift_master_dns_port'] = node['cookbook-openshift3']['deploy_dnsmasq'] == true ? '8053' : '53'
 default['cookbook-openshift3']['openshift_master_image_bulk_imported'] = 5
