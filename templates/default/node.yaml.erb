@@ -22,7 +22,9 @@ kubeletArguments:
 <%- end -%>
 <% @kubelet_args.each_pair do |k, v| %>
   <%= k %>:
-    - "<%= v %>"
+    <%- Array(v).each do |vv| -%>
+    - "<%= vv %>"
+    <%- end -%>
 <%- end -%>
 <% if node['cookbook-openshift3']['openshift_node_cadvisor_port'] %>
   cadvisor-port:

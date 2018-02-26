@@ -143,6 +143,8 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_master_scheduler_conf']` -  Defaults to `#{node['cookbook-openshift3']['openshift_master_config_dir']}/scheduler.json`.
 * `node['cookbook-openshift3']['openshift_master_managed_names_additional']` -  Defaults to `%w()`.
 * `node['cookbook-openshift3']['openshift_master_retain_events']` default to `nil`.
+* `node['cookbook-openshift3']['openshift_master_api_server_args_custom']` default to `{}`.
+* `node['cookbook-openshift3']['openshift_master_controller_args_custom']` default to `{}`.
 * `node['cookbook-openshift3']['openshift_node_config_dir']` -  Defaults to `#{node['cookbook-openshift3']['openshift_common_node_dir']}/node`.
 * `node['cookbook-openshift3']['openshift_node_config_file']` -  Defaults to `#{node['cookbook-openshift3']['openshift_node_config_dir']}/node-config.yaml`.
 * `node['cookbook-openshift3']['openshift_node_min_tls_version']` -  Defaults to `nil`.
@@ -150,6 +152,8 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_node_debug_level']` -  Defaults to `2`.
 * `node['cookbook-openshift3']['openshift_node_docker-storage']` -  Defaults to `{ ... }`.
 * `node['cookbook-openshift3']['openshift_node_generated_configs_dir']` -  Defaults to `/var/www/html/node/generated-configs`.
+* `node['cookbook-openshift3']['openshift_node_kubelet_args_default']` default to `{ 'max-pods' => '250', 'image-gc-high-threshold' => '90', 'image-gc-low-threshold' => '80' }`.
+* `node['cookbook-openshift3']['openshift_node_kubelet_args_custom']` default to `{}`.
 * `node['cookbook-openshift3']['openshift_node_iptables_sync_period']` -  Defaults to `5s`.
 * `node['cookbook-openshift3']['openshift_node_max_pod']` -  Defaults to `40`. (Deprecated use `openshift_node_kubelet_args_custom`)
 * `node['cookbook-openshift3']['openshift_node_sdn_mtu_sdn']` -  Defaults to `1450`.

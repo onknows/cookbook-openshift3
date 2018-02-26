@@ -108,6 +108,12 @@ kubernetesMasterConfig:
   - v1
 <% if @ose_major_version.split('.')[1].to_i >= 3%>
   apiServerArguments:
+<% node['cookbook-openshift3']['openshift_master_api_server_args_custom'].each_pair do |k, v| %>
+    <%= k %>:
+    <%- Array(v).each do |vv| -%>
+    - "<%= vv %>"
+    <%- end -%>
+<%- end -%>
     deserialization-cache-size:
     - "<%= node['cookbook-openshift3']['openshift_master_deserialization_cache_size'] %>"
 <% if node['cookbook-openshift3']['openshift_cloud_provider'] %>
@@ -127,7 +133,13 @@ kubernetesMasterConfig:
     - "<%= node['cookbook-openshift3']['openshift_master_retain_events'] %>"    
 <%- end -%>
 <%- end -%>
-  controllerArguments: 
+  controllerArguments:
+<% node['cookbook-openshift3']['openshift_master_controller_args_custom'].each_pair do |k, v| %>
+    <%= k %>:
+    <%- Array(v).each do |vv| -%>
+    - "<%= vv %>"
+    <%- end -%>
+<%- end -%>
 <% if node['cookbook-openshift3']['openshift_cloud_provider'] %>
     cloud-provider:
     - <%= node['cookbook-openshift3']['openshift_cloud_provider'] %>
