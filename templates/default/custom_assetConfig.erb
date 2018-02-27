@@ -11,5 +11,9 @@
   extensions:
     - name: images
       sourceDirectory: <%= node['cookbook-openshift3']['openshift_master_asset_config']['extensions'] %>
+  <% if @ose_major_version.split('.')[1].to_i >= 6 %>
+  extensionScripts:
+    - /etc/origin/master/openshift-ansible-catalog-console.js
+  <% end %>
   <% end %>
   <% end %>

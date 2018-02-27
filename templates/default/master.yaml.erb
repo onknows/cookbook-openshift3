@@ -1,3 +1,20 @@
+<% if @ose_major_version.split('.')[1].to_i >= 6 %>
+aggregatorConfig:
+  proxyClientInfo:
+    certFile: aggregator-front-proxy.crt
+    keyFile: aggregator-front-proxy.key
+authConfig:
+  requestHeader:
+    clientCA: front-proxy-ca.crt
+    clientCommonNames:
+      - aggregator-front-proxy
+    usernameHeaders:
+      - X-Remote-User
+    groupHeaders:
+      - X-Remote-Group
+    extraHeaderPrefixes:
+      - X-Remote-Extra-
+<%- end -%>
 <%= render "admission_plugin_config.erb" , :local => false -%>
 apiLevels:
 - v1
@@ -111,8 +128,12 @@ kubernetesMasterConfig:
 <% node['cookbook-openshift3']['openshift_master_api_server_args_custom'].each_pair do |k, v| %>
     <%= k %>:
     <%- Array(v).each do |vv| -%>
-    - "<%= vv %>"
+      - "<%= vv %>"
     <%- end -%>
+<% if @ose_major_version.split('.')[1].to_i >= 6 %>
+    runtime-config:
+      - apis/settings.k8s.io/v1alpha1=true
+<%- end -%>
 <%- end -%>
     deserialization-cache-size:
     - "<%= node['cookbook-openshift3']['openshift_master_deserialization_cache_size'] %>"

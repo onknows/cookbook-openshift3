@@ -214,7 +214,7 @@ if is_certificate_server
     certs = case ose_major_version.split('.')[1].to_i
             when 3..4
               node['cookbook-openshift3']['openshift_master_certs'] + %w(openshift-registry.crt openshift-registry.key openshift-registry.kubeconfig openshift-router.crt openshift-router.key openshift-router.kubeconfig service-signer.crt service-signer.key)
-            when 5..6
+            when 5..7
               node['cookbook-openshift3']['openshift_master_certs'] + %w(service-signer.crt service-signer.key)
             else
               node['cookbook-openshift3']['openshift_master_certs']
