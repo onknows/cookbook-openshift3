@@ -52,13 +52,6 @@ if is_certificate_server
     only_if { File.exist? "#{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters/ca.crt" }
   end
 
-  %w(aggregator-front-proxy.crt aggregator-front-proxy.key aggregator-front-proxy.kubeconfig).each do |aggregator_file|
-    remote_file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{aggregator_file}" do
-      source "file://#{Chef::Config[:file_cache_path]}/certtemp/#{aggregator_file}"
-      not_if { ::File.file?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{aggregator_file}") }
-    end
-  end
-
   execute 'Create a tarball of the aggregator certs' do
     command "tar czvf #{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters.tgz -C #{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters . "
     creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters.tgz"
