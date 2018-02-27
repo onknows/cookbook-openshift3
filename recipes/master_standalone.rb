@@ -90,7 +90,7 @@ if node['cookbook-openshift3']['oauth_Identities'].include? 'HTPasswdPasswordIde
   end
 end
 
-include_recipe 'cookbook-openshift3::wire_aggregator' if { ose_major_version.split('.')[1].to_i >= 6 }
+include_recipe 'cookbook-openshift3::wire_aggregator' if ose_major_version.split('.')[1].to_i >= 6
 
 openshift_create_master 'Create master configuration file' do
   named_certificate node['cookbook-openshift3']['openshift_master_named_certificates']
