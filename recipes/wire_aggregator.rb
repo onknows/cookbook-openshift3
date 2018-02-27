@@ -62,28 +62,26 @@ if is_certificate_server
   end
 end
 
-unless is_certificate_server
-  remote_file 'Retrieve the aggregator certs' do
-    path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/wire_aggregator-masters.tgz.enc"
-    source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/master/generated_certs/wire_aggregator-masters.tgz.enc"
-    action :create_if_missing
-    notifies :run, 'execute[Un-encrypt aggregator tgz files]', :immediately
-    notifies :run, 'execute[Extract aggregator to Master folder]', :immediately
-    retries 12
-    retry_delay 5
-  end
+remote_file 'Retrieve the aggregator certs' do
+  path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/wire_aggregator-masters.tgz.enc"
+  source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/master/generated_certs/wire_aggregator-masters.tgz.enc"
+  action :create_if_missing
+  notifies :run, 'execute[Un-encrypt aggregator tgz files]', :immediately
+  notifies :run, 'execute[Extract aggregator to Master folder]', :immediately
+  retries 12
+  retry_delay 5
+end
 
-  execute 'Un-encrypt aggregator tgz files' do
-    command "openssl enc -d -aes-256-cbc -in wire_aggregator-masters.tgz.enc -out wire_aggregator-masters.tgz -k '#{encrypted_file_password}'"
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    action :nothing
-  end
+execute 'Un-encrypt aggregator tgz files' do
+  command "openssl enc -d -aes-256-cbc -in wire_aggregator-masters.tgz.enc -out wire_aggregator-masters.tgz -k '#{encrypted_file_password}'"
+  cwd node['cookbook-openshift3']['openshift_master_config_dir']
+  action :nothing
+end
 
-  execute 'Extract master aggregator to Master folder' do
-    command "tar xzf wire_aggregator-masters.tgz"
-    cwd node['cookbook-openshift3']['openshift_master_config_dir']
-    action :nothing
-  end
+execute 'Extract master aggregator to Master folder' do
+  command "tar xzf wire_aggregator-masters.tgz"
+  cwd node['cookbook-openshift3']['openshift_master_config_dir']
+  action :nothing
 end
 
 file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-ansible-catalog-console.js" do
