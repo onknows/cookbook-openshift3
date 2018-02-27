@@ -117,9 +117,14 @@ default['cookbook-openshift3']['openshift_master_dynamic_provisioning_enabled'] 
 default['cookbook-openshift3']['openshift_master_disabled_features'] = "['Builder', 'S2IBuilder', 'WebConsole']"
 default['cookbook-openshift3']['openshift_master_embedded_dns'] = true
 default['cookbook-openshift3']['openshift_master_embedded_kube'] = true
+default['cookbook-openshift3']['openshift_master_external_ratelimit_burst'] = 400
+default['cookbook-openshift3']['openshift_master_external_ratelimit_qps'] = 200
+default['cookbook-openshift3']['openshift_master_loopback_ratelimit_burst'] = 600
+default['cookbook-openshift3']['openshift_master_loopback_ratelimit_qps'] = 300
 default['cookbook-openshift3']['openshift_master_debug_level'] = '2'
 default['cookbook-openshift3']['openshift_master_dns_port'] = node['cookbook-openshift3']['deploy_dnsmasq'] == true ? '8053' : '53'
 default['cookbook-openshift3']['openshift_master_image_bulk_imported'] = 5
+default['cookbook-openshift3']['openshift_master_image_config_latest'] = false
 default['cookbook-openshift3']['openshift_master_deserialization_cache_size'] = '50000'
 default['cookbook-openshift3']['openshift_master_pod_eviction_timeout'] = ''
 default['cookbook-openshift3']['openshift_master_project_request_message'] = ''
@@ -128,6 +133,7 @@ default['cookbook-openshift3']['openshift_master_logging_public_url'] = nil
 default['cookbook-openshift3']['openshift_master_router_subdomain'] = 'cloudapps.domain.local'
 default['cookbook-openshift3']['openshift_master_sdn_cluster_network_cidr'] = '10.128.0.0/14'
 default['cookbook-openshift3']['openshift_master_sdn_host_subnet_length'] = '9'
+default['cookbook-openshift3']['openshift_master_saconfig_limitsecretreferences'] = false
 default['cookbook-openshift3']['openshift_master_oauth_grant_method'] = 'auto'
 default['cookbook-openshift3']['openshift_master_session_max_seconds'] = '3600'
 default['cookbook-openshift3']['openshift_master_session_name'] = 'ssn'
@@ -164,9 +170,11 @@ default['cookbook-openshift3']['openshift_node_generated_configs_dir'] = '/var/w
 default['cookbook-openshift3']['openshift_node_kubelet_args_default'] = { 'max-pods' => '250', 'image-gc-high-threshold' => '90', 'image-gc-low-threshold' => '80' }
 default['cookbook-openshift3']['openshift_node_kubelet_args_custom'] = {}
 default['cookbook-openshift3']['openshift_node_iptables_sync_period'] = '30s'
+default['cookbook-openshift3']['openshift_node_port_range'] = ''
 default['cookbook-openshift3']['openshift_node_sdn_mtu_sdn'] = '1450'
 # Deprecated options (Use openshift_node_kubelet_args_custom instead)
 default['cookbook-openshift3']['openshift_node_max_pod'] = ''
+default['cookbook-openshift3']['openshift_node_image_config_latest'] = false
 default['cookbook-openshift3']['openshift_node_minimum_container_ttl_duration'] = ''
 default['cookbook-openshift3']['openshift_node_maximum_dead_containers_per_container'] = ''
 default['cookbook-openshift3']['openshift_node_maximum_dead_containers'] = ''

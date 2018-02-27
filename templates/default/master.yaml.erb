@@ -32,11 +32,10 @@ assetConfig:
 <% end -%>
 auditConfig:
   enabled: <%= node['cookbook-openshift3']['openshift_master_auditconfig'] %>
-<% if node['cookbook-openshift3']['openshift_HA'] %>
-controllerLeaseTTL: <%= node['cookbook-openshift3']['openshift_master_controller_lease_ttl'] %>
-<% end -%>
 <% if @ose_major_version.split('.')[1].to_i >= 3 %>
 controllerConfig:
+  election:
+    lockName: openshift-master-controllers
   serviceServingCert:
     signer:
       certFile: service-signer.crt
@@ -44,9 +43,10 @@ controllerConfig:
 <%- end -%>
 controllers: '*'
 corsAllowedOrigins:
+  # anchor with start (\A) and end (\z) of the string, make the check case insensitive ((?i)) and escape hostname
 <%- @erb_corsAllowedOrigins.each do |origin| -%>
 <% if ! origin.to_s.empty? %>
-  - <%= origin %>
+  - (?i)//<%= origin %>(:|\z)
 <%- end -%>
 <% end -%>
 <% if @standalone_registry%>
@@ -93,7 +93,7 @@ etcdStorageConfig:
   openShiftStorageVersion: v1
 imageConfig:
   format: <%= node['cookbook-openshift3']['openshift_common_registry_url'] %>
-  latest: false
+  latest: <%= node['cookbook-openshift3']['openshift_master_image_config_latest'] %>
 imagePolicyConfig:
   maxImagesBulkImportedPerRepository: <%= node['cookbook-openshift3']['openshift_master_image_bulk_imported'] %>
 kind: MasterConfig
@@ -158,7 +158,7 @@ kubernetesMasterConfig:
     keyFile: master.proxy-client.key
   schedulerArguments:
   schedulerConfigFile: <%= node['cookbook-openshift3']['openshift_master_scheduler_conf'] %>
-  servicesNodePortRange: ""
+  servicesNodePortRange: <%= node['cookbook-openshift3']['openshift_node_port_range'] %>
   servicesSubnet: <%= node['cookbook-openshift3']['openshift_common_portal_net'] %>
   staticNodeNames: []
 <%- end -%>
@@ -167,22 +167,27 @@ masterClients:
   externalKubernetesClientConnectionOverrides:
     acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
     contentType: application/vnd.kubernetes.protobuf
-    burst: 400
-    qps: 200
+    burst: <%= node['cookbook-openshift3']['openshift_master_external_ratelimit_burst'] %>
+    qps: <%= node['cookbook-openshift3']['openshift_master_external_ratelimit_qps'] %>
 <%- end -%>
   externalKubernetesKubeConfig: ""
-  <% if @ose_major_version.split('.')[1].to_i >= 3 %>
+<% if @ose_major_version.split('.')[1].to_i >= 3 %>
   openshiftLoopbackClientConnectionOverrides:
     acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
     contentType: application/vnd.kubernetes.protobuf
-    burst: 600
-    qps: 300
+    burst: <%= node['cookbook-openshift3']['openshift_master_loopback_ratelimit_burst'] %>
+    qps: <%= node['cookbook-openshift3']['openshift_master_loopback_ratelimit_qps'] %>
 <%- end -%>
   openshiftLoopbackKubeConfig: openshift-master.kubeconfig
 masterPublicURL: <%= node['cookbook-openshift3']['openshift_master_public_api_url'] %>
 networkConfig:
   clusterNetworkCIDR: <%= node['cookbook-openshift3']['openshift_master_sdn_cluster_network_cidr'] %>
   hostSubnetLength: <%= node['cookbook-openshift3']['openshift_master_sdn_host_subnet_length'] %>
+<% if @ose_major_version.split('.')[1].to_i >= 7 %>
+  clusterNetworks: 
+  - cidr: <%= node['cookbook-openshift3']['openshift_master_sdn_cluster_network_cidr'] %>
+    hostSubnetLength: <%= node['cookbook-openshift3']['openshift_master_sdn_host_subnet_length'] %>
+<%- end -%>
   networkPluginName: <%= node['cookbook-openshift3']['openshift_common_sdn_network_plugin_name'] %>
 # serviceNetworkCIDR must match kubernetesMasterConfig.servicesSubnet
   serviceNetworkCIDR: <%= node['cookbook-openshift3']['openshift_common_portal_net'] %>
@@ -210,7 +215,7 @@ projectConfig:
 routingConfig:
   subdomain: "<%= node['cookbook-openshift3']['openshift_master_router_subdomain'] %>"
 serviceAccountConfig:
-  limitSecretReferences: False
+  limitSecretReferences: <%= node['cookbook-openshift3']['openshift_master_saconfig_limitsecretreferences'] %>
   managedNames:
 <% node['cookbook-openshift3']['openshift_master_managed_names_additional'].each do |managed_name| %>
   - <%= managed_name %>
