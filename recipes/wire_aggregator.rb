@@ -10,6 +10,13 @@ master_servers = server_info.master_servers
 certificate_server = server_info.certificate_server
 is_certificate_server = server_info.on_certificate_server?
 
+if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
+  secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
+  encrypted_file_password = Chef::EncryptedDataBagItem.load(node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'], node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name'], secret_file)
+else
+  encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
+end
+
 if is_certificate_server
   directory "#{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters" do
     mode '0755'
