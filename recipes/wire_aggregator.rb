@@ -78,7 +78,7 @@ execute 'Un-encrypt aggregator tgz files' do
   action :nothing
 end
 
-execute 'Extract master aggregator to Master folder' do
+execute 'Extract aggregator to Master folder' do
   command "tar xzf wire_aggregator-masters.tgz"
   cwd node['cookbook-openshift3']['openshift_master_config_dir']
   action :nothing
