@@ -37,7 +37,7 @@ if is_certificate_server
   # Generate the aggregator kubeconfig and delete the ca.crt before creating archive for masters
   
   execute 'Create Master api-client config for Aggregator' do
-    command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-api-client-config \
+    command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} create-api-client-config \
             --certificate-authority=#{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters/front-proxy-ca.crt \
             --signer-cert=#{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters/front-proxy-ca.crt \
             --signer-key=#{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters/front-proxy-ca.key \
