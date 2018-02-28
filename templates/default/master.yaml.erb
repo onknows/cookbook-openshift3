@@ -21,6 +21,10 @@ apiLevels:
 apiVersion: v1
 assetConfig:
 <%= render "custom_assetConfig.erb" , :local => false -%>
+  <% if @ose_major_version.split('.')[1].to_i >= 6 %>
+  extensionScripts:
+    - /etc/origin/master/openshift-ansible-catalog-console.js
+  <% end %>
   logoutURL: ""
   masterPublicURL: <%= node['cookbook-openshift3']['openshift_master_public_api_url'] %>
   publicURL: <%= node['cookbook-openshift3']['openshift_master_console_url'] %>/
