@@ -214,7 +214,7 @@ if is_certificate_server
     certs = case ose_major_version.split('.')[1].to_i
             when 3..4
               node['cookbook-openshift3']['openshift_master_certs'] + %w(openshift-registry.crt openshift-registry.key openshift-registry.kubeconfig openshift-router.crt openshift-router.key openshift-router.kubeconfig service-signer.crt service-signer.key)
-            when 5..6
+            when 5..7
               node['cookbook-openshift3']['openshift_master_certs'] + %w(service-signer.crt service-signer.key)
             else
               node['cookbook-openshift3']['openshift_master_certs']
@@ -338,6 +338,8 @@ template node['cookbook-openshift3']['openshift_master_controllers_sysconfig'] d
   variables(sysconfig_vars)
   notifies :restart, 'service[Restart Controller]', :immediately
 end
+
+include_recipe 'cookbook-openshift3::wire_aggregator' if ose_major_version.split('.')[1].to_i >= 6
 
 openshift_create_master 'Create master configuration file' do
   named_certificate node['cookbook-openshift3']['openshift_master_named_certificates']
