@@ -153,5 +153,5 @@ ruby_block 'Change HTTPD port xfer' do
   notifies :restart, 'service[httpd]', :immediately
 end
 
-include_recipe 'cookbook-openshift3::certificate_server'
+include_recipe 'cookbook-openshift3::certificate_server' unless node['cookbook-openshift3']['upgrade']
 include_recipe 'cookbook-openshift3::cloud_provider'

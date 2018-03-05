@@ -161,7 +161,7 @@ if is_node_server
     block do
       Mixlib::ShellOut.new('update-ca-trust').run_command
     end
-    notifies :restart, 'service[docker]', :immediately
+    notifies :restart, 'service[docker]', :immediately if node['cookbook-openshift3']['deploy_containerized']
     notifies :run, 'execute[Wait for 30 seconds for docker services to come up]', :immediately
     action :nothing
   end

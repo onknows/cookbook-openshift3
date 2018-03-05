@@ -87,5 +87,5 @@ if is_master_server || is_certificate_server
 end
 
 if is_certificate_server
-  include_recipe 'cookbook-openshift3::nodes_certificates'
+  include_recipe 'cookbook-openshift3::nodes_certificates' unless node['cookbook-openshift3']['upgrade']
 end

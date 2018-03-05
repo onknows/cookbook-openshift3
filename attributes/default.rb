@@ -16,6 +16,7 @@ default['cookbook-openshift3']['node_servers'] = []
 default['cookbook-openshift3']['lb_servers'] = []
 default['cookbook-openshift3']['certificate_server'] = {}
 default['cookbook-openshift3']['openshift_push_via_dns'] = false
+default['cookbook-openshift3']['upgrade'] = false
 
 if node['cookbook-openshift3']['openshift_HA']
   default['cookbook-openshift3']['openshift_common_api_hostname'] = node['cookbook-openshift3']['openshift_cluster_name']
@@ -220,7 +221,7 @@ default['cookbook-openshift3']['etcd_ca_exts_server'] = 'etcd_v3_ca_server'
 
 default['cookbook-openshift3']['etcd_initial_cluster_state'] = 'new'
 default['cookbook-openshift3']['etcd_initial_cluster_token'] = 'etcd-cluster-1'
-default['cookbook-openshift3']['etcd_data_dir'] = '/var/lib/etcd/'
+default['cookbook-openshift3']['etcd_data_dir'] = '/var/lib/etcd'
 default['cookbook-openshift3']['etcd_default_days'] = '365'
 
 default['cookbook-openshift3']['etcd_client_port'] = '2379'
