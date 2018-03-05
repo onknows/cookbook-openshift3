@@ -130,8 +130,8 @@ if is_master_server && is_first_master
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
             migrate storage --include=* --confirm"
-    end
   end
+
   log 'Reconcile Cluster Roles & Cluster Role Bindings [COMPLETED]' do
     level :info
   end
@@ -182,12 +182,6 @@ if is_master_server && is_first_master
     only_if do
       node['cookbook-openshift3']['openshift_hosted_manage_registry']
     end
-  end
-
-  execute 'Upgrade job storage' do
-    command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
-            --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-            migrate storage --include=jobs --confirm"
   end
 
   log 'Update hosted deployment(s) to current version [COMPLETED]' do
