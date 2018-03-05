@@ -126,6 +126,12 @@ if is_master_server && is_first_master
             policy reconcile-sccs --confirm --additive-only=true"
   end  
 
+  execute 'Remove shared-resource-viewer protection before upgrade' do
+    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
+            --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
+            annotate role shared-resource-viewer openshift.io/reconcile-protect- -n openshift"
+  end
+
   execute 'Migrate storage post policy reconciliation' do
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
