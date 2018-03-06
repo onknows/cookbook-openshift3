@@ -58,10 +58,7 @@ end
 
 if is_first_etcd
   execute 'Migrate etcd data' do
-    command "/usr/bin/etcdctl migrate --data-dir=#{node['cookbook-openshift3']['etcd_data_dir']} > #{Chef::Config[:file_cache_path]}/etcd_migration1"
-    environment(
-      'ETCDCTL_API' => 3,
-    )
+    command "ETCDCTL_API=3 /usr/bin/etcdctl migrate --data-dir=#{node['cookbook-openshift3']['etcd_data_dir']} > #{Chef::Config[:file_cache_path]}/etcd_migration1"
   end
 
   execute 'Check the etcd v2 data are correctly migrated' do
@@ -74,7 +71,7 @@ if is_first_etcd
       f = Chef::Util::FileEdit.new("#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd.conf")
       f.insert_line_if_no_match(%r{^ETCD_FORCE_NEW_CLUSTER}, 'ETCD_FORCE_NEW_CLUSTER=true')
       f.write_file
-    notifies :stop, 'service[etcd-service]', :immediately
+    notifies :start, 'service[etcd-service]', :immediately
     end
   only_if { ::File.exists?("#{Chef::Config[:file_cache_path]}/etcd_migration2") }
   end
