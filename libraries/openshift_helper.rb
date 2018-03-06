@@ -28,6 +28,10 @@ module OpenShiftHelper
       server_method? ? Chef::Search::Query.new.search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_master_duty")[0][0] : master_servers.first # ~FC001, ~FC019
     end
 
+    def first_etcd
+      server_method? ? Chef::Search::Query.new.search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_first_etcd_duty")[0][0] : etcd_servers.first # ~FC001, ~FC019
+    end
+
     def certificate_server
       if server_method?
         certificate_server = Chef::Search::Query.new.search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0][0] # ~FC001, ~FC019
@@ -55,6 +59,10 @@ module OpenShiftHelper
 
     def on_first_master?
       first_master['fqdn'] == node['fqdn']
+    end
+
+    def on_first_etcd?
+      first_etcd['fqdn'] == node['fqdn']
     end
 
     def on_certificate_server?

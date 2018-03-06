@@ -17,7 +17,6 @@ hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 etcd_servers = server_info.etcd_servers
 certificate_server = server_info.certificate_server
-etcd_remove_servers = node['cookbook-openshift3']['etcd_remove_servers']
 is_certificate_server = server_info.on_certificate_server?
 is_etcd_server = server_info.on_etcd_server?
 is_master_server = server_info.on_master_server?
