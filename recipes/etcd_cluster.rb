@@ -211,17 +211,13 @@ if is_etcd_server
   template "#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd.conf" do
     source 'etcd.conf.erb'
     notifies :restart, 'service[etcd-service]', :immediately
+    notifies :enable, 'service[etcd-service]', :immediately
     variables lazy {
       {
         etcd_servers: etcd_servers,
         initial_cluster_state: etcd_servers.find { |etcd_node| etcd_node['fqdn'] == node['fqdn'] }.key?('new_node') ? 'existing' : node['cookbook-openshift3']['etcd_initial_cluster_state'],
       }
     }
-  end
-
-  service 'etcd-service' do
-    service_name node['cookbook-openshift3']['etcd_service_name']
-    action [:start, :enable]
   end
 
   cookbook_file '/etc/profile.d/etcdctl.sh' do

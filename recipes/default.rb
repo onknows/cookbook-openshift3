@@ -55,4 +55,9 @@ service 'Restart Node' do
   only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-node"
 end
 
+service 'etcd-service' do
+  service_name node['cookbook-openshift3']['etcd_service_name']
+  action :nothing
+end
+
 include_recipe 'cookbook-openshift3::commons' unless node['cookbook-openshift3']['upgrade']
