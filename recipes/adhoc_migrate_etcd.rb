@@ -33,15 +33,13 @@ if is_first_etcd
 
   return unless Dir["#{node['cookbook-openshift3']['etcd_data_dir']}/member/snap/*.snap"].any?
 
-  execute 'Check cluster health' do
-    command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -w 'cluster is healthy' && touch #{Chef::Config[:file_cache_path]}/etcd_migration0"
-  end
-  
-  log 'Assess cluster health [Abort if not healthy]' do
-    level :info
+  execute 'Check if there are any v3 data [Abort if at least one v3 key]' do
+    command "[[ $(ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get '.' --from-key --keys-only -w simple | wc -l) -gt 1 ]] && exit 1 || true"
   end
 
-  return unless Dir["#{Chef::Config[:file_cache_path]}/etcd_migration0"].any?
+  execute 'Check cluster health' do
+    command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -w 'cluster is healthy'"
+  end
 end
 
 if is_master_server
@@ -100,5 +98,17 @@ if is_first_etcd
     end
     notifies :restart, 'service[etcd-service]', :immediately
     only_if { ::File.exists?("#{Chef::Config[:file_cache_path]}/etcd_migration2") }
+  end
+end
+
+if is_first_etcd
+  bash 'Add TTLs on the first master' do 
+    code <<-EOH
+      ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 --ttl-keys-prefix /kubernetes.io/events --lease-duration 1h
+      ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 --ttl-keys-prefix /kubernetes.io/masterleases --lease-duration 10s
+      ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 --ttl-keys-prefix /openshift.io/oauth/accesstokens --lease-duration 86400s
+      ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 --ttl-keys-prefix /openshift.io/oauth/authorizetokens --lease-duration 500s
+      ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 --ttl-keys-prefix /openshift.io/leases/controllers --lease-duration 30s
+    EOH
   end
 end
