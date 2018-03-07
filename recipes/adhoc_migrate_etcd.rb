@@ -52,7 +52,7 @@ end
 if is_etcd_server
   execute 'Generate etcd backup before migration' do
     command "etcdctl backup --data-dir=#{node['cookbook-openshift3']['etcd_data_dir']} --backup-dir=#{node['cookbook-openshift3']['etcd_data_dir']}-pre-migration-v3"
-    not_if { ::File.directory?("#{node['cookbook-openshift3']['etcd_data_dir']}-pre-upgrade36") }
+    not_if { ::File.directory?("#{node['cookbook-openshift3']['etcd_data_dir']}-pre-migration-v3") }
     notifies :run, 'execute[Copy etcd v3 data store]', :immediately
   end
 
