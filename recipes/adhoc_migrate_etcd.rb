@@ -7,6 +7,7 @@
 node.force_override['cookbook-openshift3']['upgrade'] = true
 node.force_override['cookbook-openshift3']['ose_major_version'] = '3.6'
 node.force_override['cookbook-openshift3']['ose_version'] = '3.6.1-1.0.008f2d5'
+node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v3.6.1'
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 first_etcd = server_info.first_etcd
