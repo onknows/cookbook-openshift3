@@ -67,7 +67,7 @@ if is_master_server
   log 'Upgrade for MASTERS [STARTED]' do
     level :info
   end
-  
+
   include_recipe 'cookbook-openshift3::certificate_server' if node['cookbook-openshift3']['deploy_containerized']
 
   if node['cookbook-openshift3']['openshift_HA']
