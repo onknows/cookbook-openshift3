@@ -6,6 +6,7 @@
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 etcd_servers = server_info.etcd_servers
+ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
 
 if node['cookbook-openshift3']['ose_version']
   if node['cookbook-openshift3']['ose_version'].to_f.round(1) != node['cookbook-openshift3']['ose_major_version'].to_f.round(1)
@@ -23,6 +24,10 @@ end
 
 if !node['cookbook-openshift3']['openshift_HA'] && node['cookbook-openshift3']['certificate_server'] != {}
   Chef::Application.fatal!('Separate certificate server and master standalone not supported.')
+end
+
+if !node['cookbook-openshift3']['openshift_HA'] && ose_major_version.split('.')[1].to_i > 6
+  Chef::Application.fatal!('Master standalone is not supported with 3.7+')
 end
 
 if node['cookbook-openshift3']['openshift_hosted_cluster_metrics']

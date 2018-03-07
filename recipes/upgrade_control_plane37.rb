@@ -195,8 +195,7 @@ if is_master_server && is_first_master
       "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
       --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
       patch dc/router -n #{node['cookbook-openshift3']['openshift_hosted_router_namespace']} -p \
-      \'{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"router\",\"image\":\"#{node.run_state['router_image'].gsub(/:v.+/, ":#{hosted_upgrade_version}")}\",\"livenessProbe\":{\"tcpSocket\":null,\"httpGet\":{\"path\": \"/healthz\", \"port\": 1936, \"host\": \"localhost\", \"scheme\": \"HTTP\"},\"initialDelaySeconds\":10,\"timeoutSeconds\":1}}]}}}}' \
-      --api-version=v1"
+      \'{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"router\",\"image\":\"#{node.run_state['router_image'].gsub(/:v.+/, ":#{hosted_upgrade_version}")}\",\"livenessProbe\":{\"tcpSocket\":null,\"httpGet\":{\"path\": \"/healthz\", \"port\": 1936, \"host\": \"localhost\", \"scheme\": \"HTTP\"},\"initialDelaySeconds\":10,\"timeoutSeconds\":1}}]}}}}'"
     }
     only_if do
       node['cookbook-openshift3']['openshift_hosted_manage_router']
@@ -208,8 +207,7 @@ if is_master_server && is_first_master
       "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
       --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
       patch dc/docker-registry -n #{node['cookbook-openshift3']['openshift_hosted_registry_namespace']} -p \
-      \'{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"registry\",\"image\":\"#{node.run_state['registry_image'].gsub(/:v.+/, ":#{hosted_upgrade_version}")}\"}]}}}}' \
-      --api-version=v1"
+      \'{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"registry\",\"image\":\"#{node.run_state['registry_image'].gsub(/:v.+/, ":#{hosted_upgrade_version}")}\"}]}}}}'"
     }
     only_if do
       node['cookbook-openshift3']['openshift_hosted_manage_registry']
