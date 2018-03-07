@@ -20,6 +20,12 @@ is_first_etcd = server_info.on_first_etcd?
 
 include_recipe 'cookbook-openshift3'
 
+Dir["#{Chef::Config[:file_cache_path]}/etcd_migration*"].each do |path|
+  file ::File.expand_path(path) do
+    action :delete
+  end
+end
+
 if is_first_etcd
   log 'Check if there is at least one v2 snapshot [Abort if not found]' do
     level :info
@@ -71,8 +77,18 @@ if is_first_etcd
       f = Chef::Util::FileEdit.new("#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd.conf")
       f.insert_line_if_no_match(%r{^ETCD_FORCE_NEW_CLUSTER}, 'ETCD_FORCE_NEW_CLUSTER=true')
       f.write_file
-    notifies :start, 'service[etcd-service]', :immediately
     end
-  only_if { ::File.exists?("#{Chef::Config[:file_cache_path]}/etcd_migration2") }
+    notifies :start, 'service[etcd-service]', :immediately
+    only_if { ::File.exists?("#{Chef::Config[:file_cache_path]}/etcd_migration2") }
+  end
+
+  ruby_block 'Unset ETCD_FORCE_NEW_CLUSTER=true on first etcd host' do
+    block do
+      f = Chef::Util::FileEdit.new("#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd.conf")
+      f.search_file_delete_line(%r{^ETCD_FORCE_NEW_CLUSTER})
+      f.write_file
+    end
+    notifies :restart, 'service[etcd-service]', :immediately
+    only_if { ::File.exists?("#{Chef::Config[:file_cache_path]}/etcd_migration2") }
   end
 end
