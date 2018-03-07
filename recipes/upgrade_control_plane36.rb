@@ -11,6 +11,7 @@
 node.force_override['cookbook-openshift3']['upgrade'] = true
 node.force_override['cookbook-openshift3']['ose_major_version'] = '3.7'
 node.force_override['cookbook-openshift3']['ose_version'] = '3.6.1-1.0.008f2d5'
+node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v3.6.1'
 
 hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : 'v' + node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]
 
@@ -66,6 +67,8 @@ if is_master_server
     level :info
   end
 
+  include_recipe 'cookbook-openshift3::certificate_server' if node['cookbook-openshift3']['deploy_containerized']
+
   if node['cookbook-openshift3']['openshift_HA']
     include_recipe 'cookbook-openshift3::master_cluster'
   else
@@ -81,6 +84,7 @@ if is_master_server
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
     notifies :restart, 'service[openvswitch]', :immediately
+    not_if { node['cookbook-openshift3']['deploy_containerized'] }
   end
 
   log 'Upgrade for MASTERS [COMPLETED]' do
