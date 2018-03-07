@@ -60,4 +60,4 @@ service 'etcd-service' do
   action :nothing
 end
 
-include_recipe 'cookbook-openshift3::commons' unless node['cookbook-openshift3']['upgrade']
+include_recipe 'cookbook-openshift3::validate' unless node['cookbook-openshift3']['upgrade']

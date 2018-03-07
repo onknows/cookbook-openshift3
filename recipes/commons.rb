@@ -7,7 +7,6 @@
 server_info = OpenShiftHelper::NodeHelper.new(node)
 is_first_master = server_info.on_first_master?
 
-include_recipe 'cookbook-openshift3::validate'
 include_recipe 'cookbook-openshift3::common'
 include_recipe 'cookbook-openshift3::master'
 include_recipe 'cookbook-openshift3::node'

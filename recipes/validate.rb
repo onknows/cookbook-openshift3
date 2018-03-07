@@ -6,38 +6,50 @@
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 etcd_servers = server_info.etcd_servers
+first_master = server_info.first_master
+master_servers = server_info.master_servers
+lb_servers = server_info.lb_servers
+etcd_servers = server_info.etcd_servers
+certificate_server = server_info.certificate_server
 
 if node['cookbook-openshift3']['ose_version']
   if node['cookbook-openshift3']['ose_version'].to_f.round(1) != node['cookbook-openshift3']['ose_major_version'].to_f.round(1)
-    Chef::Application.fatal!("\"ose_version\" #{node['cookbook-openshift3']['ose_version']} should be a subset of \"ose_major_version\" #{node['cookbook-openshift3']['ose_major_version']}")
+    Chef::Log.error("\"ose_version\" #{node['cookbook-openshift3']['ose_version']} should be a subset of \"ose_major_version\" #{node['cookbook-openshift3']['ose_major_version']}")
+    node.run_state['issues_detected'] = true
   end
 end
 
 if node['cookbook-openshift3']['use_wildcard_nodes'] && node['cookbook-openshift3']['wildcard_domain'].empty?
-  Chef::Application.fatal!('"wildcard_domain" cannot be left empty when using "use_wildcard_nodes attribute"')
+  Chef::Log.error('"wildcard_domain" cannot be left empty when using "use_wildcard_nodes attribute"')
+  node.run_state['issues_detected'] = true
 end
 
 if node['cookbook-openshift3']['openshift_HA'] && node['cookbook-openshift3']['openshift_cluster_name'].nil?
-  Chef::Application.fatal!('A Cluster Name must be defined via "openshift_cluster_name"')
+  Chef::Log.error('A Cluster Name must be defined via "openshift_cluster_name"')
+  node.run_state['issues_detected'] = true
 end
 
 if !node['cookbook-openshift3']['openshift_HA'] && node['cookbook-openshift3']['certificate_server'] != {}
-  Chef::Application.fatal!('Separate certificate server and master standalone not supported.')
+  Chef::Log.error('Separate certificate server and master standalone not supported.')
+  node.run_state['issues_detected'] = true
 end
 
 if !node['cookbook-openshift3']['openshift_HA'] && node['cookbook-openshift3']['ose_major_version'].split('.')[1].to_i > 6
-  Chef::Application.fatal!('Master standalone is not supported with 3.7+')
+  Chef::Log.error('Master standalone is not supported with 3.7+')
+  node.run_state['issues_detected'] = true
 end
 
 if node['cookbook-openshift3']['openshift_hosted_cluster_metrics']
   unless node['cookbook-openshift3']['openshift_metrics_cassandra_storage_types'].any? { |t| t.casecmp(node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type']) == 0 }
-    Chef::Application.fatal!('Key openshift_metrics_cassandra_storage_types is not valid. Please refer to the documentation for supprted types')
+    Chef::Log.error('Key openshift_metrics_cassandra_storage_types is not valid. Please refer to the documentation for supprted types')
+    node.run_state['issues_detected'] = true
   end
 end
 
 if node['cookbook-openshift3']['etcd_add_additional_nodes']
   unless node['cookbook-openshift3']['etcd_add_additional_nodes'] && etcd_servers.any? { |key| key['new_node'] }
-    Chef::Application.fatal!('A key named "new_node" must be defined when adding new members to ETCD cluster')
+    Chef::Log.error('A key named "new_node" must be defined when adding new members to ETCD cluster')
+    node.run_state['issues_detected'] = true
   end
 end
 
@@ -47,24 +59,34 @@ end
   end
 end
 
-server_info = OpenShiftHelper::NodeHelper.new(node)
-first_master = server_info.first_master
-master_servers = server_info.master_servers
-lb_servers = server_info.lb_servers
-etcd_servers = server_info.etcd_servers
-certificate_server = server_info.certificate_server
-
 unless master_servers.is_a?(Array)
-  Chef::Application.fatal!('master_servers not an array')
+  Chef::Log.error('master_servers not an array')
+  node.run_state['issues_detected'] = true
 end
+
 unless lb_servers.is_a?(Array)
-  Chef::Application.fatal!('lb_servers not an array')
+  Chef::Log.error('lb_servers not an array')
+  node.run_state['issues_detected'] = true
 end
+
 unless etcd_servers.is_a?(Array)
-  Chef::Application.fatal!('etcd_servers not an array')
+  Chef::Log.error('etcd_servers not an array')
+  node.run_state['issues_detected'] = true
 end
-Chef::Application.fatal!('first_master not set') if first_master.nil?
+
+if first_master.nil?
+  Chef::Log.error('first_master not set')
+  node.run_state['issues_detected'] = true
+end
+
 if certificate_server.nil?
-  Chef::Application.fatal!('certificate_server not set')
+  Chef::Log.error('certificate_server not set')
+  node.run_state['issues_detected'] = true
 end
-Chef::Application.fatal!('No master_servers set') if master_servers.empty?
+
+if master_servers.empty?
+  Chef::Log.error('No master_servers set')
+  node.run_state['issues_detected'] = true
+end
+
+include_recipe 'cookbook-openshift3::commons' unless node.run_state['issues_detected']
