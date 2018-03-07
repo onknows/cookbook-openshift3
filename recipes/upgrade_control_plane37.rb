@@ -75,36 +75,36 @@ unless node.run_state['issues_detected']
     log 'Pre master upgrade - Upgrade all storage' do
       level :info
     end
-  
+
     execute 'Migrate storage post policy reconciliation' do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
               migrate storage --include=* --confirm"
     end
   end
-  
+
   if is_master_server
     log 'Upgrade for MASTERS [STARTED]' do
       level :info
     end
-  
+
     log 'Stop all master services prior to upgrade for 3.6 to 3.7 transition' do
       level :info
       notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
       notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
       notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
     end
-  
+
     include_recipe 'cookbook-openshift3::certificate_server' if node['cookbook-openshift3']['deploy_containerized']
-  
+
     if node['cookbook-openshift3']['openshift_HA']
       include_recipe 'cookbook-openshift3::master_cluster'
     else
       include_recipe 'cookbook-openshift3::master_standalone'
     end
-  
+
     include_recipe 'cookbook-openshift3::node'
-  
+
     log 'Restart Master & Node services' do
       level :info
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
@@ -114,29 +114,29 @@ unless node.run_state['issues_detected']
       notifies :restart, 'service[openvswitch]', :immediately
       not_if { node['cookbook-openshift3']['deploy_containerized'] }
     end
-  
+
     log 'Upgrade for MASTERS [COMPLETED]' do
       level :info
     end
   end
-  
+
   if is_master_server && is_first_master
     execute 'Post master upgrade - Upgrade clusterpolicies storage' do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
               migrate storage --include=clusterpolicies --confirm"
     end
-  
+
     log 'Reconcile Cluster Roles & Cluster Role Bindings [STARTED]' do
       level :info
     end
-  
+
     execute 'Reconcile Cluster Roles' do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
               policy reconcile-cluster-roles --additive-only=true --confirm"
     end
-  
+
     execute 'Reconcile Cluster Role Bindings' do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
@@ -147,33 +147,33 @@ unless node.run_state['issues_detected']
               --exclude-users=system:anonymous \
               --additive-only=true --confirm"
     end
-  
+
     execute 'Reconcile Security Context Constraints' do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
               policy reconcile-sccs --confirm --additive-only=true"
     end
-  
+
     execute 'Remove shared-resource-viewer protection before upgrade' do
       command "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
               annotate role shared-resource-viewer openshift.io/reconcile-protect- -n openshift"
     end
-  
+
     execute 'Migrate storage post policy reconciliation' do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
               migrate storage --include=* --confirm"
     end
-  
+
     log 'Reconcile Cluster Roles & Cluster Role Bindings [COMPLETED]' do
       level :info
     end
-  
+
     log 'Update hosted deployment(s) to current version [STARTED]' do
       level :info
     end
-  
+
     ruby_block 'Get current router image' do
       block do
         node.run_state['router_image'] = Mixlib::ShellOut.new("#{node['cookbook-openshift3']['openshift_common_client_binary']} get dc/router -n #{node['cookbook-openshift3']['openshift_hosted_router_namespace']} -o jsonpath='{.spec.template.spec.containers[0].image}'").run_command.stdout.strip
@@ -182,7 +182,7 @@ unless node.run_state['issues_detected']
         node['cookbook-openshift3']['openshift_hosted_manage_router']
       end
     end
-  
+
     ruby_block 'Get current registry image' do
       block do
         node.run_state['registry_image'] = Mixlib::ShellOut.new("#{node['cookbook-openshift3']['openshift_common_client_binary']} get dc/docker-registry -n #{node['cookbook-openshift3']['openshift_hosted_registry_namespace']} -o jsonpath='{.spec.template.spec.containers[0].image}'").run_command.stdout.strip
@@ -191,7 +191,7 @@ unless node.run_state['issues_detected']
         node['cookbook-openshift3']['openshift_hosted_manage_registry']
       end
     end
-  
+
     execute "Update router image to current version \"#{hosted_upgrade_version}\"" do
       command lazy {
         "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
@@ -203,7 +203,7 @@ unless node.run_state['issues_detected']
         node['cookbook-openshift3']['openshift_hosted_manage_router']
       end
     end
-  
+
     execute "Update registry image to current version \"#{hosted_upgrade_version}\"" do
       command lazy {
         "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
@@ -215,7 +215,7 @@ unless node.run_state['issues_detected']
         node['cookbook-openshift3']['openshift_hosted_manage_registry']
       end
     end
-  
+
     log 'Update hosted deployment(s) to current version [COMPLETED]' do
       level :info
     end
