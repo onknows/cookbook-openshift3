@@ -15,9 +15,6 @@ node.force_override['cookbook-openshift3']['ose_version'] = '3.6.1-1.0.008f2d5'
 hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : 'v' + node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
-etcd_servers = server_info.etcd_servers
-certificate_server = server_info.certificate_server
-is_certificate_server = server_info.on_certificate_server?
 is_etcd_server = server_info.on_etcd_server?
 is_master_server = server_info.on_master_server?
 is_first_master = server_info.on_first_master?
@@ -123,7 +120,7 @@ if is_master_server && is_first_master
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
             policy reconcile-sccs --confirm --additive-only=true"
-  end  
+  end
 
   execute 'Remove shared-resource-viewer protection before upgrade' do
     command "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
@@ -164,7 +161,7 @@ if is_master_server && is_first_master
   end
 
   execute "Update router image to current version \"#{hosted_upgrade_version}\"" do
-    command lazy { 
+    command lazy {
       "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
       --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
       patch dc/router -n #{node['cookbook-openshift3']['openshift_hosted_router_namespace']} -p \

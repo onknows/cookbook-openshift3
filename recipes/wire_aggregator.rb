@@ -5,8 +5,6 @@
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
-first_master = server_info.first_master
-master_servers = server_info.master_servers
 certificate_server = server_info.certificate_server
 is_certificate_server = server_info.on_certificate_server?
 
@@ -33,9 +31,9 @@ if is_certificate_server
   end
 
   # create-api-client-config generates a ca.crt file which will
-  # overwrite the OpenShift CA certificate.  
+  # overwrite the OpenShift CA certificate.
   # Generate the aggregator kubeconfig and delete the ca.crt before creating archive for masters
-  
+
   execute 'Create Master api-client config for Aggregator' do
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} create-api-client-config \
             --certificate-authority=#{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters/front-proxy-ca.crt \
@@ -46,7 +44,7 @@ if is_certificate_server
             --signer-serial=#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.serial.txt"
     creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters/aggregator-front-proxy.kubeconfig"
   end
-  
+
   file "#{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters/ca.crt" do
     action :delete
     only_if { File.exist? "#{node['cookbook-openshift3']['master_generated_certs_dir']}/wire_aggregator-masters/ca.crt" }
@@ -79,7 +77,7 @@ execute 'Un-encrypt aggregator tgz files' do
 end
 
 execute 'Extract aggregator to Master folder' do
-  command "tar xzf wire_aggregator-masters.tgz"
+  command 'tar xzf wire_aggregator-masters.tgz'
   cwd node['cookbook-openshift3']['openshift_master_config_dir']
   action :nothing
 end
