@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: cookbook-openshift3
-# Recipe:: upgrade_control_plane36
+# Recipe:: upgrade_control_plane37
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
@@ -9,9 +9,9 @@
 # existence previously.
 
 node.force_override['cookbook-openshift3']['upgrade'] = true
-node.force_override['cookbook-openshift3']['ose_major_version'] = '3.6'
-node.force_override['cookbook-openshift3']['ose_version'] = '3.6.1-1.0.008f2d5'
-node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v3.6.1'
+node.force_override['cookbook-openshift3']['ose_major_version'] = '3.7'
+node.force_override['cookbook-openshift3']['ose_version'] = '3.7.0-1.0.7ed6862'
+node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v3.7.0'
 
 hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : 'v' + node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]
 
@@ -19,6 +19,13 @@ server_info = OpenShiftHelper::NodeHelper.new(node)
 is_etcd_server = server_info.on_etcd_server?
 is_master_server = server_info.on_master_server?
 is_first_master = server_info.on_first_master?
+
+if is_first_master
+  config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
+  unless config_options['kubernetesMasterConfig']['apiServerArguments'].key?('storage-backend')
+    Chef::Application.fatal!('The cluster must be migrated to etcd v3 prior to upgrading to 3.7')
+  end
+end
 
 if defined? node['cookbook-openshift3']['upgrade_repos']
   node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
@@ -30,13 +37,13 @@ if is_etcd_server
   end
 
   execute 'Generate etcd backup before upgrade' do
-    command "etcdctl backup --data-dir=#{node['cookbook-openshift3']['etcd_data_dir']} --backup-dir=#{node['cookbook-openshift3']['etcd_data_dir']}-pre-upgrade36"
-    not_if { ::File.directory?("#{node['cookbook-openshift3']['etcd_data_dir']}-pre-upgrade36") }
+    command "etcdctl backup --data-dir=#{node['cookbook-openshift3']['etcd_data_dir']} --backup-dir=#{node['cookbook-openshift3']['etcd_data_dir']}-pre-upgrade37"
+    not_if { ::File.directory?("#{node['cookbook-openshift3']['etcd_data_dir']}-pre-upgrade37") }
     notifies :run, 'execute[Copy etcd v3 data store (PRE)]', :immediately
   end
 
   execute 'Copy etcd v3 data store (PRE)' do
-    command "cp -a #{node['cookbook-openshift3']['etcd_data_dir']}/member/snap/db #{node['cookbook-openshift3']['etcd_data_dir']}-pre-upgrade36/member/snap/"
+    command "cp -a #{node['cookbook-openshift3']['etcd_data_dir']}/member/snap/db #{node['cookbook-openshift3']['etcd_data_dir']}-pre-upgrade37/member/snap/"
     only_if { ::File.file?("#{node['cookbook-openshift3']['etcd_data_dir']}/member/snap/db") }
     action :nothing
   end
@@ -46,13 +53,13 @@ if is_etcd_server
   include_recipe 'cookbook-openshift3::etcd_cluster'
 
   execute 'Generate etcd backup after upgrade' do
-    command "etcdctl backup --data-dir=#{node['cookbook-openshift3']['etcd_data_dir']} --backup-dir=#{node['cookbook-openshift3']['etcd_data_dir']}-post-upgrade36"
-    not_if { ::File.directory?("#{node['cookbook-openshift3']['etcd_data_dir']}-post-upgrade36") }
+    command "etcdctl backup --data-dir=#{node['cookbook-openshift3']['etcd_data_dir']} --backup-dir=#{node['cookbook-openshift3']['etcd_data_dir']}-post-upgrade37"
+    not_if { ::File.directory?("#{node['cookbook-openshift3']['etcd_data_dir']}-post-upgrade37") }
     notifies :run, 'execute[Copy etcd v3 data store (POST)]', :immediately
   end
 
   execute 'Copy etcd v3 data store (POST)' do
-    command "cp -a #{node['cookbook-openshift3']['etcd_data_dir']}/member/snap/db #{node['cookbook-openshift3']['etcd_data_dir']}-post-upgrade36/member/snap/"
+    command "cp -a #{node['cookbook-openshift3']['etcd_data_dir']}/member/snap/db #{node['cookbook-openshift3']['etcd_data_dir']}-post-upgrade37/member/snap/"
     only_if { ::File.file?("#{node['cookbook-openshift3']['etcd_data_dir']}/member/snap/db") }
     action :nothing
   end
@@ -62,13 +69,29 @@ if is_etcd_server
   end
 end
 
+if is_master_server && is_first_master
+  log 'Pre master upgrade - Upgrade all storage' do
+    level :info
+  end
+
+  execute 'Migrate storage post policy reconciliation' do
+    command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
+            --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
+            migrate storage --include=* --confirm"
+  end
+end
+
 if is_master_server
   log 'Upgrade for MASTERS [STARTED]' do
     level :info
   end
 
-  config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
-  node.force_override['cookbook-openshift3']['etcd_migrated'] = false unless config_options['kubernetesMasterConfig']['apiServerArguments'].key?('storage-backend')
+  log 'Stop all master services prior to upgrade for 3.6 to 3.7 transition' do
+    level :info
+    notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
+    notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
+    notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
+  end
 
   include_recipe 'cookbook-openshift3::certificate_server' if node['cookbook-openshift3']['deploy_containerized']
 
@@ -96,6 +119,12 @@ if is_master_server
 end
 
 if is_master_server && is_first_master
+  execute 'Post master upgrade - Upgrade clusterpolicies storage' do
+    command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
+            --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
+            migrate storage --include=clusterpolicies --confirm"
+  end
+
   log 'Reconcile Cluster Roles & Cluster Role Bindings [STARTED]' do
     level :info
   end
@@ -115,12 +144,6 @@ if is_master_server && is_first_master
             --exclude-groups=system:unauthenticated \
             --exclude-users=system:anonymous \
             --additive-only=true --confirm"
-  end
-
-  execute 'Reconcile Jenkins Pipeline Role Bindings' do
-    command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
-            --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-            policy reconcile-cluster-role-bindings system:build-strategy-jenkinspipeline --confirm"
   end
 
   execute 'Reconcile Security Context Constraints' do
