@@ -32,6 +32,16 @@ if is_first_etcd
   end
 
   return unless Dir["#{node['cookbook-openshift3']['etcd_data_dir']}/member/snap/*.snap"].any?
+
+  execute 'Check cluster health' do
+    command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -w 'cluster is healthy' && touch #{Chef::Config[:file_cache_path]}/etcd_migration0"
+  end
+  
+  log 'Assess cluster health [Abort if not healthy]' do
+    level :info
+  end
+
+  return unless Dir["#{Chef::Config[:file_cache_path]}/etcd_migration0"].any?
 end
 
 if is_master_server
