@@ -18,6 +18,7 @@ hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 is_etcd_server = server_info.on_etcd_server?
 is_master_server = server_info.on_master_server?
+is_node_server = server_info.on_node_server?
 is_first_master = server_info.on_first_master?
 
 if defined? node['cookbook-openshift3']['upgrade_repos']
@@ -75,7 +76,7 @@ if is_master_server
     include_recipe 'cookbook-openshift3::master_standalone'
   end
 
-  include_recipe 'cookbook-openshift3::node'
+  include_recipe 'cookbook-openshift3::node' if is_node_server
 
   log 'Restart Master & Node services' do
     level :info
