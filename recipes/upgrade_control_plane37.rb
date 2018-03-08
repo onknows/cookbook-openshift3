@@ -122,6 +122,13 @@ unless node.run_state['issues_detected']
   end
 
   if is_master_server && is_first_master
+
+    execute 'Wait for API to be ready' do
+      command "[[ $(curl --silent #{node['cookbook-openshift3']['openshift_master_api_url']}/healthz/ready --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt) =~ \"ok\" ]]"
+      retries 120
+      retry_delay 1
+    end
+
     execute 'Post master upgrade - Upgrade clusterpolicies storage' do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
