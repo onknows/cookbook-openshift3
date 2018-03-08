@@ -39,7 +39,7 @@ action :create do
     end
   end
 
-  if File.exist?("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml") && node['cookbook-openshift3']['ose_major_version'].split('.')[1].to_i == 6
+  if ::File.file?("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml") && node['cookbook-openshift3']['ose_major_version'].split('.')[1].to_i == 6
     config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
     etcd3_deployed = config_options['kubernetesMasterConfig']['apiServerArguments'].key?('storage-backend') ? true : false
   end
