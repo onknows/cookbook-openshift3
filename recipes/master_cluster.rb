@@ -374,7 +374,7 @@ if certificate_server['fqdn'] == first_master['fqdn'] || !is_certificate_server
   end
 
   execute 'Wait for master api service to start on first master' do
-    command 'sleep 15'
+    command node['cookbook-openshift3']['deploy_containerized'] == true ? 'sleep 15' : 'sleep 5'
     action :run
     not_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-api"
   end
@@ -400,7 +400,7 @@ if certificate_server['fqdn'] == first_master['fqdn'] || !is_certificate_server
   end
 
   execute 'Wait for master controller service to start on first master' do
-    command 'sleep 15'
+    command node['cookbook-openshift3']['deploy_containerized'] == true ? 'sleep 15' : 'sleep 5'
     action :run
     not_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-controllers"
   end
