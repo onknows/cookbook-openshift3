@@ -147,7 +147,7 @@ kubernetesMasterConfig:
     cloud-config:
     - <%= node['cookbook-openshift3']['openshift_cloud_provider_config_dir']%>/<%= node['cookbook-openshift3']['openshift_cloud_provider'] %>.conf
 <%- end -%>
-<% if @ose_major_version.split('.')[1].to_i >= 6 && node['cookbook-openshift3']['etcd_migrated'] %>
+<% if @ose_major_version.split('.')[1].to_i >= 6 && node['cookbook-openshift3']['etcd_migrated'] && node['cookbook-openshift3']['openshift_HA'] %>
     storage-backend:
     - etcd3
     storage-media-type:
