@@ -37,6 +37,9 @@ if is_master_server || is_certificate_server
 
   directory node['cookbook-openshift3']['openshift_master_config_dir'] do
     recursive true
+    owner 'root'
+    group 'root'
+    mode '0700'
   end
 
   template node['cookbook-openshift3']['openshift_master_session_secrets_file'] do

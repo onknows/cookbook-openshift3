@@ -77,7 +77,7 @@ execute 'Un-encrypt aggregator tgz files' do
 end
 
 execute 'Extract aggregator to Master folder' do
-  command 'tar xzf wire_aggregator-masters.tgz'
+  command 'tar -xzf wire_aggregator-masters.tgz ./front-proxy-ca* ./aggregator-front-proxy*'
   cwd node['cookbook-openshift3']['openshift_master_config_dir']
   action :nothing
 end

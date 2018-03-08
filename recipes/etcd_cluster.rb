@@ -77,6 +77,7 @@ if is_certificate_server
     remote_file "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd/#{etcd_export_certificate}" do
       source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/#{etcd_export_certificate}"
       mode '0644'
+      sensitive true
     end
   end
 
@@ -105,6 +106,7 @@ if is_certificate_server
 
     remote_file "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}/ca.crt" do
       source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/ca.crt"
+      sensitive true
     end
 
     execute "Create a tarball of the etcd certs for #{etcd_master['fqdn']}" do

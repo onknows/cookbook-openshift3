@@ -154,6 +154,7 @@ if is_node_server
   remote_file '/etc/pki/ca-trust/source/anchors/openshift-ca.crt' do
     source "file://#{node['cookbook-openshift3']['openshift_node_config_dir']}/ca.crt"
     notifies :run, 'ruby_block[Update ca trust]', :immediately
+    sensitive true
   end
 
   # Use ruby_block for copying OpenShift CA to system CA trust
