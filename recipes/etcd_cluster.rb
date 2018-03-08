@@ -140,7 +140,7 @@ if is_etcd_server
   end
 
   package 'etcd' do
-    action :upgrade if node['cookbook-openshift3']['upgrade']
+    action :upgrade if node['cookbook-openshift3']['upgrade'] && node['cookbook-openshift3']['etcd_version'].nil?
     version node['cookbook-openshift3']['etcd_version'] unless node['cookbook-openshift3']['etcd_version'].nil?
     retries 3
   end
