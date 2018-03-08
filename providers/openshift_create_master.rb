@@ -38,6 +38,12 @@ action :create do
       named_certificates << named_hash
     end
   end
+ 
+  if File.exist? "#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml" && node['cookbook-openshift3']['ose_major_version'].split('.')[1].to_i = 6
+    config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
+    etcd3_deployed = config_options['kubernetesMasterConfig']['apiServerArguments'].key?('storage-backend') ? true : false
+    end
+  end
 
   if new_resource.cluster
     template new_resource.master_file do
@@ -48,7 +54,8 @@ action :create do
         erb_master_named_certificates: named_certificates,
         etcd_servers: new_resource.etcd_servers,
         masters_size: new_resource.masters_size,
-        ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
+        ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version'],
+        etcd3_deployed: etcd3_deployed,
       )
       # This notify fails on older versions of Chef in providers. This is a workaround.
       unless node['chef_packages']['chef']['version'] == node['cookbook-openshift3']['switch_off_provider_notify_version']
@@ -64,7 +71,8 @@ action :create do
         erb_master_named_certificates: named_certificates,
         etcd_servers: new_resource.etcd_servers,
         masters_size: new_resource.masters_size,
-        ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
+        ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version'],
+	etcd3_deployed: etcd3_deployed,
       )
       # This notify fails on older versions of Chef in providers. This is a workaround.
       unless node['chef_packages']['chef']['version'] == node['cookbook-openshift3']['switch_off_provider_notify_version']
