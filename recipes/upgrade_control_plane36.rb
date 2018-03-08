@@ -46,6 +46,11 @@ if is_etcd_server
   include_recipe 'cookbook-openshift3::common'
   include_recipe 'cookbook-openshift3::etcd_cluster'
 
+  log 'Restart ETCD' do
+    level :info
+    notifies :restart, 'service[etcd-service]', :immediately
+  end
+
   execute 'Generate etcd backup after upgrade' do
     command "etcdctl backup --data-dir=#{node['cookbook-openshift3']['etcd_data_dir']} --backup-dir=#{node['cookbook-openshift3']['etcd_data_dir']}-post-upgrade36"
     not_if { ::File.directory?("#{node['cookbook-openshift3']['etcd_data_dir']}-post-upgrade36") }

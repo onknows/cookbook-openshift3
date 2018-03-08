@@ -12,6 +12,7 @@ node.force_override['cookbook-openshift3']['upgrade'] = true
 node.force_override['cookbook-openshift3']['ose_major_version'] = '1.5'
 node.force_override['cookbook-openshift3']['ose_version'] = '1.5.1-1.el7'
 node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v1.5.1'
+node.force_override['cookbook-openshift3']['etcd_version'] = '3.1.9-2.el7'
 
 hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : 'v' + node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]
 
@@ -45,6 +46,11 @@ if is_etcd_server
   include_recipe 'cookbook-openshift3'
   include_recipe 'cookbook-openshift3::common'
   include_recipe 'cookbook-openshift3::etcd_cluster'
+
+  log 'Restart ETCD' do
+    level :info
+    notifies :restart, 'service[etcd-service]', :immediately
+  end
 
   execute 'Generate etcd backup after upgrade' do
     command "etcdctl backup --data-dir=#{node['cookbook-openshift3']['etcd_data_dir']} --backup-dir=#{node['cookbook-openshift3']['etcd_data_dir']}-post-upgrade15"
