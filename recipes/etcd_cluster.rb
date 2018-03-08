@@ -143,9 +143,6 @@ if is_etcd_server
     action :upgrade if node['cookbook-openshift3']['upgrade']
     version node['cookbook-openshift3']['etcd_version'] unless node['cookbook-openshift3']['etcd_version'].nil?
     retries 3
-    not_if do
-      `rpm -q etcd`
-    end
   end
 
   if node['cookbook-openshift3']['deploy_containerized']
