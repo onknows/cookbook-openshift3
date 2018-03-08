@@ -6,7 +6,6 @@ try {
     string(name: 'BRANCH_NAME',                                  defaultValue: env.BRANCH_NAME,                                description: 'Branch to build'),
     string(name: 'builddir',                                     defaultValue: 'cookbook-openshift3-test-' + env.BUILD_NUMBER, description: 'Build directory'),
     string(name: 'nodename',                                     defaultValue: 'cage',                                         description: 'Node to build on'),
-    string(name: 'CHEF_VERSION',                                 defaultValue: '12.16.42-1',                                   description: 'Chef version to use, eg 12.4.1-1'),
     string(name: 'OSE_VERSIONS',                                 defaultValue: '1.4 1.5 3.6 3.7',                              description: 'OSE versions to build, separated by spaces'),
     string(name: 'CHEF_IPTABLES_COOKBOOK_VERSION',               defaultValue: 'latest',                                       description: 'IPtables cookbook version, eg 1.0.0'),
     string(name: 'CHEF_SELINUX_COOKBOOK_VERSION',                defaultValue: 'latest',                                       description: 'SELinux cookbook version, eg 0.7.2'),
