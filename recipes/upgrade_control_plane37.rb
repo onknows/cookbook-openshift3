@@ -21,7 +21,7 @@ is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
 is_first_master = server_info.on_first_master?
 
-if is_first_master
+if is_master_server
   config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
   unless config_options['kubernetesMasterConfig']['apiServerArguments'].key?('storage-backend')
     Chef::Log.error('The cluster must be migrated to etcd v3 prior to upgrading to 3.7')
@@ -84,6 +84,17 @@ unless node.run_state['issues_detected']
     end
   end
 
+  if is_master_server && !is_first_master
+    execute 'Pre master upgrade - Wait until first master finishes the storage migration' do
+      command "while [ ! -f #{Chef::Config[:file_cache_path]}/upgrade37-start ] ; do sleep 5 ; done"
+    end
+    
+    file "#{Chef::Config[:file_cache_path]}/upgrade37-start" do
+      action :nothing
+      subscribes :create, 'execute[Pre master upgrade - Wait until first master finishes the storage migration]', :immediately
+    end
+  end
+  
   if is_master_server
     log 'Upgrade for MASTERS [STARTED]' do
       level :info
