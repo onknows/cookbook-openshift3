@@ -113,14 +113,14 @@ end
 unless etcd_servers.size == 1
   if is_certificate_server
 
-    etcd_servers.reject { |etcdservers| etcdservers == first_etcd['fqdn'] }.each do |etcd|
-      directory node['cookbook-openshift3']['etcd_generated_migrated_dir'] do
-        mode '0755'
-        owner 'apache'
-        group 'apache'
-        recursive true
-      end
+    directory node['cookbook-openshift3']['etcd_generated_migrated_dir'] do
+      mode '0755'
+      owner 'apache'
+      group 'apache'
+      recursive true
+    end
 
+    etcd_servers.reject { |etcdservers| etcdservers['fqdn'] == first_etcd['fqdn'] }.each do |etcd|
       execute "Add #{etcd['fqdn']} to the cluster" do
         command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{first_etcd['fqdn']}/peer.crt --key-file #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{first_etcd['fqdn']}/peer.key --ca-file #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{first_etcd['fqdn']}/ca.crt -C https://#{first_etcd['ipaddress']}:2379 member add #{etcd['fqdn']} https://#{etcd['ipaddress']}:2379 | grep ^ETCD | tr --delete '\"' | tee #{node['cookbook-openshift3']['etcd_generated_migrated_dir']}/etcd-#{etcd['fqdn']}"
       end
