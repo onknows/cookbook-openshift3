@@ -95,11 +95,11 @@ if is_first_etcd
     command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -w 'cluster is healthy'"
     retries 30
     retry_delay 1
-    notifies :run, 'ruby_block[Unset ETCD_FORCE_NEW_CLUSTER=true on first etcd host]', :immediately
+    notifies :run, 'ruby_block[Unset ETCD_FORCE_NEW_CLUSTER=true]', :immediately
     only_if { ::File.exist?("#{Chef::Config[:file_cache_path]}/etcd_migration2") }
   end
 
-  ruby_block 'Unset ETCD_FORCE_NEW_CLUSTER=true on first etcd host' do
+  ruby_block 'Unset ETCD_FORCE_NEW_CLUSTER=true' do
     block do
       f = Chef::Util::FileEdit.new("#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd.conf")
       f.search_file_delete_line(/^ETCD_FORCE_NEW_CLUSTER/)
