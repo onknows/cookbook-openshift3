@@ -132,17 +132,20 @@ if is_certificate_server
   end
 end
 
+if is_etcd_server || is_certificate_server
+  package 'etcd' do
+    action :upgrade if node['cookbook-openshift3']['upgrade'] && node['cookbook-openshift3']['etcd_version'].nil?
+    version node['cookbook-openshift3']['etcd_version'] unless node['cookbook-openshift3']['etcd_version'].nil?
+    retries 3
+    notifies :enable, 'service[etcd-service]', :immediately if node['cookbook-openshift3']['upgrade'] && certificate_server['fqdn'] == first_master['fqdn']
+  end
+end
+
 if is_etcd_server
   node['cookbook-openshift3']['enabled_firewall_rules_etcd'].each do |rule|
     iptables_rule rule do
       action :enable
     end
-  end
-
-  package 'etcd' do
-    action :upgrade if node['cookbook-openshift3']['upgrade'] && node['cookbook-openshift3']['etcd_version'].nil?
-    version node['cookbook-openshift3']['etcd_version'] unless node['cookbook-openshift3']['etcd_version'].nil?
-    retries 3
   end
 
   if node['cookbook-openshift3']['deploy_containerized']

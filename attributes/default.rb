@@ -207,6 +207,7 @@ default['cookbook-openshift3']['etcd_conf_dir'] = '/etc/etcd'
 default['cookbook-openshift3']['etcd_ca_dir'] = "#{node['cookbook-openshift3']['etcd_conf_dir']}/ca"
 default['cookbook-openshift3']['etcd_debug'] = 'False'
 default['cookbook-openshift3']['etcd_generated_certs_dir'] = '/var/www/html/etcd/generated_certs'
+default['cookbook-openshift3']['etcd_generated_migrated_dir'] = '/var/www/html/etcd/migration'
 default['cookbook-openshift3']['etcd_ca_cert'] = "#{node['cookbook-openshift3']['etcd_conf_dir']}/ca.crt"
 default['cookbook-openshift3']['etcd_cert_file'] = "#{node['cookbook-openshift3']['etcd_conf_dir']}/server.crt"
 default['cookbook-openshift3']['etcd_cert_key'] = "#{node['cookbook-openshift3']['etcd_conf_dir']}/server.key"

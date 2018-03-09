@@ -15,6 +15,9 @@ is_etcd_server = server_info.on_etcd_server?
 is_master_server = server_info.on_master_server?
 is_first_master = server_info.on_first_master?
 is_first_etcd = server_info.on_first_etcd?
+certificate_server = server_info.certificate_server
+is_certificate_server = server_info.on_certificate_server?
+etcd_servers = server_info.etcd_servers
 
 include_recipe 'cookbook-openshift3'
 
@@ -88,14 +91,89 @@ if is_first_etcd
     only_if { ::File.exist?("#{Chef::Config[:file_cache_path]}/etcd_migration2") }
   end
 
+  execute 'Check ETCD cluster health before doing anything' do
+    command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -w 'cluster is healthy'"
+    retries 30
+    retry_delay 1
+    notifies :run, 'ruby_block[Unset ETCD_FORCE_NEW_CLUSTER=true on first etcd host]', :immediately
+    only_if { ::File.exist?("#{Chef::Config[:file_cache_path]}/etcd_migration2") }
+  end
+
   ruby_block 'Unset ETCD_FORCE_NEW_CLUSTER=true on first etcd host' do
     block do
       f = Chef::Util::FileEdit.new("#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd.conf")
       f.search_file_delete_line(/^ETCD_FORCE_NEW_CLUSTER/)
       f.write_file
     end
+    action :nothing
     notifies :restart, 'service[etcd-service]', :immediately
-    only_if { ::File.exist?("#{Chef::Config[:file_cache_path]}/etcd_migration2") }
+  end
+end
+
+unless etcd_servers.size == 1
+  if is_certificate_server
+
+    etcd_servers.reject { |etcdservers| etcdservers == first_etcd['fqdn'] }.each do |etcd|
+      directory node['cookbook-openshift3']['etcd_generated_migrated_dir'] do
+        mode '0755'
+        owner 'apache'
+        group 'apache'
+        recursive true
+      end
+
+      execute "Add #{etcd['fqdn']} to the cluster" do
+        command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{first_etcd['fqdn']}/peer.crt --key-file #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{first_etcd['fqdn']}/peer.key --ca-file #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{first_etcd['fqdn']}/ca.crt -C https://#{first_etcd['ipaddress']}:2379 member add #{etcd['fqdn']} https://#{etcd['ipaddress']}:2379 | grep ^ETCD | tr --delete '\"' | tee #{node['cookbook-openshift3']['etcd_generated_migrated_dir']}/etcd-#{etcd['fqdn']}"
+      end
+
+      execute "Check #{etcd['fqdn']} has successfully registered" do
+        command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{first_etcd['fqdn']}/peer.crt --key-file #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{first_etcd['fqdn']}/peer.key --ca-file #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{first_etcd['fqdn']}/ca.crt -C https://#{first_etcd['ipaddress']}:2379 member add #{etcd['fqdn']} https://#{etcd['ipaddress']}:2379 cluster-health | grep -w 'got healthy result from https://#{etcd['ipaddress']}:2379'"
+        retries 60
+        retry_delay 5
+      end
+    end
+  end
+
+  if is_etcd_server && !is_first_etcd do
+       directory "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service.d"
+       action :create
+     end
+
+    template "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service.d/override.conf" do
+      source 'etcd-override.conf.erb'
+    end
+    remote_file "Retrieve ETCD SystemD Drop-in from Certificate Server[#{certificate_server['fqdn']}]" do
+      path "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service.d/etcd-dropin"
+      source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/migration/etcd-#{node['fqdn']}"
+      action :create_if_missing
+      notifies :run, 'execute[daemon-reload]', :immediately
+      retries 60
+      retry_delay 5
+    end
+
+    directory "#{node['cookbook-openshift3']['etcd_data_dir']}/member" do
+      recursive true
+      action :delete
+      notifies :start, 'service[etcd-service]', :immediately
+    end
+
+    execute 'Check cluster health' do
+      command "[[ $(/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -c 'got healthy') -eq #{etcd_servers.size} ]]"
+      retries 60
+      retry_delay 5
+    end
+
+    directory "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service.d" do
+      recursive true
+      action :delete
+      notifies :run, 'execute[daemon-reload]', :immediately
+      notifies :restart, 'service[etcd-service]', :immediately
+    end
+
+    execute 'Check cluster health' do
+      command "[[ $(/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -c 'got healthy') -eq #{etcd_servers.size} ]]"
+      retries 60
+      retry_delay 5
+    end
   end
 end
 
