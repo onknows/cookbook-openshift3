@@ -133,10 +133,10 @@ unless etcd_servers.size == 1
     end
   end
 
-  if is_etcd_server && !is_first_etcd do
-       directory "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service.d"
-       action :create
-     end
+  if is_etcd_server && !is_first_etcd
+    directory "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service.d" do
+      action :create
+    end
 
     template "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service.d/override.conf" do
       source 'etcd-override.conf.erb'
