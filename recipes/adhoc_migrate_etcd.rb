@@ -108,6 +108,12 @@ if is_first_etcd
     action :nothing
     notifies :restart, 'service[etcd-service]', :immediately
   end
+
+  execute 'Check ETCD cluster health before doing anything' do
+    command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -w 'cluster is healthy'"
+    retries 30
+    retry_delay 1
+  end
 end
 
 unless etcd_servers.size == 1
