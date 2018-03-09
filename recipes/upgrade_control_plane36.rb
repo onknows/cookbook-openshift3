@@ -12,6 +12,7 @@ node.force_override['cookbook-openshift3']['upgrade'] = true
 node.force_override['cookbook-openshift3']['ose_major_version'] = '3.6'
 node.force_override['cookbook-openshift3']['ose_version'] = '3.6.1-1.0.008f2d5'
 node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v3.6.1'
+node.force_override['cookbook-openshift3']['docker_version'] = '1.12.6-71.git3e8e77d.el7'
 
 hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : 'v' + node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]
 
