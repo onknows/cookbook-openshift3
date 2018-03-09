@@ -91,7 +91,7 @@ unless node.run_state['issues_detected']
 
     file "#{Chef::Config[:file_cache_path]}/upgrade37-start" do
       action :nothing
-      subscribes :create, 'execute[Pre master upgrade - Wait until first master finishes the storage migration]', :immediately
+      subscribes :create, 'execute[Migrate storage post policy reconciliation]', :immediately
     end
   end
 
