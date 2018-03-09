@@ -80,7 +80,6 @@ node['cookbook-openshift3']['core_packages'].each do |pkg|
 end
 
 package 'docker' do
-  action :upgrade if node['cookbook-openshift3']['upgrade'] && node['cookbook-openshift3']['docker_version'].nil?
   version node['cookbook-openshift3']['docker_version'] unless node['cookbook-openshift3']['docker_version'].nil?
   retries 3
 end
