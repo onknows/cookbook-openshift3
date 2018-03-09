@@ -88,13 +88,13 @@ unless node.run_state['issues_detected']
     execute 'Pre master upgrade - Wait until first master finishes the storage migration' do
       command "while [ ! -f #{Chef::Config[:file_cache_path]}/upgrade37-start ] ; do sleep 5 ; done"
     end
-    
+
     file "#{Chef::Config[:file_cache_path]}/upgrade37-start" do
       action :nothing
       subscribes :create, 'execute[Pre master upgrade - Wait until first master finishes the storage migration]', :immediately
     end
   end
-  
+
   if is_master_server
     log 'Upgrade for MASTERS [STARTED]' do
       level :info
