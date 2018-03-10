@@ -92,6 +92,18 @@ unless node.run_state['issues_detected']
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
               migrate storage --include=* --confirm"
     end
+
+    execute 'Create key for upgrade all storage' do
+      command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 put migration ok"
+    end
+  end
+
+  if is_master_server && !is_first_master
+    execute 'Wait for First master to upgrade all storage' do
+      command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get migration -w simple | grep -w ok"
+      retries 120
+      retry_delay 5
+    end
   end
 
   if is_master_server
@@ -184,16 +196,12 @@ unless node.run_state['issues_detected']
               migrate storage --include=* --confirm"
     end
 
+    execute 'Delete key for upgrade all storage' do
+      command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 del migration"
+    end
+    
     log 'Reconcile Cluster Roles & Cluster Role Bindings [COMPLETED]' do
       level :info
-    end
-
-    log 'Restart Master & Node services' do
-      level :info
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
     end
 
     log 'Update hosted deployment(s) to current version [STARTED]' do
