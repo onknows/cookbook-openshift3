@@ -10,7 +10,7 @@ etcd_servers = server_info.etcd_servers
 lb_servers = server_info.lb_servers
 is_node_server = server_info.on_node_server?
 certificate_server = server_info.certificate_server
-docker_version = '1.13'
+ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
 
 include_recipe 'iptables::default'
 include_recipe 'selinux_policy::default'
@@ -83,9 +83,12 @@ node['cookbook-openshift3']['core_packages'].each do |pkg|
 end
 
 if is_node_server || node['cookbook-openshift3']['deploy_containerized']
-  yum_package "docker < #{docker_version}" do
+  yum_package 'docker' do
+    action :upgrade if node['cookbook-openshift3']['upgrade'] && ose_major_version.split('.')[1].to_i >= 7
+    version node['cookbook-openshift3']['docker_version'] unless node['cookbook-openshift3']['docker_version'].nil?
     retries 3
     notifies :restart, 'service[docker]', :immediately if node['cookbook-openshift3']['upgrade']
+    not_if "rpm -q docker && #{node['cookbook-openshift3']['docker_version'].to_s.split('-')[0]} < `repoquery --plugins --installed --qf '%{version}' docker`"
   end
 
   bash "Configure Docker to use the default FS type for #{node['fqdn']}" do
