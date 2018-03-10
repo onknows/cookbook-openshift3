@@ -10,7 +10,6 @@ etcd_servers = server_info.etcd_servers
 lb_servers = server_info.lb_servers
 is_node_server = server_info.on_node_server?
 certificate_server = server_info.certificate_server
-ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
 
 include_recipe 'iptables::default'
 include_recipe 'selinux_policy::default'
