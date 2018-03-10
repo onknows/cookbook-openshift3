@@ -10,5 +10,6 @@ ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true 
   yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{ose_major_version}"
   execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
     command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
+    not_if { ose_major_version.split('.')[1].to_i < 4 }
   end
 end
