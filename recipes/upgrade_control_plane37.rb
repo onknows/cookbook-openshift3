@@ -240,7 +240,7 @@ end
 
 if is_master_server || is_node_server
   %w(excluder docker-excluder).each do |pkg|
-    yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{ose_major_version}"
+    yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]}"
     execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
       command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
     end
