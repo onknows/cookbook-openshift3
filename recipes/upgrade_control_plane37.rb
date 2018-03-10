@@ -143,6 +143,14 @@ unless node.run_state['issues_detected']
     end
   end
 
+  if is_master_server && !is_first_master
+      execute 'Wait for First master to reconcile all roles' do
+      command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get migration -w simple | grep -v -w ok"
+      retries 120
+      retry_delay 5
+    end
+  end
+
   if is_master_server && is_first_master
 
     execute 'Wait for API to be ready' do
@@ -199,11 +207,20 @@ unless node.run_state['issues_detected']
     execute 'Delete key for upgrade all storage' do
       command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 del migration"
     end
-    
+  end 
+
+  if is_master_server
     log 'Reconcile Cluster Roles & Cluster Role Bindings [COMPLETED]' do
       level :info
     end
 
+    log 'Restart Master & Node services' do
+      level :info
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
+    end
+  end 
+
+  if is_master_server && is_first_master
     log 'Update hosted deployment(s) to current version [STARTED]' do
       level :info
     end
