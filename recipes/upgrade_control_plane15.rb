@@ -43,6 +43,7 @@ if is_etcd_server
     action :nothing
   end
 
+  include_recipe 'cookbook-openshift3::excluder'
   include_recipe 'cookbook-openshift3'
   include_recipe 'cookbook-openshift3::common'
   include_recipe 'cookbook-openshift3::etcd_cluster'
@@ -191,6 +192,8 @@ if is_master_server && is_first_master
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
             migrate storage --include=jobs --confirm"
   end
+
+  include_recipe 'cookbook-openshift3::excluder'
 
   log 'Update hosted deployment(s) to current version [COMPLETED]' do
     level :info

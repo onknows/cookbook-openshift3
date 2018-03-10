@@ -26,6 +26,7 @@ if is_node_server
     level :info
   end
 
+  include_recipe 'cookbook-openshift3::excluder'
   include_recipe 'cookbook-openshift3'
   include_recipe 'cookbook-openshift3::common'
   include_recipe 'cookbook-openshift3::node'
@@ -36,6 +37,8 @@ if is_node_server
     notifies :restart, 'service[openvswitch]', :immediately
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
   end
+
+  include_recipe 'cookbook-openshift3::excluder'
 
   log 'Upgrade for NODE [COMPLETED]' do
     level :info
