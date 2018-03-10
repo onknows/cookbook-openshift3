@@ -11,6 +11,8 @@ etcd_remove_servers = node['cookbook-openshift3']['etcd_remove_servers']
 is_certificate_server = server_info.on_certificate_server?
 is_etcd_server = server_info.on_etcd_server?
 first_master = server_info.first_master
+ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
+etcd_version = ose_major_version.split('.')[1].to_i >= 6 ? '3.3' : '3.2'
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
@@ -134,11 +136,10 @@ if is_certificate_server
 end
 
 if is_etcd_server || is_certificate_server
-  package 'etcd' do
-    action :upgrade if node['cookbook-openshift3']['upgrade'] && node['cookbook-openshift3']['etcd_version'].nil?
-    version node['cookbook-openshift3']['etcd_version'] unless node['cookbook-openshift3']['etcd_version'].nil?
+  yum_package "etcd < #{etcd_version}" do
     retries 3
-    notifies :enable, 'service[etcd-service]', :immediately if node['cookbook-openshift3']['upgrade'] && certificate_server['fqdn'] == first_master['fqdn']
+    notifies :enable, 'service[etcd-service]', :immediately
+    notifies :restart, 'service[etcd-service]', :immediately if node['cookbook-openshift3']['upgrade'] && certificate_server['fqdn'] == first_master['fqdn']
   end
 end
 
