@@ -32,19 +32,15 @@ if is_etcd_server
     command "ls -l #{node['cookbook-openshift3']['etcd_data_dir']}/member/snap/*.snap || touch #{Chef::Config[:file_cache_path]}/etcd_migration-fail"
   end
 
-  node.run_state['issues_detected'] = true if ::File.exist?("#{Chef::Config[:file_cache_path]}/etcd_migration-fail")
-
   execute 'Check if there are any v3 data [Abort if at least one v3 key]' do
     command "[[ $(ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get '.' --from-key --keys-only -w simple | wc -l) -gt 1 ]] && touch #{Chef::Config[:file_cache_path]}/etcd_migration-fail || true"
   end
-
-  node.run_state['issues_detected'] = true if ::File.exist?("#{Chef::Config[:file_cache_path]}/etcd_migration-fail")
 
   execute 'Check cluster health' do
     command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -w 'cluster is healthy'"
   end
 
-  include_recipe 'cookbook-openshift3::validate'
+  return if ::File.exist?("#{Chef::Config[:file_cache_path]}/etcd_migration-fail")
 end
 
 if is_master_server

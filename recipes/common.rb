@@ -8,6 +8,7 @@ server_info = OpenShiftHelper::NodeHelper.new(node)
 master_servers = server_info.master_servers
 etcd_servers = server_info.etcd_servers
 lb_servers = server_info.lb_servers
+is_node_server = server_info.on_node_server?
 certificate_server = server_info.certificate_server
 include_recipe 'iptables::default'
 include_recipe 'selinux_policy::default'
@@ -79,28 +80,30 @@ node['cookbook-openshift3']['core_packages'].each do |pkg|
   end
 end
 
-package 'docker' do
-  version node['cookbook-openshift3']['docker_version'] unless node['cookbook-openshift3']['docker_version'].nil?
-  retries 3
-end
-
-bash "Configure Docker to use the default FS type for #{node['fqdn']}" do
-  code <<-EOF
-    correct_fs=$(df -T /var | egrep -o 'xfs|ext4')
-    sed -i "s/xfs/$correct_fs/" /usr/bin/docker-storage-setup
-  EOF
-  not_if "grep $(df -T /var | egrep -o 'xfs|ext4') /usr/bin/docker-storage-setup"
-  timeout 60
-end
-
-template '/etc/sysconfig/docker-storage-setup' do
-  source 'docker-storage.erb'
-end
-
-template '/etc/sysconfig/docker' do
-  source 'service_docker.sysconfig.erb'
-  notifies :restart, 'service[docker]', :immediately
-  notifies :enable, 'service[docker]', :immediately
+if is_node_server || node['cookbook-openshift3']['deploy_containerized']
+  package 'docker' do
+    version node['cookbook-openshift3']['docker_version'] unless node['cookbook-openshift3']['docker_version'].nil?
+    retries 3
+  end
+  
+  bash "Configure Docker to use the default FS type for #{node['fqdn']}" do
+    code <<-EOF
+      correct_fs=$(df -T /var | egrep -o 'xfs|ext4')
+      sed -i "s/xfs/$correct_fs/" /usr/bin/docker-storage-setup
+    EOF
+    not_if "grep $(df -T /var | egrep -o 'xfs|ext4') /usr/bin/docker-storage-setup"
+    timeout 60
+  end
+  
+  template '/etc/sysconfig/docker-storage-setup' do
+    source 'docker-storage.erb'
+  end
+  
+  template '/etc/sysconfig/docker' do
+    source 'service_docker.sysconfig.erb'
+    notifies :restart, 'service[docker]', :immediately
+    notifies :enable, 'service[docker]', :immediately
+  end
 end
 
 ruby_block 'Change HTTPD port xfer' do
