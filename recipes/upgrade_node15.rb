@@ -12,7 +12,6 @@ node.force_override['cookbook-openshift3']['upgrade'] = true
 node.force_override['cookbook-openshift3']['ose_major_version'] = '1.5'
 node.force_override['cookbook-openshift3']['ose_version'] = '1.5.1-1.el7'
 node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v1.5.1'
-node.force_override['cookbook-openshift3']['docker_version'] = '1.12.6-71.git3e8e77d.el7'
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 is_node_server = server_info.on_node_server?
