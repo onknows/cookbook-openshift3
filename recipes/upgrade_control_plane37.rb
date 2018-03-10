@@ -33,6 +33,14 @@ if defined? node['cookbook-openshift3']['upgrade_repos']
   node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
 end
 
+if is_master_server || is_node_server
+  %w(excluder docker-excluder).each do |pkg|
+    execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
+    end
+  end
+end
+
 if is_etcd_server
   log 'Upgrade for ETCD [STARTED]' do
     level :info
@@ -50,7 +58,6 @@ if is_etcd_server
     action :nothing
   end
 
-  include_recipe 'cookbook-openshift3::excluder'
   include_recipe 'cookbook-openshift3'
   include_recipe 'cookbook-openshift3::common'
   include_recipe 'cookbook-openshift3::etcd_cluster'
@@ -225,10 +232,17 @@ unless node.run_state['issues_detected']
       end
     end
 
-    include_recipe 'cookbook-openshift3::excluder'
-
     log 'Update hosted deployment(s) to current version [COMPLETED]' do
       level :info
+    end
+  end
+end
+
+if is_master_server || is_node_server
+  %w(excluder docker-excluder).each do |pkg|
+    yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{ose_major_version}"
+    execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
     end
   end
 end

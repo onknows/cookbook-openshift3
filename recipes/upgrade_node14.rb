@@ -26,7 +26,12 @@ if is_node_server
     level :info
   end
 
-  include_recipe 'cookbook-openshift3::excluder'
+  %w(excluder docker-excluder).each do |pkg|
+    execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
+    end
+  end
+
   include_recipe 'cookbook-openshift3'
   include_recipe 'cookbook-openshift3::common'
   include_recipe 'cookbook-openshift3::node'
@@ -38,9 +43,14 @@ if is_node_server
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
   end
 
-  include_recipe 'cookbook-openshift3::excluder'
-
   log 'Upgrade for NODE [COMPLETED]' do
     level :info
+  end
+
+  %w(excluder docker-excluder).each do |pkg|
+    yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{ose_major_version}"
+    execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
+    end
   end
 end
