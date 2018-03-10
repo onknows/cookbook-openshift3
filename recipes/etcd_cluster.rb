@@ -141,7 +141,7 @@ if is_etcd_server || is_certificate_server
     retries 3
     notifies :enable, 'service[etcd-service]', :immediately
     notifies :restart, 'service[etcd-service]', :immediately if node['cookbook-openshift3']['upgrade'] && certificate_server['fqdn'] == first_master['fqdn']
-    not_if "rpm -q etcd && node['cookbook-openshift3']['etcd_version'] < `repoquery --plugins --installed --qf '%{version}' etcd`"
+    not_if { `rpm -q etcd` && (node['cookbook-openshift3']['etcd_version'].to_s.split('-')[0]).to_s < `repoquery --plugins --installed --qf '%{version}' etcd` }
   end
 end
 

@@ -88,7 +88,7 @@ if is_node_server || node['cookbook-openshift3']['deploy_containerized']
     version node['cookbook-openshift3']['docker_version'] unless node['cookbook-openshift3']['docker_version'].nil?
     retries 3
     notifies :restart, 'service[docker]', :immediately if node['cookbook-openshift3']['upgrade']
-    not_if "rpm -q docker && #{node['cookbook-openshift3']['docker_version'].to_s.split('-')[0]} < `repoquery --plugins --installed --qf '%{version}' docker`"
+    not_if { `rpm -q docker` && (node['cookbook-openshift3']['docker_version'].to_s.split('-')[0]).to_s < `repoquery --plugins --installed --qf '%{version}' docker` }
   end
 
   bash "Configure Docker to use the default FS type for #{node['fqdn']}" do
