@@ -29,6 +29,7 @@ if is_node_server
   %w(excluder docker-excluder).each do |pkg|
     execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
       command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
+      only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
     end
   end
 
@@ -48,9 +49,9 @@ if is_node_server
   end
 
   %w(excluder docker-excluder).each do |pkg|
-    yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]}"
     execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
       command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
+      only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
     end
   end
 end

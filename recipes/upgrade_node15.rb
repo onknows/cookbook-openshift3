@@ -29,6 +29,7 @@ if is_node_server
   %w(excluder docker-excluder).each do |pkg|
     execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
       command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
+      only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
     end
   end
 

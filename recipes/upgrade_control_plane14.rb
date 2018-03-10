@@ -27,6 +27,15 @@ if defined? node['cookbook-openshift3']['upgrade_repos']
   node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
 end
 
+if is_master_server || is_node_server
+  %w(excluder docker-excluder).each do |pkg|
+    execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} (Best effort < 3.5)" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
+      only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
+    end
+  end
+end
+
 if is_etcd_server
   log 'Upgrade for ETCD [STARTED]' do
     level :info
@@ -191,3 +200,13 @@ if is_master_server && is_first_master
     level :info
   end
 end
+
+if is_master_server || is_node_server
+  %w(excluder docker-excluder).each do |pkg|
+    execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
+      only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
+    end
+  end
+end
+
