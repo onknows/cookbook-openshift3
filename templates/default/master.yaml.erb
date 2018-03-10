@@ -67,7 +67,7 @@ corsAllowedOrigins:
   # anchor with start (\A) and end (\z) of the string, make the check case insensitive ((?i)) and escape hostname
 <%- @erb_corsAllowedOrigins.each do |origin| -%>
 <% if ! origin.to_s.empty? %>
-  - (?i)//<%= origin %>(:|\z)
+  - <%= origin %>
 <%- end -%>
 <% end -%>
 <% if @standalone_registry%>
@@ -134,7 +134,7 @@ kubernetesMasterConfig:
     <%- Array(v).each do |vv| -%>
       - "<%= vv %>"
     <%- end -%>
-<% if @ose_major_version.split('.')[1].to_i >= 6 %>
+<% if @ose_major_version.split('.')[1].to_i >= 7 %>
     runtime-config:
       - apis/settings.k8s.io/v1alpha1=true
 <%- end -%>

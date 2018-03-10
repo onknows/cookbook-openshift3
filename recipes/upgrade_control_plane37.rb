@@ -20,6 +20,7 @@ is_etcd_server = server_info.on_etcd_server?
 is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
 is_first_master = server_info.on_first_master?
+master_servers = server_info.master_servers
 
 if is_master_server
   config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
@@ -87,6 +88,12 @@ unless node.run_state['issues_detected']
       level :info
     end
 
+    execute 'Confirm OpenShift authorization objects are in sync' do
+      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
+              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
+              migrate authorization"
+    end
+
     execute 'Migrate storage post policy reconciliation' do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
@@ -116,6 +123,7 @@ unless node.run_state['issues_detected']
       notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
       notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
       notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
+      not_if { master_servers.size == 1 }
     end
 
     include_recipe 'cookbook-openshift3::certificate_server' if node['cookbook-openshift3']['deploy_containerized']
@@ -159,43 +167,20 @@ unless node.run_state['issues_detected']
       retry_delay 1
     end
 
-    execute 'Post master upgrade - Upgrade clusterpolicies storage' do
-      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
-              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-              migrate storage --include=clusterpolicies --confirm"
-    end
-
     log 'Reconcile Cluster Roles & Cluster Role Bindings [STARTED]' do
       level :info
-    end
-
-    execute 'Reconcile Cluster Roles' do
-      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
-              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-              policy reconcile-cluster-roles --additive-only=true --confirm"
-    end
-
-    execute 'Reconcile Cluster Role Bindings' do
-      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
-              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-              policy reconcile-cluster-role-bindings \
-              --exclude-groups=system:authenticated \
-              --exclude-groups=system:authenticated:oauth \
-              --exclude-groups=system:unauthenticated \
-              --exclude-users=system:anonymous \
-              --additive-only=true --confirm"
-    end
-
-    execute 'Reconcile Security Context Constraints' do
-      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
-              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-              policy reconcile-sccs --confirm --additive-only=true"
     end
 
     execute 'Remove shared-resource-viewer protection before upgrade' do
       command "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
               annotate role shared-resource-viewer openshift.io/reconcile-protect- -n openshift"
+    end
+
+    execute 'Reconcile Security Context Constraints' do
+      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
+              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
+              policy reconcile-sccs --confirm --additive-only=true"
     end
 
     execute 'Migrate storage post policy reconciliation' do
@@ -214,7 +199,7 @@ unless node.run_state['issues_detected']
       level :info
     end
 
-    log 'Restart Master & Node services' do
+    log 'Restart Node services' do
       level :info
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
     end
