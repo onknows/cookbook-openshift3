@@ -199,7 +199,10 @@ unless node.run_state['issues_detected']
       level :info
       notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
       notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
+    end
+
+    execute 'Wait for 15 seconds all services to come up' do
+      command 'sleep 15'
     end
 
     log 'Reconcile Cluster Roles & Cluster Role Bindings [COMPLETED]' do
