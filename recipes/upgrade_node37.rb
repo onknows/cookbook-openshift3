@@ -20,6 +20,8 @@ if defined? node['cookbook-openshift3']['upgrade_repos']
   node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
 end
 
+include_recipe 'yum::default'
+
 if is_node_server
   log 'Upgrade for NODE [STARTED]' do
     level :info

@@ -12,6 +12,7 @@ node.force_override['cookbook-openshift3']['upgrade'] = true
 node.force_override['cookbook-openshift3']['ose_major_version'] = '3.6'
 node.force_override['cookbook-openshift3']['ose_version'] = '3.6.1-1.0.008f2d5'
 node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v3.6.1'
+node.force_override['yum']['main']['exclude'] = 'docker-1.13*'
 
 hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : 'v' + node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]
 
@@ -24,6 +25,8 @@ is_first_master = server_info.on_first_master?
 if defined? node['cookbook-openshift3']['upgrade_repos']
   node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
 end
+
+include_recipe 'yum::default'
 
 if is_master_server || is_node_server
   %w(excluder docker-excluder).each do |pkg|
