@@ -197,8 +197,8 @@ unless node.run_state['issues_detected']
   if is_master_server
     log 'Cycle all controller services to force new leader election mode' do
       level :info
-      notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
-      notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately if node['cookbook-openshift3']['openshift_HA']
     end
 
     execute 'Wait for 15 seconds all services to come up' do
