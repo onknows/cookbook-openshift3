@@ -85,7 +85,7 @@ if is_node_server || node['cookbook-openshift3']['deploy_containerized']
     version node['cookbook-openshift3']['docker_version'] unless node['cookbook-openshift3']['docker_version'].nil?
     retries 3
   end
-  
+
   bash "Configure Docker to use the default FS type for #{node['fqdn']}" do
     code <<-EOF
       correct_fs=$(df -T /var | egrep -o 'xfs|ext4')
@@ -94,11 +94,11 @@ if is_node_server || node['cookbook-openshift3']['deploy_containerized']
     not_if "grep $(df -T /var | egrep -o 'xfs|ext4') /usr/bin/docker-storage-setup"
     timeout 60
   end
-  
+
   template '/etc/sysconfig/docker-storage-setup' do
     source 'docker-storage.erb'
   end
-  
+
   template '/etc/sysconfig/docker' do
     source 'service_docker.sysconfig.erb'
     notifies :restart, 'service[docker]', :immediately
