@@ -3,8 +3,6 @@
 # Recipe:: default
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
-server_info = OpenShiftHelper::NodeHelper.new(node)
-is_first_master = server_info.on_first_master?
 
 service "#{node['cookbook-openshift3']['openshift_service_type']}-master"
 
@@ -33,13 +31,6 @@ service 'openvswitch'
 
 service 'haproxy'
 
-include_recipe 'cookbook-openshift3::validate'
-include_recipe 'cookbook-openshift3::common'
-include_recipe 'cookbook-openshift3::master'
-include_recipe 'cookbook-openshift3::node'
-
-include_recipe 'cookbook-openshift3::master_config_post' if is_first_master
-
 service 'Restart Master' do
   service_name "#{node['cookbook-openshift3']['openshift_service_type']}-master"
   action :nothing
@@ -63,3 +54,10 @@ service 'Restart Node' do
   action :nothing
   only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-node"
 end
+
+service 'etcd-service' do
+  service_name node['cookbook-openshift3']['etcd_service_name']
+  action :nothing
+end
+
+include_recipe 'cookbook-openshift3::validate' unless node['cookbook-openshift3']['upgrade']

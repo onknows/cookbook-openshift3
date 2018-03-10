@@ -14,7 +14,7 @@ supports 'centos', '>= 7.1'
 depends 'yum', '>= 3.6.1'
 depends 'iptables', '>= 1.0.0'
 depends 'selinux_policy'
-depends 'docker', '~> 2.0'
+depends 'docker', '>= 2.0'
 
 recipe 'cookbook-openshift3::default', 'Default recipe'
 recipe 'cookbook-openshift3::common', 'Apply common logic'

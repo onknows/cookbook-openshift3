@@ -66,18 +66,6 @@ openshift3-shared-attributes: &SHARED
   node_servers: *SERVERS
 
 suites:
-  - name: standalone-ose37
-    run_list:
-      - role[openshift3-base-ose37]
-    verifier:
-      inspec_tests:
-        - test/inspec/standalone
-        - test/inspec/shared
-    attributes:
-      cookbook-openshift3:
-        << : *SHARED
-        openshift_HA: false
-
   - name: cluster-native-ose37
     run_list:
       - role[openshift3-base-ose37]

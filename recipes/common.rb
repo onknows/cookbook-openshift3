@@ -9,7 +9,6 @@ master_servers = server_info.master_servers
 etcd_servers = server_info.etcd_servers
 lb_servers = server_info.lb_servers
 certificate_server = server_info.certificate_server
-
 include_recipe 'iptables::default'
 include_recipe 'selinux_policy::default'
 
@@ -154,5 +153,5 @@ ruby_block 'Change HTTPD port xfer' do
   notifies :restart, 'service[httpd]', :immediately
 end
 
-include_recipe 'cookbook-openshift3::certificate_server'
+include_recipe 'cookbook-openshift3::certificate_server' unless node['cookbook-openshift3']['upgrade']
 include_recipe 'cookbook-openshift3::cloud_provider'

@@ -10,6 +10,7 @@ certificate_server = server_info.certificate_server
 etcd_remove_servers = node['cookbook-openshift3']['etcd_remove_servers']
 is_certificate_server = server_info.on_certificate_server?
 is_etcd_server = server_info.on_etcd_server?
+first_master = server_info.first_master
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
@@ -77,6 +78,7 @@ if is_certificate_server
     remote_file "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd/#{etcd_export_certificate}" do
       source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/#{etcd_export_certificate}"
       mode '0644'
+      sensitive true
     end
   end
 
@@ -105,6 +107,7 @@ if is_certificate_server
 
     remote_file "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}/ca.crt" do
       source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/ca.crt"
+      sensitive true
     end
 
     execute "Create a tarball of the etcd certs for #{etcd_master['fqdn']}" do
@@ -130,15 +133,20 @@ if is_certificate_server
   end
 end
 
+if is_etcd_server || is_certificate_server
+  package 'etcd' do
+    action :upgrade if node['cookbook-openshift3']['upgrade'] && node['cookbook-openshift3']['etcd_version'].nil?
+    version node['cookbook-openshift3']['etcd_version'] unless node['cookbook-openshift3']['etcd_version'].nil?
+    retries 3
+    notifies :enable, 'service[etcd-service]', :immediately if node['cookbook-openshift3']['upgrade'] && certificate_server['fqdn'] == first_master['fqdn']
+  end
+end
+
 if is_etcd_server
   node['cookbook-openshift3']['enabled_firewall_rules_etcd'].each do |rule|
     iptables_rule rule do
       action :enable
     end
-  end
-
-  package 'etcd' do
-    retries 3
   end
 
   if node['cookbook-openshift3']['deploy_containerized']
@@ -209,17 +217,13 @@ if is_etcd_server
   template "#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd.conf" do
     source 'etcd.conf.erb'
     notifies :restart, 'service[etcd-service]', :immediately
+    notifies :enable, 'service[etcd-service]', :immediately
     variables lazy {
       {
         etcd_servers: etcd_servers,
         initial_cluster_state: etcd_servers.find { |etcd_node| etcd_node['fqdn'] == node['fqdn'] }.key?('new_node') ? 'existing' : node['cookbook-openshift3']['etcd_initial_cluster_state'],
       }
     }
-  end
-
-  service 'etcd-service' do
-    service_name node['cookbook-openshift3']['etcd_service_name']
-    action [:start, :enable]
   end
 
   cookbook_file '/etc/profile.d/etcdctl.sh' do

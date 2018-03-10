@@ -4,6 +4,8 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
+originrepos = [{ 'name' => 'centos-openshift-origin13', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin13/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin14', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin14/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin15', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin15/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin36', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin36/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin37', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin37/', 'gpgcheck' => false }]
+
 default['cookbook-openshift3']['use_wildcard_nodes'] = false
 default['cookbook-openshift3']['wildcard_domain'] = ''
 default['cookbook-openshift3']['openshift_cluster_name'] = nil
@@ -14,6 +16,8 @@ default['cookbook-openshift3']['node_servers'] = []
 default['cookbook-openshift3']['lb_servers'] = []
 default['cookbook-openshift3']['certificate_server'] = {}
 default['cookbook-openshift3']['openshift_push_via_dns'] = false
+default['cookbook-openshift3']['upgrade'] = false
+default['cookbook-openshift3']['etcd_migrated'] = true
 
 if node['cookbook-openshift3']['openshift_HA']
   default['cookbook-openshift3']['openshift_common_api_hostname'] = node['cookbook-openshift3']['openshift_cluster_name']
@@ -60,12 +64,10 @@ default['cookbook-openshift3']['enabled_firewall_rules_etcd'] = %w(firewall_etcd
 default['cookbook-openshift3']['enabled_firewall_rules_lb'] = %w(firewall_lb)
 default['cookbook-openshift3']['openshift_service_type'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'atomic-openshift' : 'origin'
 default['cookbook-openshift3']['registry_persistent_volume'] = ''
-default['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? %w() : [{ 'name' => 'centos-openshift-origin13', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin13/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin14', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin14/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin15', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin15/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin36', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin36/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin37', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin37/', 'gpgcheck' => false }]
-
+default['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? %w() : originrepos.find_all { |x| x['name'] =~ /origin#{node['cookbook-openshift3']['ose_major_version'].tr('.', '')}/ }
 default['cookbook-openshift3']['openshift_http_proxy'] = ''
 default['cookbook-openshift3']['openshift_https_proxy'] = ''
 default['cookbook-openshift3']['openshift_no_proxy'] = ''
-
 default['cookbook-openshift3']['openshift_data_dir'] = '/var/lib/origin'
 default['cookbook-openshift3']['openshift_common_base_dir'] = '/etc/origin'
 default['cookbook-openshift3']['openshift_common_master_dir'] = '/etc/origin'
@@ -99,11 +101,10 @@ default['cookbook-openshift3']['openshift_docker_insecure_registry_arg'] = []
 default['cookbook-openshift3']['openshift_docker_add_registry_arg'] = []
 default['cookbook-openshift3']['openshift_docker_block_registry_arg'] = []
 default['cookbook-openshift3']['openshift_docker_insecure_registries'] = node['cookbook-openshift3']['openshift_docker_add_registry_arg'].empty? ? [node['cookbook-openshift3']['openshift_common_portal_net']] : [node['cookbook-openshift3']['openshift_common_portal_net']] + node['cookbook-openshift3']['openshift_docker_insecure_registry_arg']
-default['cookbook-openshift3']['openshift_docker_cli_image'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/ose' : 'openshift/origin'
 default['cookbook-openshift3']['openshift_docker_master_image'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/ose' : 'openshift/origin'
 default['cookbook-openshift3']['openshift_docker_node_image'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/node' : 'openshift/node'
 default['cookbook-openshift3']['openshift_docker_ovs_image'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/openvswitch' : 'openshift/openvswitch'
-default['cookbook-openshift3']['openshift_docker_etcd_image'] = 'registry.access.redhat.com/rhel7/etcd'
+default['cookbook-openshift3']['openshift_docker_etcd_image'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'registry.access.redhat.com/rhel7/etcd' : 'registry.fedoraproject.org/f26/etcd'
 default['cookbook-openshift3']['openshift_master_config_dir'] = "#{node['cookbook-openshift3']['openshift_common_master_dir']}/master"
 default['cookbook-openshift3']['openshift_master_bind_addr'] = '0.0.0.0'
 default['cookbook-openshift3']['openshift_master_auditconfig'] = false
@@ -206,6 +207,7 @@ default['cookbook-openshift3']['etcd_conf_dir'] = '/etc/etcd'
 default['cookbook-openshift3']['etcd_ca_dir'] = "#{node['cookbook-openshift3']['etcd_conf_dir']}/ca"
 default['cookbook-openshift3']['etcd_debug'] = 'False'
 default['cookbook-openshift3']['etcd_generated_certs_dir'] = '/var/www/html/etcd/generated_certs'
+default['cookbook-openshift3']['etcd_generated_migrated_dir'] = '/var/www/html/etcd/migration'
 default['cookbook-openshift3']['etcd_ca_cert'] = "#{node['cookbook-openshift3']['etcd_conf_dir']}/ca.crt"
 default['cookbook-openshift3']['etcd_cert_file'] = "#{node['cookbook-openshift3']['etcd_conf_dir']}/server.crt"
 default['cookbook-openshift3']['etcd_cert_key'] = "#{node['cookbook-openshift3']['etcd_conf_dir']}/server.key"
@@ -220,7 +222,7 @@ default['cookbook-openshift3']['etcd_ca_exts_server'] = 'etcd_v3_ca_server'
 
 default['cookbook-openshift3']['etcd_initial_cluster_state'] = 'new'
 default['cookbook-openshift3']['etcd_initial_cluster_token'] = 'etcd-cluster-1'
-default['cookbook-openshift3']['etcd_data_dir'] = '/var/lib/etcd/'
+default['cookbook-openshift3']['etcd_data_dir'] = '/var/lib/etcd'
 default['cookbook-openshift3']['etcd_default_days'] = '365'
 
 default['cookbook-openshift3']['etcd_client_port'] = '2379'

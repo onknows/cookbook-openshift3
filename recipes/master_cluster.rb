@@ -65,6 +65,7 @@ if is_certificate_server
 
     remote_file "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}ca.crt" do
       source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/ca.crt"
+      sensitive true
     end
 
     execute "Create a tarball of the etcd master certs for #{master_server['fqdn']}" do
@@ -88,6 +89,7 @@ unless is_certificate_server && node['fqdn'] != first_master['fqdn']
     notifies :run, 'execute[Extract certificate to Master folder]', :immediately
     retries 12
     retry_delay 5
+    sensitive true
   end
 
   execute 'Un-encrypt master certificate tgz files' do
@@ -97,7 +99,7 @@ unless is_certificate_server && node['fqdn'] != first_master['fqdn']
   end
 
   execute 'Extract certificate to Master folder' do
-    command "tar xzf openshift-master-#{node['fqdn']}.tgz"
+    command "tar -xzf openshift-master-#{node['fqdn']}.tgz ./master.etcd-*"
     cwd node['cookbook-openshift3']['openshift_master_config_dir']
     action :nothing
   end
@@ -168,6 +170,7 @@ if is_certificate_server
     remote_file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{loopback_master_client}" do
       source "file://#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir/#{loopback_master_client}"
       only_if { ::File.file?("#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir/#{loopback_master_client}") }
+      sensitive true
     end
   end
 
@@ -214,7 +217,7 @@ if is_certificate_server
     certs = case ose_major_version.split('.')[1].to_i
             when 3..4
               node['cookbook-openshift3']['openshift_master_certs'] + %w(openshift-registry.crt openshift-registry.key openshift-registry.kubeconfig openshift-router.crt openshift-router.key openshift-router.kubeconfig service-signer.crt service-signer.key)
-            when 5..6
+            when 5..7
               node['cookbook-openshift3']['openshift_master_certs'] + %w(service-signer.crt service-signer.key)
             else
               node['cookbook-openshift3']['openshift_master_certs']
@@ -224,6 +227,7 @@ if is_certificate_server
       remote_file "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/#{master_certificate}" do
         source "file://#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{master_certificate}"
         only_if { ::File.file?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{master_certificate}") }
+        sensitive true
       end
     end
 
@@ -253,6 +257,7 @@ unless is_certificate_server
     notifies :run, 'execute[Extract master certificate to Master folder]', :immediately
     retries 12
     retry_delay 5
+    sensitive true
   end
 
   execute 'Un-encrypt master certificate master tgz files' do
@@ -262,7 +267,7 @@ unless is_certificate_server
   end
 
   execute 'Extract master certificate to Master folder' do
-    command "tar xzf openshift-#{node['fqdn']}.tgz"
+    command "tar -xzf openshift-#{node['fqdn']}.tgz"
     cwd node['cookbook-openshift3']['openshift_master_config_dir']
     action :nothing
   end
@@ -339,6 +344,8 @@ template node['cookbook-openshift3']['openshift_master_controllers_sysconfig'] d
   notifies :restart, 'service[Restart Controller]', :immediately
 end
 
+include_recipe 'cookbook-openshift3::wire_aggregator' if ose_major_version.split('.')[1].to_i >= 6
+
 openshift_create_master 'Create master configuration file' do
   named_certificate node['cookbook-openshift3']['openshift_master_named_certificates']
   origins node['cookbook-openshift3']['erb_corsAllowedOrigins'].uniq
@@ -351,6 +358,16 @@ openshift_create_master 'Create master configuration file' do
 end
 
 if certificate_server['fqdn'] == first_master['fqdn'] || !is_certificate_server
+  package 'etcd' do
+    not_if 'rpm -q etcd'
+  end
+
+  execute 'Check ETCD cluster health before doing anything' do
+    command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --cert-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.crt --key-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.key --ca-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-ca.crt -C #{etcd_servers.map { |srv| "https://#{srv['ipaddress']}:2379" }.join(',')} cluster-health | grep -w 'cluster is healthy'"
+    retries 120
+    retry_delay 1
+  end
+
   execute 'Activate services for Master API on first master' do
     command 'echo nothing to do specific'
     notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
@@ -359,7 +376,7 @@ if certificate_server['fqdn'] == first_master['fqdn'] || !is_certificate_server
   end
 
   execute 'Wait for master api service to start on first master' do
-    command 'sleep 15'
+    command node['cookbook-openshift3']['deploy_containerized'] == true ? 'sleep 15' : 'sleep 5'
     action :run
     not_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-api"
   end
@@ -385,7 +402,7 @@ if certificate_server['fqdn'] == first_master['fqdn'] || !is_certificate_server
   end
 
   execute 'Wait for master controller service to start on first master' do
-    command 'sleep 15'
+    command node['cookbook-openshift3']['deploy_containerized'] == true ? 'sleep 15' : 'sleep 5'
     action :run
     not_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-controllers"
   end

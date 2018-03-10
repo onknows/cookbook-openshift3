@@ -4,6 +4,8 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
+ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
+
 if node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'] && node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['openshift_master_ca_certificate']['secret_file'] || nil
   ca_vars = Chef::EncryptedDataBagItem.load(node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'], node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name'], secret_file)
@@ -89,6 +91,8 @@ if node['cookbook-openshift3']['oauth_Identities'].include? 'HTPasswdPasswordIde
     mode '600'
   end
 end
+
+include_recipe 'cookbook-openshift3::wire_aggregator' if ose_major_version.split('.')[1].to_i >= 6
 
 openshift_create_master 'Create master configuration file' do
   named_certificate node['cookbook-openshift3']['openshift_master_named_certificates']
