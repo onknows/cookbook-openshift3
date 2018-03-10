@@ -100,7 +100,7 @@ admissionConfig:
           reject: true
           skipOnResolutionFailure: true
         kind: ImagePolicyConfig
-<% if @ose_major_version.split('.')[1].to_i >= 6 %>
+<% if @ose_major_version.split('.')[1].to_i >= 7 %>
     PodPreset:
       configuration:
         kind: DefaultAdmissionConfig

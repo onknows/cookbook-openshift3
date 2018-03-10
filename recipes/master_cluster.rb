@@ -289,7 +289,7 @@ end
 template node['cookbook-openshift3']['openshift_master_scheduler_conf'] do
   source 'scheduler.json.erb'
   variables ose_major_version: ose_major_version
-  notifies :restart, 'service[Restart API]', :immediately
+  notifies :restart, 'service[Restart API]', :immediately unless node['cookbook-openshift3']['upgrade']
 end
 
 if node['cookbook-openshift3']['oauth_Identities'].include? 'HTPasswdPasswordIdentityProvider'
@@ -318,8 +318,8 @@ end
 template "/etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-master" do
   source 'service_master.sysconfig.erb'
   variables(sysconfig_vars)
-  notifies :restart, 'service[Restart API]', :immediately
-  notifies :restart, 'service[Restart Controller]', :immediately
+  notifies :restart, 'service[Restart API]', :immediately unless node['cookbook-openshift3']['upgrade']
+  notifies :restart, 'service[Restart Controller]', :immediately unless node['cookbook-openshift3']['upgrade']
 end
 
 template node['cookbook-openshift3']['openshift_master_api_systemd'] do
@@ -335,13 +335,13 @@ end
 template node['cookbook-openshift3']['openshift_master_api_sysconfig'] do
   source 'service_master-api.sysconfig.erb'
   variables(sysconfig_vars)
-  notifies :restart, 'service[Restart API]', :immediately
+  notifies :restart, 'service[Restart API]', :immediately unless node['cookbook-openshift3']['upgrade']
 end
 
 template node['cookbook-openshift3']['openshift_master_controllers_sysconfig'] do
   source 'service_master-controllers.sysconfig.erb'
   variables(sysconfig_vars)
-  notifies :restart, 'service[Restart Controller]', :immediately
+  notifies :restart, 'service[Restart Controller]', :immediately unless node['cookbook-openshift3']['upgrade']
 end
 
 include_recipe 'cookbook-openshift3::wire_aggregator' if ose_major_version.split('.')[1].to_i >= 6

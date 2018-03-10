@@ -20,6 +20,7 @@ is_etcd_server = server_info.on_etcd_server?
 is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
 is_first_master = server_info.on_first_master?
+master_servers = server_info.master_servers
 
 if is_master_server
   config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
@@ -87,10 +88,28 @@ unless node.run_state['issues_detected']
       level :info
     end
 
+    execute 'Confirm OpenShift authorization objects are in sync' do
+      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
+              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
+              migrate authorization"
+    end
+
     execute 'Migrate storage post policy reconciliation' do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
               migrate storage --include=* --confirm"
+    end
+
+    execute 'Create key for upgrade all storage' do
+      command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 put migration ok"
+    end
+  end
+
+  if is_master_server && !is_first_master
+    execute 'Wait for First master to upgrade all storage' do
+      command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get migration -w simple | grep -w ok"
+      retries 120
+      retry_delay 5
     end
   end
 
@@ -104,6 +123,7 @@ unless node.run_state['issues_detected']
       notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
       notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
       notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
+      not_if { master_servers.size == 1 }
     end
 
     include_recipe 'cookbook-openshift3::certificate_server' if node['cookbook-openshift3']['deploy_containerized']
@@ -131,6 +151,14 @@ unless node.run_state['issues_detected']
     end
   end
 
+  if is_master_server && !is_first_master
+    execute 'Wait for First master to reconcile all roles' do
+      command "[[ $(ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get migration -w simple | wc -l) -eq 0 ]]"
+      retries 120
+      retry_delay 5
+    end
+  end
+
   if is_master_server && is_first_master
 
     execute 'Wait for API to be ready' do
@@ -139,37 +167,8 @@ unless node.run_state['issues_detected']
       retry_delay 1
     end
 
-    execute 'Post master upgrade - Upgrade clusterpolicies storage' do
-      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
-              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-              migrate storage --include=clusterpolicies --confirm"
-    end
-
     log 'Reconcile Cluster Roles & Cluster Role Bindings [STARTED]' do
       level :info
-    end
-
-    execute 'Reconcile Cluster Roles' do
-      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
-              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-              policy reconcile-cluster-roles --additive-only=true --confirm"
-    end
-
-    execute 'Reconcile Cluster Role Bindings' do
-      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
-              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-              policy reconcile-cluster-role-bindings \
-              --exclude-groups=system:authenticated \
-              --exclude-groups=system:authenticated:oauth \
-              --exclude-groups=system:unauthenticated \
-              --exclude-users=system:anonymous \
-              --additive-only=true --confirm"
-    end
-
-    execute 'Reconcile Security Context Constraints' do
-      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
-              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-              policy reconcile-sccs --confirm --additive-only=true"
     end
 
     execute 'Remove shared-resource-viewer protection before upgrade' do
@@ -178,24 +177,40 @@ unless node.run_state['issues_detected']
               annotate role shared-resource-viewer openshift.io/reconcile-protect- -n openshift"
     end
 
+    execute 'Reconcile Security Context Constraints' do
+      command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
+              --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
+              policy reconcile-sccs --confirm --additive-only=true"
+    end
+
     execute 'Migrate storage post policy reconciliation' do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
               migrate storage --include=* --confirm"
     end
 
+    execute 'Delete key for upgrade all storage' do
+      command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 del migration"
+    end
+  end
+
+  if is_master_server
+    log 'Cycle all controller services to force new leader election mode' do
+      level :info
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately if node['cookbook-openshift3']['openshift_HA']
+    end
+
+    execute 'Wait for 15 seconds all services to come up' do
+      command 'sleep 15'
+    end
+
     log 'Reconcile Cluster Roles & Cluster Role Bindings [COMPLETED]' do
       level :info
     end
+  end
 
-    log 'Restart Master & Node services' do
-      level :info
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
-    end
-
+  if is_master_server && is_first_master
     log 'Update hosted deployment(s) to current version [STARTED]' do
       level :info
     end
