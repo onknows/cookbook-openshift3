@@ -9,6 +9,6 @@ ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true 
 %w(excluder docker-excluder).each do |pkg|
   yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{ose_major_version}"
   execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
-    command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} exclude"
+    command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
   end
 end
