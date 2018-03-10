@@ -186,6 +186,14 @@ unless node.run_state['issues_detected']
       level :info
     end
 
+    log 'Restart Master & Node services' do
+      level :info
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
+    end
+
     log 'Update hosted deployment(s) to current version [STARTED]' do
       level :info
     end
