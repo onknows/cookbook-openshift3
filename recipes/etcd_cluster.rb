@@ -135,7 +135,7 @@ if is_certificate_server
 end
 
 if is_etcd_server || is_certificate_server
-  yum_package 'etcd' do
+  package 'etcd' do
     action :upgrade if node['cookbook-openshift3']['upgrade'] && ose_major_version.split('.')[1].to_i >= 6
     version node['cookbook-openshift3']['etcd_version'] unless node['cookbook-openshift3']['etcd_version'].nil?
     retries 3
