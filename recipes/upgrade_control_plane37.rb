@@ -195,13 +195,15 @@ unless node.run_state['issues_detected']
   end
 
   if is_master_server
-    log 'Reconcile Cluster Roles & Cluster Role Bindings [COMPLETED]' do
+    log 'Cycle all controller services to force new leader election mode' do
       level :info
+      notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
+      notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
     end
 
-    log 'Restart Node services' do
+    log 'Reconcile Cluster Roles & Cluster Role Bindings [COMPLETED]' do
       level :info
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
     end
   end
 
