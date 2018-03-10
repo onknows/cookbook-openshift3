@@ -118,6 +118,11 @@ if is_first_etcd
     retries 30
     retry_delay 1
   end
+
+  execute 'Wait for 10 seconds when containerised' do
+    command 'sleep 10'
+    only_if { node['cookbook-openshift3']['deploy_containerized'] }
+  end
 end
 
 unless etcd_servers.size == 1
