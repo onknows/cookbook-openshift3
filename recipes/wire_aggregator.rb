@@ -20,6 +20,7 @@ if is_certificate_server
     mode '0755'
     owner 'apache'
     group 'apache'
+    recursive true
   end
 
   execute 'Creating Master Aggregator signer certs' do

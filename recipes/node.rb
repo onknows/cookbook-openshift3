@@ -11,7 +11,6 @@ is_node_server = server_info.on_node_server?
 
 ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
 path_certificate = node['cookbook-openshift3']['use_wildcard_nodes'] ? 'wildcard_nodes.tgz.enc' : "#{node['fqdn']}.tgz.enc"
-default_interface = `/sbin/ip route get to 8.8.8.8`[/src.*/][/\d+\.\d+\.\d+\.\d+/]
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
@@ -186,7 +185,6 @@ if is_node_server
     template '/etc/dnsmasq.d/origin-dns.conf' do
       source 'origin-dns.conf.erb'
       variables(
-        default_interface: default_interface,
         ose_major_version: ose_major_version
       )
       notifies :restart, 'service[dnsmasq]', :immediately

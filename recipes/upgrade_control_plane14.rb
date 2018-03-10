@@ -12,7 +12,7 @@ node.force_override['cookbook-openshift3']['upgrade'] = true
 node.force_override['cookbook-openshift3']['ose_major_version'] = '1.4'
 node.force_override['cookbook-openshift3']['ose_version'] = '1.4.1-1.el7'
 node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v1.4.1'
-node.force_override['cookbook-openshift3']['docker_version'] = '1.12.6-71.git3e8e77d.el7'
+node.force_override['cookbook-openshift3']['etcd_version'] = '3.1.9-2.el7'
 
 hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : 'v' + node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]
 
@@ -97,6 +97,12 @@ end
 if is_master_server && is_first_master
   log 'Reconcile Cluster Roles & Cluster Role Bindings [STARTED]' do
     level :info
+  end
+
+  execute 'Wait for API to be ready' do
+    command "[[ $(curl --silent #{node['cookbook-openshift3']['openshift_master_api_url']}/healthz/ready --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt) =~ \"ok\" ]]"
+    retries 120
+    retry_delay 1
   end
 
   execute 'Reconcile Cluster Roles' do

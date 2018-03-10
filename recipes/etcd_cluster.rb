@@ -10,6 +10,7 @@ certificate_server = server_info.certificate_server
 etcd_remove_servers = node['cookbook-openshift3']['etcd_remove_servers']
 is_certificate_server = server_info.on_certificate_server?
 is_etcd_server = server_info.on_etcd_server?
+first_master = server_info.first_master
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
@@ -132,17 +133,20 @@ if is_certificate_server
   end
 end
 
+if is_etcd_server || is_certificate_server
+  package 'etcd' do
+    action :upgrade if node['cookbook-openshift3']['upgrade'] && node['cookbook-openshift3']['etcd_version'].nil?
+    version node['cookbook-openshift3']['etcd_version'] unless node['cookbook-openshift3']['etcd_version'].nil?
+    retries 3
+    notifies :enable, 'service[etcd-service]', :immediately if node['cookbook-openshift3']['upgrade'] && certificate_server['fqdn'] == first_master['fqdn']
+  end
+end
+
 if is_etcd_server
   node['cookbook-openshift3']['enabled_firewall_rules_etcd'].each do |rule|
     iptables_rule rule do
       action :enable
     end
-  end
-
-  package 'etcd' do
-    action :upgrade if node['cookbook-openshift3']['upgrade']
-    version node['cookbook-openshift3']['etcd_version'] unless node['cookbook-openshift3']['etcd_version'].nil?
-    retries 3
   end
 
   if node['cookbook-openshift3']['deploy_containerized']

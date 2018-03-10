@@ -1,0 +1,8 @@
+<% if node['cookbook-openshift3']['deploy_containerized'] %>
+[Service]
+ExecStart=
+ExecStart=/usr/bin/docker run --name <%= node['cookbook-openshift3']['etcd_service_name'] %> --rm -v /var/lib/etcd:/var/lib/etcd:z -v <%= node['cookbook-openshift3']['etcd_conf_dir'] %>:<%= node['cookbook-openshift3']['etcd_conf_dir'] %>:ro --env-file=<%= node['cookbook-openshift3']['etcd_conf_dir'] %>/etcd.conf --env-file=/etc/systemd/system/<%= node['cookbook-openshift3']['etcd_service_name'] %>.service.d/etcd-dropin --net=host --entrypoint=/usr/bin/etcd <%= node['cookbook-openshift3']['openshift_docker_etcd_image'] %>
+<% else -%>
+[Service]
+EnvironmentFile=-/etc/systemd/system/<%= node['cookbook-openshift3']['etcd_service_name'] %>.service.d/etcd-dropin
+<% end -%>

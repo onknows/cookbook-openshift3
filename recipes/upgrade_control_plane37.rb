@@ -21,7 +21,7 @@ is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
 is_first_master = server_info.on_first_master?
 
-if is_first_master
+if is_master_server
   config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
   unless config_options['kubernetesMasterConfig']['apiServerArguments'].key?('storage-backend')
     Chef::Log.error('The cluster must be migrated to etcd v3 prior to upgrading to 3.7')
@@ -122,6 +122,13 @@ unless node.run_state['issues_detected']
   end
 
   if is_master_server && is_first_master
+
+    execute 'Wait for API to be ready' do
+      command "[[ $(curl --silent #{node['cookbook-openshift3']['openshift_master_api_url']}/healthz/ready --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt) =~ \"ok\" ]]"
+      retries 120
+      retry_delay 1
+    end
+
     execute 'Post master upgrade - Upgrade clusterpolicies storage' do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
               --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \

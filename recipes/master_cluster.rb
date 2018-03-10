@@ -358,7 +358,9 @@ openshift_create_master 'Create master configuration file' do
 end
 
 if certificate_server['fqdn'] == first_master['fqdn'] || !is_certificate_server
-  package 'etcd'
+  package 'etcd' do
+    not_if 'rpm -q etcd'
+  end
 
   execute 'Check ETCD cluster health before doing anything' do
     command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --cert-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.crt --key-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.key --ca-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-ca.crt -C #{etcd_servers.map { |srv| "https://#{srv['ipaddress']}:2379" }.join(',')} cluster-health | grep -w 'cluster is healthy'"
@@ -374,7 +376,7 @@ if certificate_server['fqdn'] == first_master['fqdn'] || !is_certificate_server
   end
 
   execute 'Wait for master api service to start on first master' do
-    command 'sleep 15'
+    command node['cookbook-openshift3']['deploy_containerized'] == true ? 'sleep 15' : 'sleep 5'
     action :run
     not_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-api"
   end
@@ -400,7 +402,7 @@ if certificate_server['fqdn'] == first_master['fqdn'] || !is_certificate_server
   end
 
   execute 'Wait for master controller service to start on first master' do
-    command 'sleep 15'
+    command node['cookbook-openshift3']['deploy_containerized'] == true ? 'sleep 15' : 'sleep 5'
     action :run
     not_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-controllers"
   end
