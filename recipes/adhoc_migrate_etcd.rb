@@ -28,10 +28,6 @@ Dir["#{Chef::Config[:file_cache_path]}/etcd_migration*"].each do |path|
 end
 
 if is_etcd_server
-  execute 'Check if there is at least one v2 snapshot [Abort if not found]' do
-    command "ls -l #{node['cookbook-openshift3']['etcd_data_dir']}/member/snap/*.snap || touch #{Chef::Config[:file_cache_path]}/etcd_migration-fail"
-  end
-
   execute 'Check if there are any v3 data [Abort if at least one v3 key]' do
     command "[[ $(ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get '.' --from-key --keys-only -w simple | wc -l) -gt 1 ]] && touch #{Chef::Config[:file_cache_path]}/etcd_migration-fail || true"
   end
