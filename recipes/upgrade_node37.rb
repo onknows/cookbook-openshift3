@@ -20,9 +20,17 @@ if defined? node['cookbook-openshift3']['upgrade_repos']
   node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
 end
 
+include_recipe 'yum::default'
+
 if is_node_server
   log 'Upgrade for NODE [STARTED]' do
     level :info
+  end
+
+  %w(excluder docker-excluder).each do |pkg|
+    execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
+    end
   end
 
   include_recipe 'cookbook-openshift3'
@@ -38,5 +46,12 @@ if is_node_server
 
   log 'Upgrade for NODE [COMPLETED]' do
     level :info
+  end
+
+  %w(excluder docker-excluder).each do |pkg|
+    yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]}"
+    execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
+    end
   end
 end

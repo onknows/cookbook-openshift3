@@ -11,3 +11,4 @@ include_recipe 'cookbook-openshift3::common'
 include_recipe 'cookbook-openshift3::master'
 include_recipe 'cookbook-openshift3::node'
 include_recipe 'cookbook-openshift3::master_config_post' if is_first_master
+include_recipe 'cookbook-openshift3::excluder'
