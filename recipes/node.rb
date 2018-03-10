@@ -232,6 +232,12 @@ if is_node_server
     value true
   end
 
+  execute 'Wait for API to become available before starting Node component' do
+    command "[[ $(curl --silent #{node['cookbook-openshift3']['openshift_master_api_url']}/healthz/ready --cacert #{node['cookbook-openshift3']['openshift_node_config_dir']}/ca.crt) =~ \"ok\" ]]"
+    retries 120
+    retry_delay 1
+  end
+
   service "#{node['cookbook-openshift3']['openshift_service_type']}-node" do
     retries 5
     retry_delay 2

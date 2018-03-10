@@ -12,7 +12,7 @@ node.force_override['cookbook-openshift3']['upgrade'] = true
 node.force_override['cookbook-openshift3']['ose_major_version'] = '1.5'
 node.force_override['cookbook-openshift3']['ose_version'] = '1.5.1-1.el7'
 node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v1.5.1'
-node.force_override['cookbook-openshift3']['etcd_version'] = '3.1.9-2.el7'
+node.force_override['yum']['main']['exclude'] = 'docker-1.13* etcd-3.2*'
 
 hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : 'v' + node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]
 
@@ -24,6 +24,17 @@ is_first_master = server_info.on_first_master?
 
 if defined? node['cookbook-openshift3']['upgrade_repos']
   node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
+end
+
+include_recipe 'yum::default'
+
+if is_master_server || is_node_server
+  %w(excluder docker-excluder).each do |pkg|
+    execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} (Best effort < 3.5)" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
+      only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
+    end
+  end
 end
 
 if is_etcd_server
@@ -194,5 +205,14 @@ if is_master_server && is_first_master
 
   log 'Update hosted deployment(s) to current version [COMPLETED]' do
     level :info
+  end
+end
+
+if is_master_server || is_node_server
+  %w(excluder docker-excluder).each do |pkg|
+    yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]}"
+    execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
+    end
   end
 end

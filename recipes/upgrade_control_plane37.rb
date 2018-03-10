@@ -33,6 +33,16 @@ if defined? node['cookbook-openshift3']['upgrade_repos']
   node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
 end
 
+include_recipe 'yum::default'
+
+if is_master_server || is_node_server
+  %w(excluder docker-excluder).each do |pkg|
+    execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
+    end
+  end
+end
+
 if is_etcd_server
   log 'Upgrade for ETCD [STARTED]' do
     level :info
@@ -178,6 +188,14 @@ unless node.run_state['issues_detected']
       level :info
     end
 
+    log 'Restart Master & Node services' do
+      level :info
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
+    end
+
     log 'Update hosted deployment(s) to current version [STARTED]' do
       level :info
     end
@@ -226,6 +244,15 @@ unless node.run_state['issues_detected']
 
     log 'Update hosted deployment(s) to current version [COMPLETED]' do
       level :info
+    end
+  end
+end
+
+if is_master_server || is_node_server
+  %w(excluder docker-excluder).each do |pkg|
+    yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]}"
+    execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
     end
   end
 end

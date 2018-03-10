@@ -33,7 +33,7 @@ else
   default['cookbook-openshift3']['master_etcd_cert_prefix'] = ''
 end
 
-default['cookbook-openshift3']['ose_version'] = nil
+default['cookbook-openshift3']['ose_version'] = '3.7.0-1.0.7ed6862'
 default['cookbook-openshift3']['persistent_storage'] = []
 default['cookbook-openshift3']['openshift_deployment_type'] = 'enterprise'
 default['cookbook-openshift3']['ose_major_version'] = '3.7'
@@ -53,7 +53,7 @@ default['cookbook-openshift3']['docker_log_driver'] = 'json-file'
 default['cookbook-openshift3']['docker_log_options'] = {}
 default['cookbook-openshift3']['install_method'] = 'yum'
 default['cookbook-openshift3']['httpd_xfer_port'] = '9999'
-default['cookbook-openshift3']['core_packages'] = %w(libselinux-python wget vim-enhanced net-tools bind-utils git bash-completion dnsmasq)
+default['cookbook-openshift3']['core_packages'] = %w(libselinux-python wget vim-enhanced net-tools bind-utils git bash-completion dnsmasq yum-utils)
 default['cookbook-openshift3']['osn_cluster_dns_domain'] = 'cluster.local'
 default['cookbook-openshift3']['osn_cluster_dns_ip'] = node['ipaddress']
 default['cookbook-openshift3']['enabled_firewall_rules_master'] = %w(firewall_master)
