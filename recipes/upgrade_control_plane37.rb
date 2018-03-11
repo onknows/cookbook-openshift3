@@ -29,13 +29,6 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
       Chef::Log.error('The cluster must be migrated to etcd v3 prior to upgrading to 3.7')
       node.run_state['issues_detected'] = true
     end
-
-    ruby_block 'Get current version' do
-      block do
-        node.run_state['issues_detected'] = true
-      end
-      not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
-    end
   end
 
   include_recipe 'cookbook-openshift3::upgrade_control_plane37_part1' unless node.run_state['issues_detected']
@@ -46,6 +39,11 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
       execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
         command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
       end
+    end
+
+    file node['cookbook-openshift3']['control_upgrade_flag'] do
+      action :delete
+      only_if { File.exist? node['cookbook-openshift3']['control_upgrade_flag'] }
     end
   end
 end
