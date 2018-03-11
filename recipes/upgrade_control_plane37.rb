@@ -21,6 +21,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
   server_info = OpenShiftHelper::NodeHelper.new(node)
   is_master_server = server_info.on_master_server?
+  is_node_server = server_info.on_node_server?
 
   if is_master_server
     config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
@@ -31,4 +32,13 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   end
 
   include_recipe 'cookbook-openshift3::upgrade_control_plane37_part1' unless node.run_state['issues_detected']
+
+  if is_master_server || is_node_server
+    %w(excluder docker-excluder).each do |pkg|
+      yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]}"
+      execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+        command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
+      end
+    end
+  end
 end

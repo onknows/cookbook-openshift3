@@ -65,4 +65,4 @@ if is_etcd_server
   end
 end
 
-include_recipe 'cookbook-openshift3::upgrade_control_plane37_part2'
+include_recipe 'cookbook-openshift3::upgrade_control_plane37_part2' unless `#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7.0`
