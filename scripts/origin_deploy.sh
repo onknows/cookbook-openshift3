@@ -4,8 +4,7 @@ clear
 cat << EOF
 
 ############################################################
-# This installer is suitable for a standalone installation #
-# "All in the box" (Master and Node in a server)           #
+# "All in the box" (Master, ETCD and Node in a server)     #
 ############################################################
 
 EOF
@@ -91,7 +90,7 @@ cat << EOF > environments/origin.json
 }
 EOF
 ### Specify the configuration details for chef-solo
-cat << EOF > ~//root/chef-solo-example/cookbookschef-solo-example/solo.rb
+cat << EOF > /root/chef-solo-example/solo.rb
 cookbook_path [
                '/root/chef-solo-example/cookbooks',
                '/root/chef-solo-example/site-cookbooks'
@@ -102,8 +101,17 @@ file_cache_path '/root/chef-solo-example/cache'
 log_location STDOUT
 solo true
 EOF
+### Create run_list
+cat << EOF > /root/chef-solo-example/run_list.json
+{ 
+  "run_list": [
+    "recipe[cookbook-openshift3::default]"
+  ]
+}
+EOF
+
 ### Deploy OSE !!!!
-chef-solo --environment origin -o recipe[cookbook-openshift3] -c ~/chef-solo-example/solo.rb
+chef-solo --environment origin -c ~/chef-solo-example/solo.rb -j ~/chef-solo-example/run_list.json --legacy
 if ! $(oc get project demo --config=/etc/origin/master/admin.kubeconfig &> /dev/null)
 then 
   # Put admin user in cluster-admin group
