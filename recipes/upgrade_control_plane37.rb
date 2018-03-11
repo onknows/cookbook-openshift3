@@ -31,14 +31,14 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     end
   end
 
-  include_recipe 'cookbook-openshift3::upgrade_control_plane37_part1' unless node.run_state['issues_detected'] ||
+  include_recipe 'cookbook-openshift3::upgrade_control_plane37_part1' unless node.run_state['issues_detected']
 
-                                                                             if is_master_server || is_node_server
-                                                                               %w(excluder docker-excluder).each do |pkg|
-                                                                                 yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]}"
-                                                                                 execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
-                                                                                   command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
-                                                                                 end
-                                                                               end
-                                                                             end
+  if is_master_server || is_node_server
+    %w(excluder docker-excluder).each do |pkg|
+      yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]}"
+      execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+        command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
+      end
+    end
+  end
 end
