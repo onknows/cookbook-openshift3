@@ -18,18 +18,17 @@ bash <(curl -s https://raw.githubusercontent.com/IshentRas/cookbook-openshift3/m
 
 Your installation of Origin is completed.
 
-A demo user has been created for you.
+An admin user has been created for you.
 
-Password is : 1234
+Username is : admin
+Password is : admin
 
 Access the console via : https://console.${IP}.nip.io:8443/console
 
 (More about [nip.io](http://nip.io/))
 
-You can also login via CLI : oc login -u demo
+You can also login via CLI : oc login -u admin
 
 Next steps for you:
 
 1) Read the [documentation](https://docs.openshift.org/latest/welcome/index.html)
-
-You should disconnect and reconnect so as to get the benefit of bash-completion on commands
