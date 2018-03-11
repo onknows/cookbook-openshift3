@@ -65,12 +65,4 @@ if is_etcd_server
   end
 end
 
-if is_master_server
-  ruby_block 'Get current version' do
-    block do
-      node.run_state['already_37'] = Mixlib::ShellOut.new("#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7").run_command.error? ? false : true
-    end
-  end
-end
-
-include_recipe 'cookbook-openshift3::upgrade_control_plane37_part2' unless node.run_state['already_37']
+include_recipe 'cookbook-openshift3::upgrade_control_plane37_part2'
