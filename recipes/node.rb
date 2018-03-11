@@ -99,6 +99,7 @@ if is_node_server
     version node['cookbook-openshift3']['ose_version'] unless node['cookbook-openshift3']['ose_version'].nil?
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
     retries 3
+    notifies :restart, 'service[Restart Node]', :immediately if node['cookbook-openshift3']['upgrade']
   end
 
   package "#{node['cookbook-openshift3']['openshift_service_type']}-sdn-ovs" do
