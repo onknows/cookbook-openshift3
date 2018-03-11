@@ -25,14 +25,12 @@ if is_master_server && is_first_master
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
             migrate authorization"
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   execute 'Migrate storage post policy reconciliation' do
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
             migrate storage --include=* --confirm"
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   execute 'Create key for upgrade all storage' do
@@ -58,7 +56,6 @@ if is_master_server
     notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
     notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
     not_if { master_servers.size == 1 }
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   include_recipe 'cookbook-openshift3::certificate_server' if node['cookbook-openshift3']['deploy_containerized']
@@ -74,7 +71,6 @@ if is_master_server
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
     notifies :restart, 'service[openvswitch]', :immediately
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   log 'Upgrade for MASTERS [COMPLETED]' do
@@ -96,7 +92,6 @@ if is_master_server && is_first_master
     command "[[ $(curl --silent #{node['cookbook-openshift3']['openshift_master_api_url']}/healthz/ready --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt) =~ \"ok\" ]]"
     retries 120
     retry_delay 1
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   log 'Reconcile Cluster Roles & Cluster Role Bindings [STARTED]' do
@@ -107,7 +102,6 @@ if is_master_server && is_first_master
     command "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
             annotate role shared-resource-viewer openshift.io/reconcile-protect- -n openshift"
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   execute 'Reconcile Security Context Constraints' do
@@ -120,7 +114,6 @@ if is_master_server && is_first_master
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
             migrate storage --include=* --confirm"
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   execute 'Delete key for upgrade all storage' do
@@ -133,12 +126,10 @@ if is_master_server
     level :info
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   execute 'Wait for 15 seconds all services to come up' do
     command 'sleep 15'
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   log 'Reconcile Cluster Roles & Cluster Role Bindings [COMPLETED]' do
