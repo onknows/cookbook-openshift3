@@ -17,6 +17,9 @@ default['cookbook-openshift3']['lb_servers'] = []
 default['cookbook-openshift3']['certificate_server'] = {}
 default['cookbook-openshift3']['openshift_push_via_dns'] = false
 default['cookbook-openshift3']['upgrade'] = false
+default['cookbook-openshift3']['control_upgrade'] = false
+default['cookbook-openshift3']['control_upgrade_version'] = ''
+default['cookbook-openshift3']['control_upgrade_flag'] = '/to_be_replaced'
 default['cookbook-openshift3']['etcd_migrated'] = true
 
 if node['cookbook-openshift3']['openshift_HA']

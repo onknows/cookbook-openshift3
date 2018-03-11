@@ -8,52 +8,60 @@
 # It creates the service signer certs (and any others) if they were not in
 # existence previously.
 
-node.force_override['cookbook-openshift3']['upgrade'] = true
-node.force_override['cookbook-openshift3']['ose_major_version'] = '1.4'
-node.force_override['cookbook-openshift3']['ose_version'] = '1.4.1-1.el7'
-node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v1.4.1'
-node.force_override['yum']['main']['exclude'] = 'docker-1.13* etcd-3.2*'
-
-server_info = OpenShiftHelper::NodeHelper.new(node)
-is_node_server = server_info.on_node_server?
-
-if defined? node['cookbook-openshift3']['upgrade_repos']
-  node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
+log "Upgrade will be skipped. Could not find the flag: #{node['cookbook-openshift3']['control_upgrade_flag']}" do
+  level :warn
+  not_if { ::File.file?(node['cookbook-openshift3']['control_upgrade_flag']) }
 end
 
-include_recipe 'yum::default'
+if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
-if is_node_server
-  log 'Upgrade for NODE [STARTED]' do
-    level :info
+  node.force_override['cookbook-openshift3']['upgrade'] = true
+  node.force_override['cookbook-openshift3']['ose_major_version'] = '1.4'
+  node.force_override['cookbook-openshift3']['ose_version'] = '1.4.1-1.el7'
+  node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v1.4.1'
+  node.force_override['yum']['main']['exclude'] = 'docker-1.13* etcd-3.2*'
+  
+  server_info = OpenShiftHelper::NodeHelper.new(node)
+  is_node_server = server_info.on_node_server?
+  
+  if defined? node['cookbook-openshift3']['upgrade_repos']
+    node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
   end
-
-  %w(excluder docker-excluder).each do |pkg|
-    execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
-      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
-      only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
+  
+  include_recipe 'yum::default'
+  
+  if is_node_server
+    log 'Upgrade for NODE [STARTED]' do
+      level :info
     end
-  end
-
-  include_recipe 'cookbook-openshift3'
-  include_recipe 'cookbook-openshift3::common'
-  include_recipe 'cookbook-openshift3::node'
-
-  log 'Node services' do
-    level :info
-    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
-    notifies :restart, 'service[openvswitch]', :immediately
-    not_if { node['cookbook-openshift3']['deploy_containerized'] }
-  end
-
-  log 'Upgrade for NODE [COMPLETED]' do
-    level :info
-  end
-
-  %w(excluder docker-excluder).each do |pkg|
-    execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
-      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
-      only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
+  
+    %w(excluder docker-excluder).each do |pkg|
+      execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+        command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
+        only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
+      end
+    end
+  
+    include_recipe 'cookbook-openshift3'
+    include_recipe 'cookbook-openshift3::common'
+    include_recipe 'cookbook-openshift3::node'
+  
+    log 'Node services' do
+      level :info
+      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
+      notifies :restart, 'service[openvswitch]', :immediately
+      not_if { node['cookbook-openshift3']['deploy_containerized'] }
+    end
+  
+    log 'Upgrade for NODE [COMPLETED]' do
+      level :info
+    end
+  
+    %w(excluder docker-excluder).each do |pkg|
+      execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
+        command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
+        only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
+      end
     end
   end
 end
