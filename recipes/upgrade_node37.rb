@@ -44,12 +44,12 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     include_recipe 'cookbook-openshift3::common'
     include_recipe 'cookbook-openshift3::node'
 
-    log 'Node services' do
-      level :info
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
-      notifies :restart, 'service[openvswitch]', :immediately
-      not_if { node['cookbook-openshift3']['deploy_containerized'] }
-    end
+    # log 'Node services' do
+    #  level :info
+    #  notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
+    #  notifies :restart, 'service[openvswitch]', :immediately
+    #  not_if { node['cookbook-openshift3']['deploy_containerized'] }
+    # end
 
     log 'Upgrade for NODE [COMPLETED]' do
       level :info
