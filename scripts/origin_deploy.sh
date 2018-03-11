@@ -54,7 +54,9 @@ cat << EOF > environments/origin.json
   },
   "override_attributes": {
     "cookbook-openshift3": {
-      "openshift_common_public_hostname": "console.${IP}.nip.io",
+      "openshift_common_sdn_network_plugin_name": "redhat/openshift-ovs-multitenant",
+      "openshift_cluster_name": "console.${IP}.nip.io",
+      "openshift_HA": true,
       "openshift_deployment_type": "origin",
       "openshift_common_default_nodeSelector": "region=infra",
       "deploy_containerized": true,
