@@ -43,12 +43,12 @@ Control upgrade requires variables to be set before running.
 *The CHEF run will ignore any upgrade unless all variables are correctly set*
 
 Variables:
-|NAME|PURPOSE|Default value|Mandatory|
-|----------------|-------------------------------|------------------|----------|
-|control_upgrade|Execute an upgrade     |`false`    |`YES`|
-|control_upgrade_version|Target version (13,14,15,36,37)        |`""` |`YES`|
-|control_upgrade_flag| Location of the control upgrade flag| `"/to_be_replaced"`  |`YES`|
-|upgrade_repos|Target YUM repo|`""`|`NO`|
+| NAME | PURPOSE | Default value | Mandatory |
+| ---------------- | ------------------------------- | ------------------ | ---------- |
+| control_upgrade | Execute an upgrade     | `false`    | `YES` |
+| control_upgrade_version | Target version (13,14,15,36,37)        |`""` |`YES`|
+| control_upgrade_flag | Location of the control upgrade flag | `"/to_be_replaced"`  | `YES` |
+| upgrade_repos | Target YUM repo | `""` | `NO` |
 
 ```json
   "override_attributes": {
