@@ -1,0 +1,96 @@
+kind: List
+metadata: {}
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: image-src
+  spec:
+    tags:
+    - from:
+        kind: DockerImage
+        name: docker.io/openshift/hello-openshift:latest
+      name: latest
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: hello-image
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: hello-build
+  spec:
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: hello-image:latest
+    source:
+      dockerfile: |-
+        FROM docker.io/openshift/hello-openshift:latest
+        ENV RESPONSE Build by S2I (Docker Strategy)
+      type: Dockerfile
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: image-src:latest
+      type: Docker
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: hello-image
+  spec:
+    replicas: 1
+    selector:
+      app: hello-image
+      deploymentconfig: hello-image
+    template:
+      metadata:
+        labels:
+          app: hello-image
+          deploymentconfig: hello-image
+      spec:
+        containers:
+        - image: ' '
+          name: hello-image
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - hello-image
+        from:
+          kind: ImageStreamTag
+          name: hello-image:latest
+      type: ImageChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: hello-image
+  spec:
+    ports:
+    - name: web
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: hello-image
+      deploymentconfig: hello-image
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: hello-from-pod
+  spec:
+    port:
+      targetPort: web
+    to:
+      name: hello-image

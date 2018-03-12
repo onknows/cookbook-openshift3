@@ -4,8 +4,7 @@ clear
 cat << EOF
 
 ############################################################
-# This installer is suitable for a standalone installation #
-# "All in the box" (Master and Node in a server)           #
+# "All in the box" (Master, ETCD and Node in a server)     #
 ############################################################
 
 EOF
@@ -55,13 +54,26 @@ cat << EOF > environments/origin.json
   },
   "override_attributes": {
     "cookbook-openshift3": {
-      "openshift_common_public_hostname": "console.${IP}.nip.io",
+      "openshift_common_sdn_network_plugin_name": "redhat/openshift-ovs-multitenant",
+      "openshift_cluster_name": "console.${IP}.nip.io",
+      "openshift_HA": true,
       "openshift_deployment_type": "origin",
       "openshift_common_default_nodeSelector": "region=infra",
       "deploy_containerized": true,
       "deploy_example": true,
+      "openshift_master_htpasswd_users": [
+        {
+          "admin": "$apr1$5iDjNKyc$Cp8.GumvS3Q2jxeXYGptd."
+        }
+      ],
       "openshift_master_router_subdomain": "cloudapps.${IP}.nip.io",
       "master_servers": [
+        {
+          "fqdn": "${FQDN}",
+          "ipaddress": "$IP"
+        }
+      ],
+      "etcd_servers": [
         {
           "fqdn": "${FQDN}",
           "ipaddress": "$IP"
@@ -80,7 +92,7 @@ cat << EOF > environments/origin.json
 }
 EOF
 ### Specify the configuration details for chef-solo
-cat << EOF > ~/chef-solo-example/solo.rb
+cat << EOF > /root/chef-solo-example/solo.rb
 cookbook_path [
                '/root/chef-solo-example/cookbooks',
                '/root/chef-solo-example/site-cookbooks'
@@ -91,33 +103,46 @@ file_cache_path '/root/chef-solo-example/cache'
 log_location STDOUT
 solo true
 EOF
+### Create run_list
+cat << EOF > /root/chef-solo-example/run_list.json
+{ 
+  "run_list": [
+    "recipe[cookbook-openshift3::default]"
+  ]
+}
+EOF
+
 ### Deploy OSE !!!!
-chef-solo --environment origin -o recipe[cookbook-openshift3] -c ~/chef-solo-example/solo.rb
-if ! $(oc get project test --config=/etc/origin/master/admin.kubeconfig &> /dev/null)
+chef-solo --environment origin -c ~/chef-solo-example/solo.rb -j ~/chef-solo-example/run_list.json --legacy
+if ! $(oc get project demo --config=/etc/origin/master/admin.kubeconfig &> /dev/null)
 then 
+  # Put admin user in cluster-admin group
+  oc adm policy add-cluster-role-to-user cluster-admin admin
   # Create a demo project
-  oc adm new-project demo --display-name="Origin Demo Project" --admin=demo
+  oc adm new-project demo --display-name="Origin Demo Project" --admin=admin
+  oc create -f /root/chef-solo-example/cookbooks/cookbook-openshift3/scripts/build_and_run.yml &> /dev/null
 fi
-# Reset password for demo user
-htpasswd -b /etc/origin/openshift-passwd demo 1234
+# Enable completion of commands
+. /etc/bash_completion.d/oc
 cat << EOF
 
 ##### Installation DONE ######
 #####                   ######
 Your installation of Origin is completed.
 
-A demo user has been created for you.
-Password is : 1234
+An admin user has been created for you.
+Username is : admin
+Password is : admin
+
+A Sample application has been deployed :-)
 
 Access the console here : https://console.${IP}.nip.io:8443/console
 
-You can also login via CLI : oc login -u demo
+You can also login via CLI : oc login -u admin
 
 Next steps for you :
 
 1) Read the documentation : https://docs.openshift.org/latest/welcome/index.html
-
-You should disconnect and reconnect so as to get the benefit of bash-completion on commands
 
 ##############################
 ########## DONE ##############

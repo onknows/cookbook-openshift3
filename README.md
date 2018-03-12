@@ -19,13 +19,14 @@ Requirements
 
 **Highly recommended**: explicitly set `node['cookbook-openshift3']['ose_version']`, `node['cookbook-openshift3']['ose_major_version']`
 and ideally `node['cookbook-openshift3']['docker_version']` to be safe when a major version is released on the
-CentOS PaaS repository; this cookbook does NOT support upgrade between major versions, so lock your package versions
-in your openshift3 role or environment.
+CentOS PaaS repository; 
+
+This cookbook does support upgrade between major versions (Read doc)
 
 Test Matrix
 ===========
 
-| Platform   | OSE 3.7.0 | OSE 3.6.0 | OSE 1.5.1 | OSE 1.4.1 | OSE 1.3.3 | OSE 1.2.2 |
+| Platform   | OSE 3.7.0 | OSE 3.6.1 | OSE 1.5.1 | OSE 1.4.1 | OSE 1.3.3 | OSE 1.2.2 |
 | --------   | --------- | --------- | --------- | --------- | --------- | --------- |
 | centos 7.4 | PASS      | PASS      | PASS      | PASS      | PASS      | Not supported |
 
@@ -738,7 +739,7 @@ Development
 License and Author
 ==================
 
-Author: William Burton (<wburton@redhat.com>)
+Author: William Burton (<william17.burton@gmail.com>)
 
 The MIT License (MIT)
 
