@@ -30,8 +30,11 @@ This cookbook does support upgrade between major versions (Read doc)
 
 ### Supported version
 [x] 1.3 to 1.4
+
 [x] 1.4 to 1.5
+
 [x] 1.5 to 3.6
+
 [x] 3.6 to 3.7
 
 ### Control Upgrade
