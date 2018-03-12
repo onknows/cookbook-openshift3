@@ -23,6 +23,47 @@ CentOS PaaS repository;
 
 This cookbook does support upgrade between major versions (Read doc)
 
+## New Features!
+
+- Control upgrades between versions
+- ETCD migration v2 to v3 (Mandatory before upgrading to 3.7)
+
+### Supported version
+[x] 1.3 to 1.4
+[x] 1.4 to 1.5
+[x] 1.5 to 3.6
+[x] 3.6 to 3.7
+
+### Control Upgrade
+
+Control upgrade requires variables to be set before running.
+*The CHEF run will ignore any upgrade unless all variables are correctly set*
+
+Variables:
+|NAME|PURPOSE|Default value|Mandatory|
+|----------------|-------------------------------|------------------|----------|
+|control_upgrade|Execute an upgrade     |`false`    |`YES`|
+|control_upgrade_version|Target version (13,14,15,36,37)        |`""` |`YES`|
+|control_upgrade_flag| Location of the control upgrade flag| `"/to_be_replaced"`  |`YES`|
+|upgrade_repos|Target YUM repo|`""`|`NO`|
+
+```json
+  "override_attributes": {
+    "cookbook-openshift3": {
+      "control_upgrade": true,
+      "control_upgrade_version": "37",
+      "control_upgrade_flag": "/tmp/ready",
+      "upgrade_repos": [
+        {
+          "name": "centos-openshift-origin37",
+          "baseurl": "http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin37/",
+          "gpgcheck": false
+        }
+      ]
+    }
+  }
+```
+
 Test Matrix
 ===========
 
