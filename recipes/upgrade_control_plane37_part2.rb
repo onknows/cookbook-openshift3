@@ -89,7 +89,6 @@ if is_master_server && !is_first_master
     command "[[ $(ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get migration -w simple | wc -l) -eq 0 ]]"
     retries 120
     retry_delay 5
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 end
 
@@ -109,26 +108,22 @@ if is_master_server && is_first_master
     command "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
             annotate role shared-resource-viewer openshift.io/reconcile-protect- -n openshift"
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   execute 'Reconcile Security Context Constraints' do
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
             policy reconcile-sccs --confirm --additive-only=true"
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   execute 'Migrate storage post policy reconciliation' do
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
             migrate storage --include=* --confirm"
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   execute 'Delete key for upgrade all storage' do
     command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 del migration"
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 end
 
@@ -137,12 +132,10 @@ if is_master_server
     level :info
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   execute 'Wait for 15 seconds all services to come up' do
     command 'sleep 15'
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
   log 'Reconcile Cluster Roles & Cluster Role Bindings [COMPLETED]' do
