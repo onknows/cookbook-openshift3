@@ -17,7 +17,9 @@ Requirements
 * Support Origin version from 1.3+
 * Default the installation to 3.7
 
-**Highly recommended**: explicitly set `node['cookbook-openshift3']['ose_version']`, `node['cookbook-openshift3']['ose_major_version']`
+**Highly recommended**: 
+
+Explicitly set `node['cookbook-openshift3']['ose_version']`, `node['cookbook-openshift3']['ose_major_version']`
 and ideally `node['cookbook-openshift3']['docker_version']` to be safe when a major version is released on the
 CentOS PaaS repository; 
 
@@ -40,6 +42,7 @@ This cookbook does support upgrade between major versions (Read doc)
 ### Control Upgrade
 
 Control upgrade requires variables to be set before running.
+
 *The CHEF run will ignore any upgrade unless all variables are correctly set*
 
 Variables:
@@ -68,6 +71,8 @@ Variables:
   }
 ```
 
+[Read more about the upgrade process here!](upgrade-process.md)
+
 Test Matrix
 ===========
 
@@ -78,7 +83,7 @@ Test Matrix
 Override Attributes
 ===================
 
-[Read more about overriding attributes here!](https://github.com/IshentRas/cookbook-openshift3/blob/master/attribute-cookbook.md)
+[Read more about overriding attributes here!](attribute-cookbook.md)
 
 #### Structure ####
 -------------------
