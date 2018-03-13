@@ -60,7 +60,8 @@ action :create do
       )
       # This notify fails on older versions of Chef in providers. This is a workaround.
       unless node['chef_packages']['chef']['version'] == node['cookbook-openshift3']['switch_off_provider_notify_version']
-        notifies :restart, 'service[Restart API]', :immediately
+        notifies :restart, 'service[Restart API]', :immediately unless node['cookbook-openshift3']['upgrade']
+        notifies :restart, 'service[Restart Controller]', :immediately unless node['cookbook-openshift3']['upgrade']
       end
     end
   else
@@ -77,7 +78,7 @@ action :create do
       )
       # This notify fails on older versions of Chef in providers. This is a workaround.
       unless node['chef_packages']['chef']['version'] == node['cookbook-openshift3']['switch_off_provider_notify_version']
-        notifies :restart, 'service[Restart Master]', :immediately
+        notifies :restart, 'service[Restart Master]', :immediately unless node['cookbook-openshift3']['upgrade']
       end
     end
   end

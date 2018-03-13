@@ -65,7 +65,7 @@ if is_node_server
 
     template '/etc/sysconfig/openvswitch' do
       source 'service_openvswitch.sysconfig.erb'
-      notifies :restart, 'service[openvswitch]', :immediately
+      notifies :restart, 'service[openvswitch]', :immediately unless node['cookbook-openshift3']['upgrade']
     end
   else
     template "/etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-node.service" do
@@ -91,7 +91,7 @@ if is_node_server
   template "/etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-node" do
     source 'service_node.sysconfig.erb'
     variables(sysconfig_vars)
-    notifies :restart, 'service[Restart Node]', :immediately
+    notifies :restart, 'service[Restart Node]', :immediately unless node['cookbook-openshift3']['upgrade']
   end
 
   package "#{node['cookbook-openshift3']['openshift_service_type']}-node" do
@@ -99,7 +99,7 @@ if is_node_server
     version node['cookbook-openshift3']['ose_version'] unless node['cookbook-openshift3']['ose_version'].nil?
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
     retries 3
-    notifies :restart, 'service[Restart Node]', :immediately if node['cookbook-openshift3']['upgrade']
+    notifies :restart, 'service[Restart Node]', :immediately unless node['cookbook-openshift3']['upgrade']
   end
 
   package "#{node['cookbook-openshift3']['openshift_service_type']}-sdn-ovs" do
@@ -171,6 +171,7 @@ if is_node_server
     command 'sleep 30'
     action :nothing
     only_if { node['cookbook-openshift3']['deploy_containerized'] }
+    not_if { node['cookbook-openshift3']['upgrade'] }
   end
 
   if node['cookbook-openshift3']['deploy_dnsmasq']
@@ -225,7 +226,7 @@ if is_node_server
       kubelet_args: node['cookbook-openshift3']['openshift_node_kubelet_args_default'].merge(node['cookbook-openshift3']['openshift_node_kubelet_args_custom'])
     )
     notifies :run, 'execute[daemon-reload]', :immediately
-    notifies :restart, 'service[Restart Node]', :immediately
+    notifies :restart, 'service[Restart Node]', :immediately unless node['cookbook-openshift3']['upgrade']
     notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
   end
 

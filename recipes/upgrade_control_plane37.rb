@@ -15,9 +15,9 @@ end
 if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
   node.force_override['cookbook-openshift3']['upgrade'] = true
-  node.force_override['cookbook-openshift3']['ose_major_version'] = '3.7'
-  node.force_override['cookbook-openshift3']['ose_version'] = '3.7.0-1.0.7ed6862'
-  node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v3.7.0'
+  node.force_override['cookbook-openshift3']['ose_major_version'] = node['cookbook-openshift3']['upgrade_ose_major_version']
+  node.force_override['cookbook-openshift3']['ose_version'] = node['cookbook-openshift3']['upgrade_ose_version']
+  node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = node['cookbook-openshift3']['upgrade_openshift_docker_image_version']
 
   server_info = OpenShiftHelper::NodeHelper.new(node)
   is_master_server = server_info.on_master_server?

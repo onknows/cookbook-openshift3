@@ -16,11 +16,6 @@ default['cookbook-openshift3']['node_servers'] = []
 default['cookbook-openshift3']['lb_servers'] = []
 default['cookbook-openshift3']['certificate_server'] = {}
 default['cookbook-openshift3']['openshift_push_via_dns'] = false
-default['cookbook-openshift3']['upgrade'] = false
-default['cookbook-openshift3']['control_upgrade'] = false
-default['cookbook-openshift3']['control_upgrade_version'] = ''
-default['cookbook-openshift3']['control_upgrade_flag'] = '/to_be_replaced'
-default['cookbook-openshift3']['etcd_migrated'] = true
 
 if node['cookbook-openshift3']['openshift_HA']
   default['cookbook-openshift3']['openshift_common_api_hostname'] = node['cookbook-openshift3']['openshift_cluster_name']
@@ -41,6 +36,7 @@ default['cookbook-openshift3']['persistent_storage'] = []
 default['cookbook-openshift3']['openshift_deployment_type'] = 'enterprise'
 default['cookbook-openshift3']['ose_major_version'] = '3.7'
 default['cookbook-openshift3']['openshift_docker_image_version'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'v3.7' : 'v3.7.0'
+default['cookbook-openshift3']['upgrade'] = false
 default['cookbook-openshift3']['deploy_containerized'] = false
 default['cookbook-openshift3']['deploy_example'] = false
 default['cookbook-openshift3']['deploy_dnsmasq'] = true

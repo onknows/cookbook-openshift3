@@ -14,7 +14,7 @@ Once the upgrade is done, any future CHEF runs will skip the default installatio
 
 It gives you the time/opportunity to update any references from the previous list accordingly with the new environment.
 
-Example from an upgrade from 1.5 to 3.6
+Example after a schedulable upgrade from 1.5 to 3.6 you would like to update the following variables
 
 ```json
   "override_attributes": {
@@ -114,6 +114,46 @@ Before upgrading the cluster, some variables need to be declared:
     }
   }
 ```
+
+In addition to the previous variables the upgrade mechanism has got a set of default values from the different target upgrades.
+Feel free to override those so as to match your environment:
+
+**CUV = Control Upgrade Version**
+
+##### Origin Deployment
+
+| NAME | CUV | Default value |
+| ---------------- | ------------------------------- | ------------------ |
+| upgrade_ose_major_version |  14  | `"1.4"`    |
+| upgrade_ose_version | 14 | `"1.4.1-1.el7"` |
+| upgrade_openshift_docker_image_version | 14 | `"v1.4.1"`  |
+| upgrade_ose_major_version |  15  | `"1.5"`    |
+| upgrade_ose_version | 15 | `"1.5.1-1.el7"` |
+| upgrade_openshift_docker_image_version | 15 | `"v1.5.1"`  |
+| upgrade_ose_major_version |  36 | `"3.6"`    |
+| upgrade_ose_version | 36 | `"3.6.1-1.0.008f2d5"` |
+| upgrade_openshift_docker_image_version | 36 | `"v3.6.1"`  |
+| upgrade_ose_major_version |  37 | `"3.7"`    |
+| upgrade_ose_version | 37 | `"3.7.0-1.0.7ed6862"` |
+| upgrade_openshift_docker_image_version | 37 | `"v3.7.0"`  |
+
+##### Enterprise Deployment
+
+| NAME | CUV | Default value | 
+| ---------------- | ------------------------------- | ------------------ | 
+| upgrade_ose_major_version |  14  | `"3.4"`    |
+| upgrade_ose_version | 14 | `"3.4.1.44.38-1.git.0.d04b8d5.el7"` |
+| upgrade_openshift_docker_image_version | 14 | `"v3.4.1.44.38"`  | 
+| upgrade_ose_major_version |  15  | `"3.5"`    |
+| upgrade_ose_version | 15 | `"3.5.5.31.47-1.git.0.25d535c.el7"` |
+| upgrade_openshift_docker_image_version | 15 | `"v3.5.5.31.47"`  |
+| upgrade_ose_major_version |  36 | `"3.6"`    |
+| upgrade_ose_version | 36 | `"3.6.173.0.63-1.git.0.855ea8b.el7"` |
+| upgrade_openshift_docker_image_version | 36 | `"v3.6.173.0.63"`  |
+| upgrade_ose_major_version |  37 | `"3.7"`    |
+| upgrade_ose_version | 37 | `"3.7.23-1.git.0.8edc154.el7"` |
+| upgrade_openshift_docker_image_version | 37 | `"v3.7.23"`  |
+
 ##### Please be aware
 
 * **The upgrade will not run unless it finds the file designated by the `control_upgrade_flag`**

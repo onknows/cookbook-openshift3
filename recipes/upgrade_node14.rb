@@ -16,9 +16,9 @@ end
 if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
   node.force_override['cookbook-openshift3']['upgrade'] = true
-  node.force_override['cookbook-openshift3']['ose_major_version'] = '1.4'
-  node.force_override['cookbook-openshift3']['ose_version'] = '1.4.1-1.el7'
-  node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = 'v1.4.1'
+  node.force_override['cookbook-openshift3']['ose_major_version'] = node['cookbook-openshift3']['upgrade_ose_major_version']
+  node.force_override['cookbook-openshift3']['ose_version'] = node['cookbook-openshift3']['upgrade_ose_version']
+  node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = node['cookbook-openshift3']['upgrade_openshift_docker_image_version']
   node.force_override['yum']['main']['exclude'] = 'docker-1.13* etcd-3.2*'
 
   server_info = OpenShiftHelper::NodeHelper.new(node)
@@ -50,7 +50,6 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
       level :info
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
       notifies :restart, 'service[openvswitch]', :immediately
-      not_if { node['cookbook-openshift3']['deploy_containerized'] }
     end
 
     log 'Upgrade for NODE [COMPLETED]' do

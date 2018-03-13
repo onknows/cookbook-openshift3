@@ -71,12 +71,11 @@ if is_master_server
 
   log 'Restart Master & Node services' do
     level :info
-    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
-    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
+    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
+    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
+    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
-    notifies :restart, 'service[openvswitch]', :immediately
-    not_if { node['cookbook-openshift3']['deploy_containerized'] }
-    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
+    notifies :restart, 'service[openvswitch]', :immediately if is_node_server
   end
 
   log 'Upgrade for MASTERS [COMPLETED]' do
@@ -131,11 +130,6 @@ if is_master_server
   log 'Cycle all controller services to force new leader election mode' do
     level :info
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
-    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
-  end
-
-  execute 'Wait for 15 seconds all services to come up' do
-    command 'sleep 15'
   end
 
   log 'Reconcile Cluster Roles & Cluster Role Bindings [COMPLETED]' do
