@@ -8,10 +8,7 @@
 # It creates the service signer certs (and any others) if they were not in
 # existence previously.
 
-log "Upgrade will be skipped. Could not find the flag: #{node['cookbook-openshift3']['control_upgrade_flag']}" do
-  level :warn
-  not_if { ::File.file?(node['cookbook-openshift3']['control_upgrade_flag']) }
-end
+Chef::Log.error("Upgrade will be skipped. Could not find the flag: #{node['cookbook-openshift3']['control_upgrade_flag']}") unless ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
 if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
@@ -34,7 +31,9 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
   end
 
-  include_recipe 'cookbook-openshift3::upgrade_pre-check' if is_master_server
+  if is_master_server
+    return unless ::Mixlib::ShellOut.new("/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.crt --key-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.key --ca-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-ca.crt -C https://#{first_etcd['ipaddress']}:2379 ls /migration/#{node['cookbook-openshift3']['control_upgrade_version']}/#{node['fqdn']}").run_command.error?
+  end
 
   include_recipe 'yum::default'
 

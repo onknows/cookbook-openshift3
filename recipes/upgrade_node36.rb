@@ -8,10 +8,7 @@
 # It creates the service signer certs (and any others) if they were not in
 # existence previously.
 
-log "Upgrade will be skipped. Could not find the flag: #{node['cookbook-openshift3']['control_upgrade_flag']}" do
-  level :warn
-  not_if { ::File.file?(node['cookbook-openshift3']['control_upgrade_flag']) }
-end
+Chef::Log.error("Upgrade will be skipped. Could not find the flag: #{node['cookbook-openshift3']['control_upgrade_flag']}") unless ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
 if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 

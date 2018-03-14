@@ -16,9 +16,7 @@ if node['cookbook-openshift3']['control_upgrade']
     include_recipe "cookbook-openshift3::upgrade_control_plane#{node['cookbook-openshift3']['control_upgrade_version']}" if is_master_server || is_etcd_server
     include_recipe "cookbook-openshift3::upgrade_node#{node['cookbook-openshift3']['control_upgrade_version']}" if is_node_server && !is_master_server
   rescue Chef::Exceptions::RecipeNotFound
-    log "['cookbook-openshift3']['control_upgrade_version']: '#{node['cookbook-openshift3']['control_upgrade_version']}' not valid (14,15,36,37)" do
-      level :warn
-    end
+    Chef::Log.error("The variable control_upgrade_version \'#{node['cookbook-openshift3']['control_upgrade_version']}\' is not a valid target (14,15,36,37)")
   end
 end
 
