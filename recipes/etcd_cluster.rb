@@ -138,7 +138,7 @@ if is_etcd_server || is_certificate_server
     version node['cookbook-openshift3']['etcd_version'] unless node['cookbook-openshift3']['etcd_version'].nil?
     retries 3
     notifies :enable, 'service[etcd-service]', :immediately
-    notifies :restart, 'service[etcd-service]', :immediately if node['cookbook-openshift3']['upgrade'] && etcd_servers.find { |etcd| etcd['fqdn'] == node['fqdn'] }.nil?
+    notifies :restart, 'service[etcd-service]', :immediately if node['cookbook-openshift3']['upgrade'] && !etcd_servers.find { |etcd| etcd['fqdn'] == node['fqdn'] }.nil?
   end
 end
 
