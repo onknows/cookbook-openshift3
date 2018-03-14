@@ -18,27 +18,24 @@ etcd_servers = server_info.etcd_servers
 
 include_recipe 'cookbook-openshift3::services'
 
+if is_etcd_server
+  return if ::File.file?("#{node['cookbook-openshift3']['etcd_data_dir']}/.migrated")
+end
+
 if is_first_etcd
-  begin
-    execute 'Check cluster health' do
-      command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -w 'cluster is healthy'"
-      notifies :run, 'execute[Check if there are any v3 data]', :immediately
-    end
+  execute 'Check cluster health' do
+    command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -w 'cluster is healthy'"
+    notifies :run, 'execute[Check if there are any v3 data]', :immediately
+  end
 
-    execute 'Check if there are any v3 data' do
-      command "[[ $(ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get '.' --from-key --keys-only -w simple | wc -l) -eq 0 ]]"
-      notifies :run, 'execute[Starting ETCD Migration]', :immediately
-      action :nothing
-    end
+  execute 'Check if there are any v3 data' do
+    command "[[ $(ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['cookbook-openshift3']['etcd_peer_file']} --key #{node['cookbook-openshift3']['etcd_peer_key']} --cacert #{node['cookbook-openshift3']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get '.' --from-key --keys-only -w simple | wc -l) -eq 0 ]]"
+    notifies :run, 'execute[Starting ETCD Migration]', :immediately
+    action :nothing
+  end
 
-    execute 'Starting ETCD Migration' do
-      command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 set migration pre"
-    end
-  rescue Mixlib::ShellOut::ShellCommandFailed
-    log 'ETCD Migration aborted.. Error detected' do
-      level :warn
-    end
-    return
+  execute 'Starting ETCD Migration' do
+    command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 set migration pre"
   end
 end
 
@@ -131,6 +128,10 @@ if is_first_etcd
     command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 set migration ok"
     only_if { etcd_servers.size == 1 }
   end
+
+  file "#{node['cookbook-openshift3']['etcd_data_dir']}/.migrated" do
+    action :create_if_missing
+  end
 end
 
 unless etcd_servers.size == 1
@@ -203,12 +204,20 @@ unless etcd_servers.size == 1
       retries 60
       retry_delay 5
     end
+
+    file "#{node['cookbook-openshift3']['etcd_data_dir']}/.migrated" do
+      action :create_if_missing
+    end
   end
 
   if is_first_etcd
     execute 'Set Migration ok' do
       command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 set migration ok"
       only_if "[[ $(/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 cluster-health | grep -c 'got healthy') -eq #{etcd_servers.size} ]]"
+    end
+
+    file "#{node['cookbook-openshift3']['etcd_data_dir']}/.migrated" do
+      action :create_if_missing
     end
   end
 end
@@ -233,10 +242,13 @@ if is_first_master
 
       ETCDCTL_API=3 #{node['cookbook-openshift3']['openshift_common_admin_binary']} migrate etcd-ttl --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig --cert #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.crt --key #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.key --cacert #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-ca.crt --etcd-address https://#{first_etcd['ipaddress']}:2379 --ttl-keys-prefix /openshift.io/leases/controllers --lease-duration 30s
     EOH
+    action :nothing
+    notifies :run, 'execute[Clearing migration flag]', :immediately
   end
 
   execute 'Clearing migration flag' do
     command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.crt --key-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.key --ca-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-ca.crt -C https://#{first_etcd['ipaddress']}:2379 set migration final"
+    action :nothing
   end
 end
 
