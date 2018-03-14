@@ -17,7 +17,7 @@ end
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
-  encrypted_file_password = Chef::EncryptedDataBagItem.load(node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'], node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name'], secret_file)
+  encrypted_file_password = data_bag_item(node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'], node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name'], secret_file)
 else
   encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
 end

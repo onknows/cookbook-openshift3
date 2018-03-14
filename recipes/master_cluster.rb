@@ -21,7 +21,7 @@ end
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
-  encrypted_file_password = Chef::EncryptedDataBagItem.load(node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'], node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name'], secret_file)
+  encrypted_file_password = data_bag_item(node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'], node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name'], secret_file)
 else
   encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
 end
@@ -116,7 +116,7 @@ end
 if is_certificate_server
   if node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'] && node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name']
     secret_file = node['cookbook-openshift3']['openshift_master_ca_certificate']['secret_file'] || nil
-    ca_vars = Chef::EncryptedDataBagItem.load(node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'], node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name'], secret_file)
+    ca_vars = data_bag_item(node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'], node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name'], secret_file)
 
     file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.key" do
       content Base64.decode64(ca_vars['key_base64'])
@@ -308,7 +308,7 @@ sysconfig_vars = {}
 if node['cookbook-openshift3']['openshift_cloud_provider'] == 'aws'
   if node['cookbook-openshift3']['openshift_cloud_providers']['aws']['data_bag_name'] && node['cookbook-openshift3']['openshift_cloud_providers']['aws']['data_bag_item_name']
     secret_file = node['cookbook-openshift3']['openshift_cloud_providers']['aws']['secret_file'] || nil
-    aws_vars = Chef::EncryptedDataBagItem.load(node['cookbook-openshift3']['openshift_cloud_providers']['aws']['data_bag_name'], node['cookbook-openshift3']['openshift_cloud_providers']['aws']['data_bag_item_name'], secret_file)
+    aws_vars = data_bag_item(node['cookbook-openshift3']['openshift_cloud_providers']['aws']['data_bag_name'], node['cookbook-openshift3']['openshift_cloud_providers']['aws']['data_bag_item_name'], secret_file)
 
     sysconfig_vars['aws_access_key_id'] = aws_vars['access_key_id']
     sysconfig_vars['aws_secret_access_key'] = aws_vars['secret_access_key']

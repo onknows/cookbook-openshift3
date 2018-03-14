@@ -346,10 +346,10 @@ action :create do
         {
           route: route,
           annotations: node['cookbook-openshift3']['openshift_metrics_hawkular_route_annotations'],
-          tls_key: node['cookbook-openshift3']['openshift_metrics_hawkular_key'].empty? ? '' : `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_metrics_hawkular_key']}`,
-          tls_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_cert'].empty? ? '' : `cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_cert']} | awk '{printf "%s\\n", $0}'`,
-          tls_ca_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_ca'].empty? ? '' : `cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_ca']} | awk '{printf "%s\\n", $0}'`,
-          tls_destination_ca_certificate: `cat #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt | awk '{printf "%s\\n", $0}'`,
+          tls_key: node['cookbook-openshift3']['openshift_metrics_hawkular_key'].empty? ? '' : Mixlib::ShellOut.new("base64 --wrap 0 #{node['cookbook-openshift3']['openshift_metrics_hawkular_key']}").run_command.stdout.strip,
+          tls_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_cert'].empty? ? '' : Mixlib::ShellOut.new("cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_cert']} | ruby -p -e \"gsub(/\n/, '\\n')\"").run_command.stdout.strip,
+          tls_ca_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_ca'].empty? ? '' : Mixlib::ShellOut.new("cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_ca']} | ruby -p -e \"gsub(/\n/, '\\n')\"").run_command.stdout.strip,
+          tls_destination_ca_certificate: Mixlib::ShellOut.new("cat #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt | ruby -p -e \"gsub(/\n/, '\\n')\"").run_command.stdout.strip,
         }
       }
     end
