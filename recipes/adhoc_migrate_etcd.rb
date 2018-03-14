@@ -4,8 +4,6 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-node.force_override['cookbook-openshift3']['upgrade'] = true
-
 server_info = OpenShiftHelper::NodeHelper.new(node)
 first_etcd = server_info.first_etcd
 is_etcd_server = server_info.on_etcd_server?
