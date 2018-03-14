@@ -43,5 +43,6 @@ recipe 'cookbook-openshift3::upgrade_node14', 'Control Upgrade from 1.3 to 1.4 (
 recipe 'cookbook-openshift3::upgrade_node15', 'Control Upgrade from 1.4 to 1.5 (Node only)'
 recipe 'cookbook-openshift3::upgrade_node36', 'Control Upgrade from 1.5 to 3.6 (Node only)'
 recipe 'cookbook-openshift3::upgrade_node37', 'Control Upgrade from 3.6 to 3.7 (Node only)'
+recipe 'cookbook-openshift3::upgrade_pre-check', 'Pre-Check Control Upgrade for master servers'
 recipe 'cookbook-openshift3::validate', 'Pre-validation check before installing OpenShift'
 recipe 'cookbook-openshift3::wire_aggregator', 'Configure Wire-aggregator for Service Catalog logic (>= 3.6)'

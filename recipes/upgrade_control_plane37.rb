@@ -23,6 +23,8 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   is_master_server = server_info.on_master_server?
   is_node_server = server_info.on_node_server?
 
+  include_recipe 'cookbook-openshift3::upgrade_pre-check' if is_master_server
+
   if is_master_server
     config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
     unless config_options['kubernetesMasterConfig']['apiServerArguments'].key?('storage-backend')

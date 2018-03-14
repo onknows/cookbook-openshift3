@@ -24,6 +24,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : 'v' + node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]
 
   server_info = OpenShiftHelper::NodeHelper.new(node)
+  first_etcd = server_info.first_etcd
   is_etcd_server = server_info.on_etcd_server?
   is_master_server = server_info.on_master_server?
   is_node_server = server_info.on_node_server?
@@ -32,6 +33,8 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   if defined? node['cookbook-openshift3']['upgrade_repos']
     node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
   end
+
+  include_recipe 'cookbook-openshift3::upgrade_pre-check' if is_master_server
 
   include_recipe 'yum::default'
 
@@ -106,6 +109,10 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
       notifies :restart, 'service[openvswitch]', :immediately if is_node_server
+    end
+
+    execute "Set upgrade markup for master : #{node['fqdn']}" do
+      command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.crt --key-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.key --ca-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-ca.crt -C https://#{first_etcd['ipaddress']}:2379 set /migration/#{node['cookbook-openshift3']['control_upgrade_version']}/#{node['fqdn']} ok"
     end
 
     log 'Upgrade for MASTERS [COMPLETED]' do
