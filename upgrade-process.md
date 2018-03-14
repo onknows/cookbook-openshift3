@@ -2,9 +2,11 @@
 
 ### Overview
 
-You can use the upgrade cookbook to automate the OpenShift cluster upgrade process.
+You can use the upgrade cookbook to automate the OpenShift cluster upgrade
+process.
 
-Once the upgrade is done, any future CHEF runs will skip the default installation/run so as to avoid any clashes with previous variables such as:
+Once the upgrade is done, any future CHEF runs will skip the default
+installation/run so as to avoid any clashes with previous variables such as:
 
 * `ose_major_version`
 * `ose_version`
@@ -12,9 +14,11 @@ Once the upgrade is done, any future CHEF runs will skip the default installatio
 * `etcd_version`
 * `openshift_docker_image_version`
 
-It gives you the time/opportunity to update any references from the previous list accordingly with the new environment.
+It gives you the time/opportunity to update any references from the previous
+list accordingly with the new environment.
 
-Example after a schedulable upgrade from 1.5 to 3.6 you would like to update the following variables
+For example after a schedulable upgrade from 1.5 to 3.6, you should
+update the following variables to get the 'normal' Chef recipes working again:
 
 ```json
   "override_attributes": {
@@ -31,11 +35,12 @@ Example after a schedulable upgrade from 1.5 to 3.6 you would like to update the
 
 - Applies the latest configuration.
 
-- Upgrades master and etcd components and restarts services. (Control plane servers)
+- Upgrades master and etcd components and restarts services (aka the control
+plane servers).
 
-- Upgrade docker components.
+- Upgrades docker components.
 
-- Upgrades node components and restarts services. (Node servers)
+- Upgrades node components and restarts services (aka node servers).
 
 - Applies the latest cluster policies.
 
@@ -49,15 +54,15 @@ Example after a schedulable upgrade from 1.5 to 3.6 you would like to update the
 
 **The automated upgrade does not perform the following steps for you:**
 
-- Drain node servers.
+- Drains node servers.
 
-- Mark drained node servers as unschedulable.
+- Marks drained node servers as unschedulable.
 
-- Reboot servers after upgrade.
+- Reboots servers after upgrade.
 
 - Upgrade metrics or logging components (Coming soon)
 
-#### Control upgrade
+#### Control Plane Upgrade
 
 When upgrading in separate phases, the control plane phase includes upgrading:
 
@@ -74,7 +79,7 @@ The node phase includes upgrading:
 * Node services running on stand-alone nodes (node_servers group)
 * Docker running on stand-alone nodes
 
-#### Supported version
+#### Supported Upgrade Versions
 
 [x] 1.3 to 1.4
 
@@ -84,9 +89,11 @@ The node phase includes upgrading:
 
 [x] 3.6 to 3.7
 
-*Cluster upgrades cannot span more than one minor version at a time, so if your cluster is at a version earlier than the targeted one, you must first upgrade incrementally (e.g., 1.4 to 1.5, then 1.5 to 3.6...)*
+*Cluster upgrades cannot span more than one minor version at a time, so if your
+cluster is at a version earlier than the targeted one, you must first upgrade
+incrementally (e.g., 1.4 to 1.5, then 1.5 to 3.6...)*
 
-### Running control upgrade
+### Running the Control Plane Upgrade
 
 Before upgrading the cluster, some variables need to be declared:
 
@@ -115,7 +122,9 @@ Before upgrading the cluster, some variables need to be declared:
   }
 ```
 
-In addition to the previous variables the upgrade mechanism has got a set of default values from the different target upgrades.
+In addition to the previous variables the upgrade mechanism has got a set of
+default values from the different target upgrades.
+
 Feel free to override those so as to match your environment:
 
 **CUV = Control Upgrade Version**
@@ -154,7 +163,7 @@ Feel free to override those so as to match your environment:
 | upgrade_ose_version | 37 | `"3.7.23-1.git.0.8edc154.el7"` |
 | upgrade_openshift_docker_image_version | 37 | `"v3.7.23"`  |
 
-##### Please be aware
+##### Please Note
 
 * **The upgrade will not run unless it finds the file designated by the `control_upgrade_flag`**
 * **The upgrade will not run unless the `control_upgrade` is set to `true`**
