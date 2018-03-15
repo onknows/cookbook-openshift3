@@ -39,6 +39,8 @@ action :create do
     end
   end
 
+  admission_plugin = node['cookbook-openshift3']['admission_plugin'].empty? ? '' : JSON.parse(node['cookbook-openshift3']['admission_plugin'].tr("'", '"')).to_yaml
+
   etcd3_deployed = true if node['cookbook-openshift3']['ose_major_version'].split('.')[1].to_i >= 6
 
   if ::File.file?("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml") && node['cookbook-openshift3']['ose_major_version'].split('.')[1].to_i == 6
@@ -56,7 +58,8 @@ action :create do
         etcd_servers: new_resource.etcd_servers,
         masters_size: new_resource.masters_size,
         ose_major_version: node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version'],
-        etcd3_deployed: etcd3_deployed
+        etcd3_deployed: etcd3_deployed,
+        admission_plugin: admission_plugin
       )
       # This notify fails on older versions of Chef in providers. This is a workaround.
       unless node['chef_packages']['chef']['version'] == node['cookbook-openshift3']['switch_off_provider_notify_version']

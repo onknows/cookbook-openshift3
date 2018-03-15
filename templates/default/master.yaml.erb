@@ -15,7 +15,11 @@ authConfig:
     extraHeaderPrefixes:
       - X-Remote-Extra-
 <%- end -%>
-<%= render "admission_plugin_config.erb" , :local => false -%>
+admissionConfig:
+<% unless @admission_plugin.empty? %>
+  pluginConfig:
+    <%= @admission_plugin %>
+<%- end -%>
 apiLevels:
 - v1
 apiVersion: v1
