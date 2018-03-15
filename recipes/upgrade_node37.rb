@@ -40,6 +40,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     include_recipe 'cookbook-openshift3'
     include_recipe 'cookbook-openshift3::common'
     include_recipe 'cookbook-openshift3::node'
+    include_recipe 'cookbook-openshift3::excluder'
 
     log 'Node services' do
       level :info

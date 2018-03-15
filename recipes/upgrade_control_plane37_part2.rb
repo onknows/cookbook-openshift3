@@ -70,12 +70,14 @@ if is_master_server
 
   include_recipe 'cookbook-openshift3::node' if is_node_server
 
+  include_recipe 'cookbook-openshift3::excluder'
+
   log 'Restart Master & Node services' do
     level :info
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
-    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
+    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately if is_node_server
     notifies :restart, 'service[openvswitch]', :immediately if is_node_server
   end
 
