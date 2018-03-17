@@ -11,7 +11,6 @@ etcd_servers = server_info.etcd_servers
 certificate_server = server_info.certificate_server
 is_certificate_server = server_info.on_certificate_server?
 
-etcd3_deployed = true if node['cookbook-openshift3']['ose_major_version'].split('.')[1].to_i >= 6
 ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
 
 node['cookbook-openshift3']['enabled_firewall_rules_master_cluster'].each do |rule|
@@ -382,7 +381,7 @@ if certificate_server['fqdn'] == first_master['fqdn'] || !is_certificate_server
   end
 
   execute 'Activate services for Master API on all masters' do
-   command 'echo nothing to do specific'
+    command 'echo nothing to do specific'
     notifies :start, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
     notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
     only_if { first_master['fqdn'] != node['fqdn'] }

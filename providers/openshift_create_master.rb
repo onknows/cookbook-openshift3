@@ -13,7 +13,7 @@ def whyrun_supported?
 end
 
 action :create do
-  converge_by "Create Master configuration file" do
+  converge_by 'Create Master configuration file' do
     named_certificates = []
     named_certificate_original = new_resource.named_certificate
     named_certificate_original.each do |named|
@@ -47,20 +47,20 @@ action :create do
     template "#{Chef::Config[:file_cache_path]}/BuildDefaults.yaml" do
       source 'BuildDefaultsConfig.erb'
     end
-    
+
     template "#{Chef::Config[:file_cache_path]}/BuildOverrides.yaml" do
       source 'BuildOverridesConfig.erb'
     end
-    
+
     template "#{Chef::Config[:file_cache_path]}/ClusterResourceOverride.yaml" do
       source 'ClusterResourceOverrideConfig.erb'
     end
-    
+
     if ::File.file?("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml") && node['cookbook-openshift3']['ose_major_version'].split('.')[1].to_i == 6
       config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
       etcd3_deployed = config_options['kubernetesMasterConfig']['apiServerArguments'].key?('storage-backend') ? true : false
     end
-    
+
     template "#{Chef::Config[:file_cache_path]}/core-master.yaml" do
       source 'master.yaml.erb'
       variables(
@@ -79,11 +79,11 @@ action :create do
         pre_builddefaults = YAML.load_file("#{Chef::Config[:file_cache_path]}/BuildDefaults.yaml")
         pre_buildoverrides = YAML.load_file("#{Chef::Config[:file_cache_path]}/BuildOverrides.yaml")
         pre_clusteroverrides = YAML.load_file("#{Chef::Config[:file_cache_path]}/ClusterResourceOverride.yaml")
-        
+
         builddefaults = pre_builddefaults['BuildDefaults']['configuration'].keys.size.eql?(2) ? {} : pre_builddefault
         buildoverrides = pre_buildoverrides['BuildOverrides']['configuration'].keys.size.eql?(2) ? {} : pre_buildoverrides
         clusteroverrides = pre_clusteroverrides['ClusterResourceOverride']['configuration'].keys.size.eql?(2) ? {} : pre_clusteroverrides
-        
+
         pre_master = YAML.load_file("#{Chef::Config[:file_cache_path]}/core-master.yaml")
         pre_master['admissionConfig']['pluginConfig'] = builddefaults.merge(buildoverrides).merge(clusteroverrides)
 
