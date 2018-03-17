@@ -246,7 +246,8 @@ Example of enabling a specific "feature-gate": enabling the [persistent local vo
 
 Example of overriding the setting for global builds:
 Any option can be set, as long as they are supported by current [Global Build Defaults and Overrides](https://docs.openshift.com/container-platform/latest/install_config/build_defaults_overrides.html).
-* `node['cookbook-openshift3']['openshift_builddefaults_env']` is the preferred for setting custom environment variables. 
+
+**When setting CPU/Memory via `openshift_builddefaults_resources_*`, `openshift_builddefaults_resources` needs to be set to `true`**
 
 ```json
 {
@@ -289,6 +290,18 @@ Any option can be set, as long as they are supported by current [Global Build De
     "annotationkey1": "annotationvalue1"
   },
   "....."
+}
+```
+
+If OpenShift Container Platform administrators would like to control the level of overcommit and manage container density on nodes, masters can be configured to override the ratio between request and limit set on developer containers. This requires configuring the ClusterResourceOverride variables.
+
+```json
+{
+  ".....",
+  "openshift_clusterresourceoverrides_memorylimit_percent": "10",
+  "openshift_clusterresourceoverrides_cpulimit_percent": "50",
+  "openshift_clusterresourceoverrides_limitcputomem_percent": "200",
+  "...."
 }
 ```
 
