@@ -1,6 +1,6 @@
 admissionConfig:
   pluginConfig: null
-<% if @ose_major_version.split('.')[1].to_i >= 6 %>
+<% if @ose_major_version.split('.')[1].to_i >= 7 %>
 aggregatorConfig:
   proxyClientInfo:
     certFile: aggregator-front-proxy.crt
@@ -22,7 +22,7 @@ apiLevels:
 apiVersion: v1
 assetConfig:
 <%= render "custom_assetConfig.erb" , :local => false -%>
-  <% if @ose_major_version.split('.')[1].to_i >= 6 %>
+  <% if @ose_major_version.split('.')[1].to_i >= 7 %>
   extensionScripts:
     - /etc/origin/master/openshift-ansible-catalog-console.js
   <% end %>

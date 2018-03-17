@@ -39,6 +39,15 @@ action :create do
 
     etcd3_deployed = true if node['cookbook-openshift3']['ose_major_version'].split('.')[1].to_i >= 6
 
+    case node['cookbook-openshift3']['ose_major_version'].split('.')[1].to_i
+    when 3..4
+      admission_default = {}
+    when 5..6
+      admission_default = { 'openshift.io/ImagePolicy' => { 'configuration' => { 'apiVersion' => 'v1', 'executionRules' => [{ 'matchImageAnnotations' => [{ 'key' => 'images.openshift.io/deny-execution', 'value' => 'true' }], 'name' => 'execution-denied', 'onResources' => [{ 'resource' => 'pods' }, { 'resource' => 'builds' }], 'reject' => true, 'skipOnResolutionFailure' => true }], 'kind' => 'ImagePolicyConfig' } } }
+    when 7
+      admission_default = { 'openshift.io/ImagePolicy' => { 'configuration' => { 'apiVersion' => 'v1', 'executionRules' => [{ 'matchImageAnnotations' => [{ 'key' => 'images.openshift.io/deny-execution', 'value' => 'true' }], 'name' => 'execution-denied', 'onResources' => [{ 'resource' => 'pods' }, { 'resource' => 'builds' }], 'reject' => true, 'skipOnResolutionFailure' => true }], 'kind' => 'ImagePolicyConfig' } }, 'PodPreset' => { 'configuration' => { 'kind' => 'DefaultAdmissionConfig', 'apiVersion' => 'v1', 'disable' => false } } }
+    end
+
     if ::File.file?("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml") && node['cookbook-openshift3']['ose_major_version'].split('.')[1].to_i == 6
       config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
       etcd3_deployed = config_options['kubernetesMasterConfig']['apiServerArguments'].key?('storage-backend') ? true : false
@@ -85,7 +94,7 @@ action :create do
         clusteroverrides = pre_clusteroverrides['ClusterResourceOverride']['configuration'].keys.size.eql?(2) ? {} : pre_clusteroverrides
 
         pre_master = YAML.load_file("#{Chef::Config[:file_cache_path]}/core-master.yaml")
-        pre_master['admissionConfig']['pluginConfig'] = builddefaults.merge(buildoverrides).merge(clusteroverrides)
+        pre_master['admissionConfig']['pluginConfig'] = builddefaults.merge(buildoverrides).merge(clusteroverrides).merge(admission_default)
 
         file new_resource.master_file do
           content pre_master.to_yaml
