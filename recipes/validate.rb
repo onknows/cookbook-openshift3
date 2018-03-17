@@ -23,7 +23,7 @@ if node['cookbook-openshift3']['use_wildcard_nodes'] && node['cookbook-openshift
   node.run_state['issues_detected'] = true
 end
 
-if node['cookbook-openshift3']['openshift_HA'] && node['cookbook-openshift3']['openshift_cluster_name'].nil?
+if node['cookbook-openshift3']['openshift_HA'] && node['cookbook-openshift3']['openshift_cluster_name'].empty?
   Chef::Log.error('A Cluster Name must be defined via "openshift_cluster_name"')
   node.run_state['issues_detected'] = true
 end

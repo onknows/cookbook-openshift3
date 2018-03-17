@@ -44,9 +44,9 @@ service 'Restart API' do
 end
 
 service 'Restart Controller' do
-  service_name "#{node['cookbook-openshift3']['openshift_service_type']}-master-controller"
+  service_name "#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers"
   action :nothing
-  only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-controller"
+  only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-master-controllers"
 end
 
 service 'Restart Node' do

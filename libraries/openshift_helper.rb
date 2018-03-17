@@ -1,5 +1,7 @@
 module OpenShiftHelper
   class NodeHelper
+    require 'openssl'
+
     def initialize(node)
       @node = node
     end

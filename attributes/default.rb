@@ -8,7 +8,7 @@ originrepos = [{ 'name' => 'centos-openshift-origin13', 'baseurl' => 'http://mir
 
 default['cookbook-openshift3']['use_wildcard_nodes'] = false
 default['cookbook-openshift3']['wildcard_domain'] = ''
-default['cookbook-openshift3']['openshift_cluster_name'] = nil
+default['cookbook-openshift3']['openshift_cluster_name'] = ''
 default['cookbook-openshift3']['openshift_HA'] = false
 default['cookbook-openshift3']['master_servers'] = []
 default['cookbook-openshift3']['etcd_servers'] = []

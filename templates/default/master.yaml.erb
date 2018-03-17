@@ -1,3 +1,5 @@
+admissionConfig:
+  pluginConfig: null
 <% if @ose_major_version.split('.')[1].to_i >= 6 %>
 aggregatorConfig:
   proxyClientInfo:
@@ -14,11 +16,6 @@ authConfig:
       - X-Remote-Group
     extraHeaderPrefixes:
       - X-Remote-Extra-
-<%- end -%>
-admissionConfig:
-<% unless @admission_plugin.empty? %>
-  pluginConfig:
-    <%= @admission_plugin %>
 <%- end -%>
 apiLevels:
 - v1
