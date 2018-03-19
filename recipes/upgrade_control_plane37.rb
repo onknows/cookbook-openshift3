@@ -21,7 +21,6 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   server_info = OpenShiftHelper::NodeHelper.new(node)
   first_etcd = server_info.first_etcd
   is_master_server = server_info.on_master_server?
-  is_node_server = server_info.on_node_server?
 
   if is_master_server
     return unless ::Mixlib::ShellOut.new("/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.crt --key-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-client.key --ca-file #{node['cookbook-openshift3']['openshift_master_config_dir']}/master.etcd-ca.crt -C https://#{first_etcd['ipaddress']}:2379 ls /migration/#{node['cookbook-openshift3']['control_upgrade_version']}/#{node['fqdn']}").run_command.error?
