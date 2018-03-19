@@ -276,6 +276,7 @@ end
 package "#{node['cookbook-openshift3']['openshift_service_type']}-master" do
   action :install
   version node['cookbook-openshift3']['ose_version'] unless node['cookbook-openshift3']['ose_version'].nil?
+  options node['cookbook-openshift3']['yum_options'] unless node['cookbook-openshift3']['yum_options'].nil?
   notifies :run, 'execute[daemon-reload]', :immediately
   not_if { node['cookbook-openshift3']['deploy_containerized'] }
   retries 3

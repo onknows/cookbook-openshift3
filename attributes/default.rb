@@ -86,7 +86,7 @@ default['cookbook-openshift3']['openshift_base_images'] = node['cookbook-openshi
 default['cookbook-openshift3']['openshift_common_hostname'] = node['fqdn']
 default['cookbook-openshift3']['openshift_common_ip'] = node['ipaddress']
 default['cookbook-openshift3']['openshift_common_public_ip'] = node['ipaddress']
-default['cookbook-openshift3']['openshift_common_admin_binary'] = node['cookbook-openshift3']['deploy_containerized'] == true ? '/usr/local/bin/oadm' : '/usr/bin/oadm'
+default['cookbook-openshift3']['openshift_common_admin_binary'] = node['cookbook-openshift3']['deploy_containerized'] == true ? '/usr/local/bin/o adm' : '/usr/bin/oc adm'
 default['cookbook-openshift3']['openshift_common_client_binary'] = node['cookbook-openshift3']['deploy_containerized'] == true ? '/usr/local/bin/oc' : '/usr/bin/oc'
 default['cookbook-openshift3']['openshift_common_service_accounts'] = []
 default['cookbook-openshift3']['openshift_common_service_accounts'] = [{ 'name' => 'router', 'namespace' => 'default', 'scc' => 'hostnetwork' }]

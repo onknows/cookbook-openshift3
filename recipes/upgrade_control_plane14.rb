@@ -215,13 +215,4 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
       level :info
     end
   end
-
-  if is_master_server || is_node_server
-    %w(excluder docker-excluder).each do |pkg|
-      execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
-        command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
-        only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
-      end
-    end
-  end
 end

@@ -15,6 +15,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   node.force_override['cookbook-openshift3']['upgrade'] = true
   node.force_override['cookbook-openshift3']['ose_major_version'] = node['cookbook-openshift3']['upgrade_ose_major_version']
   node.force_override['cookbook-openshift3']['ose_version'] = node['cookbook-openshift3']['upgrade_ose_version']
+  node.force_override['cookbook-openshift3']['yum_options'] = '--exclude=*3.7.1*' # Bug with Origin 3.7.1.x
   node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = node['cookbook-openshift3']['upgrade_openshift_docker_image_version']
 
   server_info = OpenShiftHelper::NodeHelper.new(node)
@@ -33,13 +34,4 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   end
 
   include_recipe 'cookbook-openshift3::upgrade_control_plane37_part1' unless node.run_state['issues_detected']
-
-  if is_master_server || is_node_server
-    %w(excluder docker-excluder).each do |pkg|
-      yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]}"
-      execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
-        command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
-      end
-    end
-  end
 end

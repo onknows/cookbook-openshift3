@@ -52,12 +52,5 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     log 'Upgrade for NODE [COMPLETED]' do
       level :info
     end
-
-    %w(excluder docker-excluder).each do |pkg|
-      yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} = #{node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]}"
-      execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
-        command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
-      end
-    end
   end
 end
