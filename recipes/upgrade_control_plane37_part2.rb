@@ -8,6 +8,10 @@
 # It creates the service signer certs (and any others) if they were not in
 # existence previously.
 
+node.force_override['cookbook-openshift3']['upgrade'] = true
+node.force_override['cookbook-openshift3']['ose_major_version'] = node['cookbook-openshift3']['upgrade_ose_major_version']
+node.force_override['cookbook-openshift3']['ose_version'] = node['cookbook-openshift3']['upgrade_ose_version']
+node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = node['cookbook-openshift3']['upgrade_openshift_docker_image_version']
 server_info = OpenShiftHelper::NodeHelper.new(node)
 first_etcd = server_info.first_etcd
 is_master_server = server_info.on_master_server?
