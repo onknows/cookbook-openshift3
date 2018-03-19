@@ -38,8 +38,8 @@ if node['cookbook-openshift3']['control_upgrade']
       default['cookbook-openshift3']['upgrade_openshift_docker_image_version'] = 'v3.6.1'
     when '37'
       default['cookbook-openshift3']['upgrade_ose_major_version'] = '3.7'
-      default['cookbook-openshift3']['upgrade_ose_version'] = '3.7.1-1.el7.git.0.0a2d6a1'
-      default['cookbook-openshift3']['upgrade_openshift_docker_image_version'] = 'v3.7.1'
+      default['cookbook-openshift3']['upgrade_ose_version'] = '3.7.0-1.0.7ed6862'
+      default['cookbook-openshift3']['upgrade_openshift_docker_image_version'] = 'v3.7.0'
     end
   end
 end
