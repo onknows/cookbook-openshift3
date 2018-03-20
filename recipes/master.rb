@@ -44,12 +44,14 @@ if is_master_server || is_certificate_server
 
   template node['cookbook-openshift3']['openshift_master_session_secrets_file'] do
     source 'session-secrets.yaml.erb'
-    variables lazy {
-      {
-        secret_authentication: Mixlib::ShellOut.new('/usr/bin/openssl rand -base64 24').run_command.stdout.strip,
-        secret_encryption: Mixlib::ShellOut.new('/usr/bin/openssl rand -base64 24').run_command.stdout.strip,
-      }
-    }
+    variables(
+      lazy do
+        {
+          secret_authentication: Mixlib::ShellOut.new('/usr/bin/openssl rand -base64 24').run_command.stdout.strip,
+          secret_encryption: Mixlib::ShellOut.new('/usr/bin/openssl rand -base64 24').run_command.stdout.strip
+        }
+      end
+    )
     action :create_if_missing
   end
 

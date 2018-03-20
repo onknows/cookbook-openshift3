@@ -48,13 +48,13 @@ if [[ $2 =~ ^(up|dhcp4-change|dhcp6-change)$ ]]; then
   def_route_ip=$(/sbin/ip route get to ${def_route} | awk '{print $5}')
   if [[ ${DEVICE_IFACE} == ${def_route_int} ]]; then
     if [ ! -f /etc/dnsmasq.d/origin-dns.conf ]; then
-      cat << EOF > /etc/dnsmasq.d/origin-dns.conf
+      cat << BASH > /etc/dnsmasq.d/origin-dns.conf
 no-resolv
 domain-needed
 server=/cluster.local/172.30.0.1
 server=/30.172.in-addr.arpa/172.30.0.1
 enable-dbus
-EOF
+BASH
       # New config file, must restart
       NEEDS_RESTART=1
     fi

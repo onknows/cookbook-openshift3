@@ -15,13 +15,13 @@ action :add_node do
     etcd_servers = new_resource.etcd_servers
     etcd_servers.each do |etcd|
       bash 'add_etcd_nodes_if_needed' do
-        code <<-EOH
+        code <<-BASH
           list_of_nodes=$(etcdctl -C https://${ETCD_SERVER}:${ETCD_CLIENT_PORT} --cert-file $CRT --key-file $KEY --ca-file $CA member list | cut -d' ' -f2)
           if [[ ! $list_of_nodes =~ "$ETCD_NODE_FQDN" ]]
           then
             etcdctl -C https://${ETCD_SERVER}:${ETCD_CLIENT_PORT} --cert-file $CRT --key-file $KEY --ca-file $CA member add $ETCD_NODE_FQDN https://${ETCD_NODE_IP}:${ETCD_PEER_PORT}
           fi
-          EOH
+          BASH
         environment(
           'ETCD_SERVER' => etcd_servers.find { |etcd_node| etcd_node['fqdn'] == node['fqdn'] }['ipaddress'],
           'ETCD_CLIENT_PORT' => node['cookbook-openshift3']['etcd_client_port'],
@@ -45,14 +45,14 @@ action :remove_node do
     etcd_servers_to_remove = new_resource.etcd_servers_to_remove
     etcd_servers_to_remove.each do |etcd|
       bash 'remove_etcd_nodes_if_needed' do
-        code <<-EOH
+        code <<-BASH
           list_of_nodes=$(etcdctl -C https://${ETCD_SERVER}:${ETCD_CLIENT_PORT} --cert-file $CRT --key-file $KEY --ca-file $CA member list | cut -d' ' -f2)
           ID_SERVER=$(etcdctl -C https://${ETCD_SERVER}:${ETCD_CLIENT_PORT} --cert-file $CRT --key-file $KEY --ca-file $CA member list | grep $ETCD_NODE_FQDN | cut -d':' -f1)
           if [[ $list_of_nodes =~ "$ETCD_NODE_FQDN" ]]
           then
             etcdctl -C https://${ETCD_SERVER}:${ETCD_CLIENT_PORT} --cert-file $CRT --key-file $KEY --ca-file $CA member remove $ID_SERVER
           fi
-          EOH
+          BASH
         environment(
           'ETCD_SERVER' => etcd_servers.find { |etcd_node| etcd_node['fqdn'] == node['fqdn'] }['ipaddress'],
           'ETCD_CLIENT_PORT' => node['cookbook-openshift3']['etcd_client_port'],

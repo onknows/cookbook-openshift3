@@ -35,12 +35,14 @@ if !lb_servers.nil? && lb_servers.find { |lb| lb['fqdn'] == node['fqdn'] }
 
   template '/etc/haproxy/haproxy.cfg' do
     source 'haproxy.conf.erb'
-    variables lazy {
-      {
-        master_servers: master_servers,
-        maxconn: node['cookbook-openshift3']['lb_default_maxconn'].nil? ? '20000' : node['cookbook-openshift3']['lb_default_maxconn'],
-      }
-    }
+    variables(
+      lazy do
+        {
+          master_servers: master_servers,
+          maxconn: node['cookbook-openshift3']['lb_default_maxconn'].nil? ? '20000' : node['cookbook-openshift3']['lb_default_maxconn']
+        }
+      end
+    )
     notifies :restart, 'service[haproxy]', :immediately
   end
 
@@ -68,7 +70,7 @@ if node['cookbook-openshift3']['install_method'].eql? 'yum'
 end
 
 service 'firewalld' do
-  action [:stop, :disable]
+  action %i[stop disable]
 end
 
 package 'deltarpm' do
@@ -90,10 +92,10 @@ if is_node_server || node['cookbook-openshift3']['deploy_containerized']
   end
 
   bash "Configure Docker to use the default FS type for #{node['fqdn']}" do
-    code <<-EOF
+    code <<-BASH
       correct_fs=$(df -T /var | egrep -o 'xfs|ext4')
       sed -i "s/xfs/$correct_fs/" /usr/bin/docker-storage-setup
-    EOF
+    BASH
     not_if "grep $(df -T /var | egrep -o 'xfs|ext4') /usr/bin/docker-storage-setup"
     timeout 60
   end

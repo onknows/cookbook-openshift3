@@ -20,7 +20,7 @@ default['cookbook-openshift3']['openshift_master_identity_provider']['OpenIDIden
 
 # See https://github.com/IshentRas/cookbook-openshift3/issues/115 - if you want clientCA as per below, you need to add it into your config.
 # default['cookbook-openshift3']['openshift_master_identity_provider']['RequestHeaderIdentityProvider'] = { 'name' => 'header_provider_identify', 'login' => false, 'challenge' => false, 'kind' => 'RequestHeaderIdentityProvider', 'headers' => %w(X-Remote-User SSO-User), 'clientCA' => "#{default['cookbook-openshift3']['openshift_common_master_dir']}/master/ca.crt" }
-default['cookbook-openshift3']['openshift_master_identity_provider']['RequestHeaderIdentityProvider'] = { 'name' => 'header_provider_identify', 'login' => false, 'challenge' => false, 'kind' => 'RequestHeaderIdentityProvider', 'headers' => %w(X-Remote-User SSO-User) }
+default['cookbook-openshift3']['openshift_master_identity_provider']['RequestHeaderIdentityProvider'] = { 'name' => 'header_provider_identify', 'login' => false, 'challenge' => false, 'kind' => 'RequestHeaderIdentityProvider', 'headers' => %w[X-Remote-User SSO-User] }
 
 default['cookbook-openshift3']['openshift_master_htpasswd'] = "#{node['cookbook-openshift3']['openshift_common_master_dir']}/openshift-passwd"
 

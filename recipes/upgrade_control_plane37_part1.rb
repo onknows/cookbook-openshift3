@@ -20,7 +20,7 @@ end
 include_recipe 'yum::default'
 
 if is_master_server || is_node_server
-  %w(excluder docker-excluder).each do |pkg|
+  %w[excluder docker-excluder].each do |pkg|
     execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
       command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
     end

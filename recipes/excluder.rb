@@ -6,7 +6,7 @@
 
 ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
 
-%w(excluder docker-excluder).each do |pkg|
+%w[excluder docker-excluder].each do |pkg|
   yum_package "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
     action :upgrade if node['cookbook-openshift3']['upgrade']
     version node['cookbook-openshift3']['excluder_version'] unless node['cookbook-openshift3']['excluder_version'].nil?

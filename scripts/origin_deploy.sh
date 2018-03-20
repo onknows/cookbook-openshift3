@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 clear
-cat << EOF
+cat << BASH
 
 ############################################################
 # "All in the box" (Master, ETCD and Node in a server)     #
 ############################################################
 
-EOF
+BASH
 IP_DETECT=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
 DF=""
 read -p "Please enter the FQDN of the server: " FQDN
@@ -40,7 +40,7 @@ yum install -y git
 [ -d ~/chef-solo-example/cookbooks/docker ] || git clone -q https://github.com/chef-cookbooks/docker.git
 cd ~/chef-solo-example
 ### Create the dedicated environment for Origin deployment
-cat << EOF > environments/origin.json
+cat << BASH > environments/origin.json
 {
   "name": "origin",
   "description": "",
@@ -90,9 +90,9 @@ cat << EOF > environments/origin.json
     }
   }
 }
-EOF
+BASH
 ### Specify the configuration details for chef-solo
-cat << EOF > /root/chef-solo-example/solo.rb
+cat << BASH > /root/chef-solo-example/solo.rb
 cookbook_path [
                '/root/chef-solo-example/cookbooks',
                '/root/chef-solo-example/site-cookbooks'
@@ -102,15 +102,15 @@ file_backup_path '/root/chef-solo-example/backup'
 file_cache_path '/root/chef-solo-example/cache'
 log_location STDOUT
 solo true
-EOF
+BASH
 ### Create run_list
-cat << EOF > /root/chef-solo-example/run_list.json
+cat << BASH > /root/chef-solo-example/run_list.json
 { 
   "run_list": [
     "recipe[cookbook-openshift3::default]"
   ]
 }
-EOF
+BASH
 
 ### Deploy OSE !!!!
 chef-solo --environment origin -c ~/chef-solo-example/solo.rb -j ~/chef-solo-example/run_list.json --legacy
@@ -124,7 +124,7 @@ then
 fi
 # Enable completion of commands
 . /etc/bash_completion.d/oc
-cat << EOF
+cat << BASH
 
 ##### Installation DONE ######
 #####                   ######
@@ -146,4 +146,4 @@ Next steps for you :
 
 ##############################
 ########## DONE ##############
-EOF
+BASH

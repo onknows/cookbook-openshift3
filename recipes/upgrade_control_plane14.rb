@@ -38,7 +38,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   include_recipe 'yum::default'
 
   if is_master_server || is_node_server
-    %w(excluder docker-excluder).each do |pkg|
+    %w[excluder docker-excluder].each do |pkg|
       execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} (Best effort < 3.5)" do
         command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
         only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
@@ -187,12 +187,12 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
     execute "Update router image to current version \"#{hosted_upgrade_version}\"" do
       command lazy {
-        "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
-        --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-        patch dc/router -n #{node['cookbook-openshift3']['openshift_hosted_router_namespace']} -p \
-        \'{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"router\",\"image\":\"#{node.run_state['router_image'].gsub(/:v.+/, ":#{hosted_upgrade_version}")}\",\"livenessProbe\":{\"tcpSocket\":null,\"httpGet\":{\"path\": \"/healthz\", \"port\": 1936, \"host\": \"localhost\", \"scheme\": \"HTTP\"},\"initialDelaySeconds\":10,\"timeoutSeconds\":1}}]}}}}' \
-        --api-version=v1"
-      }
+                "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
+                --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
+                patch dc/router -n #{node['cookbook-openshift3']['openshift_hosted_router_namespace']} -p \
+                \'{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"router\",\"image\":\"#{node.run_state['router_image'].gsub(/:v.+/, ":#{hosted_upgrade_version}")}\",\"livenessProbe\":{\"tcpSocket\":null,\"httpGet\":{\"path\": \"/healthz\", \"port\": 1936, \"host\": \"localhost\", \"scheme\": \"HTTP\"},\"initialDelaySeconds\":10,\"timeoutSeconds\":1}}]}}}}' \
+                --api-version=v1"
+              }
       only_if do
         node['cookbook-openshift3']['openshift_hosted_manage_router']
       end
@@ -200,12 +200,12 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
     execute "Update registry image to current version \"#{hosted_upgrade_version}\"" do
       command lazy {
-        "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
-        --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-        patch dc/docker-registry -n #{node['cookbook-openshift3']['openshift_hosted_registry_namespace']} -p \
-        \'{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"registry\",\"image\":\"#{node.run_state['registry_image'].gsub(/:v.+/, ":#{hosted_upgrade_version}")}\"}]}}}}' \
-        --api-version=v1"
-      }
+                "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
+                --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
+                patch dc/docker-registry -n #{node['cookbook-openshift3']['openshift_hosted_registry_namespace']} -p \
+                \'{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"registry\",\"image\":\"#{node.run_state['registry_image'].gsub(/:v.+/, ":#{hosted_upgrade_version}")}\"}]}}}}' \
+                --api-version=v1"
+              }
       only_if do
         node['cookbook-openshift3']['openshift_hosted_manage_registry']
       end

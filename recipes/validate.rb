@@ -39,7 +39,7 @@ if !node['cookbook-openshift3']['openshift_HA'] && node['cookbook-openshift3']['
 end
 
 if node['cookbook-openshift3']['openshift_hosted_cluster_metrics']
-  unless node['cookbook-openshift3']['openshift_metrics_cassandra_storage_types'].any? { |t| t.casecmp(node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type']) == 0 }
+  unless node['cookbook-openshift3']['openshift_metrics_cassandra_storage_types'].any? { |t| t.casecmp(node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type']).zero? }
     Chef::Log.error('Key openshift_metrics_cassandra_storage_types is not valid. Please refer to the documentation for supprted types')
     node.run_state['issues_detected'] = true
   end
@@ -52,7 +52,7 @@ if node['cookbook-openshift3']['etcd_add_additional_nodes']
   end
 end
 
-%w(openshift_node_max_pod openshift_node_minimum_container_ttl_duration openshift_node_maximum_dead_containers_per_container openshift_node_maximum_dead_containers openshift_node_image_gc_high_threshold openshift_node_image_gc_low_threshold).each do |deprecated|
+%w[openshift_node_max_pod openshift_node_minimum_container_ttl_duration openshift_node_maximum_dead_containers_per_container openshift_node_maximum_dead_containers openshift_node_image_gc_high_threshold openshift_node_image_gc_low_threshold].each do |deprecated|
   unless node['cookbook-openshift3'][deprecated].empty?
     Chef::Log.warn("The attributes #{deprecated} has been deprecated, please use \"openshift_node_kubelet_args_custom\",")
   end

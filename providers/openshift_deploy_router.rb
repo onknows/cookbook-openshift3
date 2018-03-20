@@ -34,7 +34,7 @@ action :create do
       not_if 'oc get secret router-certs -n $namespace_router --no-headers'
     end
 
-    deploy_options = %w(--selector=${selector_router} -n ${namespace_router}) + Array(new_resource.deployer_options)
+    deploy_options = %w[--selector=${selector_router} -n ${namespace_router}] + Array(new_resource.deployer_options)
     execute 'Deploy Hosted Router' do
       command "#{node['cookbook-openshift3']['openshift_common_client_binary']} adm router #{deploy_options.join(' ')} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig || true"
       environment(

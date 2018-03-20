@@ -103,5 +103,5 @@ openshift_create_master 'Create master configuration file' do
 end
 
 service "#{node['cookbook-openshift3']['openshift_service_type']}-master" do
-  action [:start, :enable]
+  action %i[start enable]
 end

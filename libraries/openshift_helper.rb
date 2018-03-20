@@ -1,4 +1,5 @@
 module OpenShiftHelper
+  # Helper for Openshift
   class NodeHelper
     require 'openssl'
 

@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 clear
-cat << EOF
+cat << BASH
 
 ############################################################
 #                    DELETE OSE                            #
 ############################################################
-EOF
+BASH
 ### Create the chef-local mode infrastructure
 mkdir -p ~/chef-solo-example/{backup,cache,roles,cookbooks,environments}
 cd ~/chef-solo-example/cookbooks
@@ -21,7 +21,7 @@ yum -y install -q https://packages.chef.io/files/stable/chef/12.17.44/el/7/chef-
 [ -d ~/chef-solo-example/cookbooks/compat_resource ] || git clone -q https://github.com/chef-cookbooks/compat_resource.git
 cd ~/chef-solo-example
 ### Specify the configuration details for chef-solo
-cat << EOF > ~/chef-solo-example/solo.rb
+cat << BASH > ~/chef-solo-example/solo.rb
 cookbook_path [
                '/root/chef-solo-example/cookbooks',
                '/root/chef-solo-example/site-cookbooks'
@@ -31,10 +31,10 @@ file_backup_path '/root/chef-solo-example/backup'
 file_cache_path '/root/chef-solo-example/cache'
 log_location STDOUT
 solo true
-EOF
+BASH
 ### Delete OSE !!!!
 chef-solo -o recipe[cookbook-openshift3::adhoc_uninstall] -c ~/chef-solo-example/solo.rb
-cat << EOF
+cat << BASH
 
 ##### Uninstallation DONE ######
 #####                     ######
@@ -42,4 +42,4 @@ Next steps for you :
 
 1) Reboot this server
 
-EOF
+BASH
