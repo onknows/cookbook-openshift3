@@ -98,6 +98,10 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_master_ingress_ip_network_cidr']` -  Defaults to `nil`.
 * `node['cookbook-openshift3']['openshift_master_bind_addr']` -  Defaults to `0.0.0.0`.
 * `node['cookbook-openshift3']['openshift_master_auditconfig']` -  Defaults to `false`.
+* `node['cookbook-openshift3']['openshift_master_auditconfig']['audit-file']` - Default to `nil`
+* `node['cookbook-openshift3']['openshift_master_auditconfig']['max-retention-day']` - Default to `nil`
+* `node['cookbook-openshift3']['openshift_master_auditconfig']['max-file-size']` - Default to `nil`
+* `node['cookbook-openshift3']['openshift_master_auditconfig']['max-file-number']` - Default to `nil`
 * `node['cookbook-openshift3']['openshift_master_api_port']` -  Defaults to `8443`.
 * `node['cookbook-openshift3']['openshift_master_console_port']` -  Defaults to `8443`.
 * `node['cookbook-openshift3']['openshift_lb_port']` -  Defaults to `8443`.

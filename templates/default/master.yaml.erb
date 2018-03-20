@@ -54,6 +54,18 @@ assetConfig:
 <% end -%>
 auditConfig:
   enabled: <%= node['cookbook-openshift3']['openshift_master_auditconfig'] %>
+<% if node['cookbook-openshift3']['openshift_master_auditconfig'].has_key?('audit-file') %>
+  auditFilePath: <%= node['cookbook-openshift3']['openshift_master_auditconfig']['audit-file'] %>
+<% end -%>
+<% if node['cookbook-openshift3']['openshift_master_auditconfig'].has_key?('max-retention-day') %>
+  maximumFileRetentionDays: <%= node['cookbook-openshift3']['openshift_master_auditconfig']['max-retention-day'] %>
+<% end -%>
+<% if node['cookbook-openshift3']['openshift_master_auditconfig'].has_key?('max-file-size') %>
+  maximumFileSizeMegabytes: <%= node['cookbook-openshift3']['openshift_master_auditconfig']['max-file-size'] %>
+<% end -%>
+<% if node['cookbook-openshift3']['openshift_master_auditconfig'].has_key?('max-file-number') %>
+  maximumRetainedFiles: <%= node['cookbook-openshift3']['openshift_master_auditconfig']['max-file-number'] %>
+<% end -%>
 <% if @ose_major_version.split('.')[1].to_i >= 3 %>
 controllerConfig:
   election:
