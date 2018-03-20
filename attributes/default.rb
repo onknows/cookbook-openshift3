@@ -106,7 +106,7 @@ default['cookbook-openshift3']['openshift_docker_ovs_image'] = node['cookbook-op
 default['cookbook-openshift3']['openshift_docker_etcd_image'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'registry.access.redhat.com/rhel7/etcd' : 'registry.fedoraproject.org/f26/etcd'
 default['cookbook-openshift3']['openshift_master_config_dir'] = "#{node['cookbook-openshift3']['openshift_common_master_dir']}/master"
 default['cookbook-openshift3']['openshift_master_bind_addr'] = '0.0.0.0'
-default['cookbook-openshift3']['openshift_master_auditconfig'] = false
+default['cookbook-openshift3']['openshift_master_auditconfig'] = { 'enable' => false }
 default['cookbook-openshift3']['openshift_master_api_port'] = '8443'
 default['cookbook-openshift3']['openshift_lb_port'] = '8443'
 default['cookbook-openshift3']['openshift_master_certs'] = %w(admin.crt admin.key admin.kubeconfig master.kubelet-client.crt master.kubelet-client.key ca.crt ca.key ca.serial.txt ca-bundle.crt serviceaccounts.private.key serviceaccounts.public.key master.proxy-client.crt master.proxy-client.key service-signer.crt service-signer.key)

@@ -53,7 +53,7 @@ assetConfig:
 <%- end -%>
 <% end -%>
 auditConfig:
-  enabled: <%= node['cookbook-openshift3']['openshift_master_auditconfig'] %>
+  enabled: <%= node['cookbook-openshift3']['openshift_master_auditconfig']['enable'] %>
 <% if node['cookbook-openshift3']['openshift_master_auditconfig'].has_key?('audit-file') %>
   auditFilePath: <%= node['cookbook-openshift3']['openshift_master_auditconfig']['audit-file'] %>
 <% end -%>
