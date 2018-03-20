@@ -244,6 +244,29 @@ Example of enabling a specific "feature-gate": enabling the [persistent local vo
 }
 ```
 
+Example of overriding the Audit Configuration Parameters for the `openshift_master_auditconfig` Hash
+
+| Key Name   | Description |
+| --------   | --------- |
+| enable | A boolean to enable or disable audit logs. Default is `false`. |
+| audit-file | File path where the requests should be logged to. If not set, logs are printed to master logs. |
+| max-retention-day | Specifies maximum number of days to retain old audit log files based on the time stamp encoded in their filename. |
+| max-file-number | Specifies the maximum number of old audit log files to retain. |
+| max-file-size | Specifies maximum size in megabytes of the log file before it gets rotated. Defaults to 100MB. |
+
+```json
+{
+  ...
+  "openshift_master_auditconfig": {
+    "enable": true,
+    "audit-file": "/var/log/audit-ocp",
+    "max-file-size": "50",
+    "max-file-number": "10"
+  },
+  ...
+}
+```
+
 Example of overriding the setting for global builds:
 Any option can be set, as long as they are supported by current [Global Build Defaults and Overrides](https://docs.openshift.com/container-platform/latest/install_config/build_defaults_overrides.html).
 
