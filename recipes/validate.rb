@@ -6,6 +6,7 @@
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 first_master = server_info.first_master
+first_etcd = server_info.first_etcd
 master_servers = server_info.master_servers
 lb_servers = server_info.lb_servers
 etcd_servers = server_info.etcd_servers
@@ -82,9 +83,11 @@ if first_master.nil?
   node.run_state['issues_detected'] = true
 end
 
+
 if first_etcd.nil?
   Chef::Log.error('first_etcd not set')
   node.run_state['issues_detected'] = true
+  only_if { node['cookbook-openshift3']['openshift_HA'] }
 end
 
 if certificate_server.nil?
