@@ -168,9 +168,5 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     end
 
     include_recipe 'cookbook-openshift3::upgrade_managed_hosted'
-
-    log 'Update hosted deployment(s) to current version [COMPLETED]' do
-      level :info
-    end
   end
 end
