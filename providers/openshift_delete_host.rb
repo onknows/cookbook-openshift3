@@ -73,11 +73,12 @@ action :delete do
       end
     end
 
-    Dir.glob('/var/lib/origin/openshift.local.volumes/**/*').select { |fn| File.directory?(fn) }.each do |dir|
+    ::Dir.glob('/var/lib/origin/openshift.local.volumes/**/*').select { |fn| ::File.directory?(fn) }.each do |dir|
       execute 'Unmount kube volumes' do
-        command "umount #{dir}"
+        command "$ACTION #{dir}"
 	retries 30
         retry_delay 2
+	environment 'ACTION' => 'unmount'
       end
     end
    
@@ -110,13 +111,6 @@ action :delete do
     service 'docker' do
       action :start
       only_if { node['cookbook-openshift3']['deploy_containerized'] }
-    end
-
-    reboot 'Uninstall require reboot' do
-      action :request_reboot
-      reason 'Need to reboot when the run completes successfully.'
-      delay_mins 1
-      only_if { node['cookbook-openshift3']['openshift_adhoc_reboot_node'] == true }
     end
   end
 end

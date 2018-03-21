@@ -55,7 +55,14 @@ service 'Restart Node' do
   only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-node"
 end
 
-service 'etcd-service' do
-  service_name node['cookbook-openshift3']['etcd_service_name']
-  action :nothing
+if node['cookbook-openshift3']['deploy_containerized']
+  service 'etcd-service' do
+    service_name 'etcd_container'
+    action :nothing
+  end
+else
+  service 'etcd-service' do
+    service_name 'etcd'
+    action :nothing
+  end
 end
