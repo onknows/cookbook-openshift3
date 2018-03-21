@@ -19,38 +19,38 @@ action :delete do
       action %i(stop disable)
       ignore_failure true
     end
-    
+
     service 'openvswitch' do
       action %i(stop disable)
       ignore_failure true
     end
-    
+
     service "#{node['cookbook-openshift3']['openshift_service_type']}-master" do
       action %i(stop disable)
       ignore_failure true
     end
-    
+
     service "#{node['cookbook-openshift3']['openshift_service_type']}-master-api" do
       action %i(stop disable)
       ignore_failure true
     end
-    
+
     service "#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers" do
       action %i(stop disable)
       ignore_failure true
     end
-    
-    service "etcd" do
+
+    service 'etcd' do
       action %i(stop disable)
       ignore_failure true
     end
-    
-    service "etcd_container" do
+
+    service 'etcd_container' do
       action %i(stop disable)
       ignore_failure true
     end
-    
-    service "haproxy" do
+
+    service 'haproxy' do
       action %i(stop disable)
       ignore_failure true
     end
@@ -76,10 +76,10 @@ action :delete do
     ::Dir.glob('/var/lib/origin/openshift.local.volumes/**/*').select { |fn| ::File.directory?(fn) }.each do |dir|
       execute 'Unmount kube volumes' do
         command "$ACTION #{dir} || true"
-	environment 'ACTION' => 'umount'
+        environment 'ACTION' => 'umount'
       end
     end
-   
+
     %W(#{node['cookbook-openshift3']['openshift_service_type']} #{node['cookbook-openshift3']['openshift_service_type']}-master #{node['cookbook-openshift3']['openshift_service_type']}-node #{node['cookbook-openshift3']['openshift_service_type']}-sdn-ovs #{node['cookbook-openshift3']['openshift_service_type']}-clients cockpit-bridge cockpit-docker cockpit-shell cockpit-ws openvswitch tuned-profiles-#{node['cookbook-openshift3']['openshift_service_type']}-node #{node['cookbook-openshift3']['openshift_service_type']}-excluder #{node['cookbook-openshift3']['openshift_service_type']}-docker-excluder etcd httpd haproxy).each do |remove_package|
       package remove_package do
         action :remove
@@ -97,7 +97,7 @@ action :delete do
         environment 'ACTION' => 'umount'
       end
     end
-    
+
     helper.remove_dir('/var/lib/origin/*')
 
     execute 'Clean Iptables rules' do
