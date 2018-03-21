@@ -36,17 +36,19 @@ action :delete do
     end
 
     execute 'Uninstalling metrics components' do
-      command "#{node['cookbook-openshift3']['openshift_common_client_binary']} delete --ignore-not-found \
+      command "#{node['cookbook-openshift3']['openshift_common_client_binary']} $ACTION --ignore-not-found \
               --selector=metrics-infra all,sa,secrets,templates,routes,pvc,rolebindings,clusterrolebindings \
               --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
               --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']}"
+      environment 'ACTION' => 'delete'
     end
 
     execute 'Uninstalling rolebindings' do
-      command "#{node['cookbook-openshift3']['openshift_common_client_binary']} delete \
+      command "#{node['cookbook-openshift3']['openshift_common_client_binary']} $ACTION \
               --ignore-not-found rolebinding/hawkular-view clusterrolebinding/heapster-cluster-reader \
               --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
               --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']}"
+      environment 'ACTION' => 'delete'
     end
   end
 end

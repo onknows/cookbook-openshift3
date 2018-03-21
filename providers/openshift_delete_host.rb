@@ -14,14 +14,46 @@ end
 action :delete do
   converge_by 'Uninstalling OpenShift' do
     helper = OpenShiftHelper::NodeHelper.new(node)
-    %W(#{node['cookbook-openshift3']['openshift_service_type']}-node openvswitch #{node['cookbook-openshift3']['openshift_service_type']}-master #{node['cookbook-openshift3']['openshift_service_type']}-master-api #{node['cookbook-openshift3']['openshift_service_type']}-master-api-controllers etcd etcd_container haproxy).each do |remove_service|
-      service do
-	service_name remove_service
-        action %i(stop disable)
-        ignore_failure true
-      end
-    end
 
+    service "#{node['cookbook-openshift3']['openshift_service_type']}-node" do
+      action %i(stop disable)
+      ignore_failure true
+    end
+    
+    service 'openvswitch' do
+      action %i(stop disable)
+      ignore_failure true
+    end
+    
+    service "#{node['cookbook-openshift3']['openshift_service_type']}-master" do
+      action %i(stop disable)
+      ignore_failure true
+    end
+    
+    service "#{node['cookbook-openshift3']['openshift_service_type']}-master-api" do
+      action %i(stop disable)
+      ignore_failure true
+    end
+    
+    service "#{node['cookbook-openshift3']['openshift_service_type']}-master-api-controllers" do
+      action %i(stop disable)
+      ignore_failure true
+    end
+    
+    service "etcd" do
+      action %i(stop disable)
+      ignore_failure true
+    end
+    
+    service "etcd_container" do
+      action %i(stop disable)
+      ignore_failure true
+    end
+    
+    service "haproxy" do
+      action %i(stop disable)
+      ignore_failure true
+    end
     service 'docker' do
       action :stop
       only_if { node['cookbook-openshift3']['deploy_containerized'] }
