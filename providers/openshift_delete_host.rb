@@ -35,7 +35,7 @@ action :delete do
       ignore_failure true
     end
     
-    service "#{node['cookbook-openshift3']['openshift_service_type']}-master-api-controllers" do
+    service "#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers" do
       action %i(stop disable)
       ignore_failure true
     end
