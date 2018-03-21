@@ -78,7 +78,7 @@ action :delete do
         command "$ACTION #{dir}"
 	retries 30
         retry_delay 2
-	environment 'ACTION' => 'unmount'
+	environment 'ACTION' => 'umount'
       end
     end
    
