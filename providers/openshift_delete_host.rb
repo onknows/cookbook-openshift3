@@ -75,9 +75,7 @@ action :delete do
 
     ::Dir.glob('/var/lib/origin/openshift.local.volumes/**/*').select { |fn| ::File.directory?(fn) }.each do |dir|
       execute 'Unmount kube volumes' do
-        command "$ACTION #{dir}"
-	retries 30
-        retry_delay 2
+        command "$ACTION #{dir} || true"
 	environment 'ACTION' => 'umount'
       end
     end
