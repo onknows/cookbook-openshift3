@@ -43,7 +43,7 @@ try {
       stage('rubocop') {
         node(nodename) {
           dir(builddir) {
-            sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk rubocop -r cookstyle -D'
+            sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk rubocop -D'
           }
         }
       }
