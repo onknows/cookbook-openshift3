@@ -4,6 +4,7 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
+use_inline_resources
 require 'openssl'
 
 provides :openshift_create_master if defined? provides

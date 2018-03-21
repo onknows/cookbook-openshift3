@@ -4,6 +4,7 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
+use_inline_resources
 provides :openshift_redeploy_certificate if defined? provides
 
 def whyrun_supported?

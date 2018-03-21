@@ -4,6 +4,7 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
+use_inline_resources
 provides :openshift_deploy_metrics if defined? provides
 
 def whyrun_supported?
@@ -34,14 +35,14 @@ action :delete do
               --replicas=0 --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']}"
     end
 
-    execute 'Remove metrics components' do
+    execute 'Uninstalling metrics components' do
       command "#{node['cookbook-openshift3']['openshift_common_client_binary']} delete --ignore-not-found \
               --selector=metrics-infra all,sa,secrets,templates,routes,pvc,rolebindings,clusterrolebindings \
               --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \
               --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']}"
     end
 
-    execute 'Remove rolebindings' do
+    execute 'Uninstalling rolebindings' do
       command "#{node['cookbook-openshift3']['openshift_common_client_binary']} delete \
               --ignore-not-found rolebinding/hawkular-view clusterrolebinding/heapster-cluster-reader \
               --config=#{Chef::Config['file_cache_path']}/hosted_metric/admin.kubeconfig \

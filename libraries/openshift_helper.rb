@@ -2,6 +2,7 @@ module OpenShiftHelper
   # Helper for Openshift
   class NodeHelper
     require 'openssl'
+    require 'fileutils'
 
     def initialize(node)
       @node = node
@@ -72,8 +73,42 @@ module OpenShiftHelper
       certificate_server['fqdn'] == node['fqdn']
     end
 
+    def remove_dir(path)
+      FileUtils.rm_rf(Dir.glob(path))
+    end
+
     protected
 
     attr_reader :node
+  end
+
+  # Helper for Openshift
+  class UtilHelper
+    def initialize(filepath)
+      raise ArgumentError, "File '#{filepath}' does not exist" unless File.exist?(filepath)
+      @contents = File.open(filepath, &:read)
+      @original_pathname = filepath
+      @changes = false
+    end
+
+    def search_file_replace_line(regex, newline)
+      @changes ||= contents.gsub!(regex, newline)
+    end
+
+    def write_file
+      if @changes
+        backup_pathname = original_pathname + '.old'
+        FileUtils.cp(original_pathname, backup_pathname, preserve: true)
+        File.open(original_pathname, 'w') do |newfile|
+          newfile.write(contents)
+          newfile.flush
+        end
+      end
+      @changes = false
+    end
+
+    private
+
+    attr_reader :contents, :original_pathname
   end
 end
