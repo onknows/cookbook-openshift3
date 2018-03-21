@@ -18,10 +18,6 @@ if node['cookbook-openshift3']['ose_version']
   end
 end
 
-if node['cookbook-openshift3']['ose_major_version'] == '3.7' && node['cookbook-openshift3']['openshift_deployment_type'] == 'origin'
-  node.force_override['cookbook-openshift3']['yum_options'] = '--exclude=*3.7.1*'
-end
-
 if node['cookbook-openshift3']['use_wildcard_nodes'] && node['cookbook-openshift3']['wildcard_domain'].empty?
   Chef::Log.error('"wildcard_domain" cannot be left empty when using "use_wildcard_nodes attribute"')
   node.run_state['issues_detected'] = true
