@@ -52,18 +52,18 @@ default['cookbook-openshift3']['docker_log_driver'] = 'json-file'
 default['cookbook-openshift3']['docker_log_options'] = {}
 default['cookbook-openshift3']['install_method'] = 'yum'
 default['cookbook-openshift3']['httpd_xfer_port'] = '9999'
-default['cookbook-openshift3']['core_packages'] = %w[libselinux-python wget vim-enhanced net-tools bind-utils git bash-completion dnsmasq yum-utils]
+default['cookbook-openshift3']['core_packages'] = %w(libselinux-python wget vim-enhanced net-tools bind-utils git bash-completion dnsmasq yum-utils)
 default['cookbook-openshift3']['osn_cluster_dns_domain'] = 'cluster.local'
 default['cookbook-openshift3']['osn_cluster_dns_ip'] = node['ipaddress']
-default['cookbook-openshift3']['enabled_firewall_rules_master'] = %w[firewall_master]
-default['cookbook-openshift3']['enabled_firewall_rules_master_cluster'] = %w[firewall_master_cluster]
-default['cookbook-openshift3']['enabled_firewall_rules_node'] = %w[firewall_node]
+default['cookbook-openshift3']['enabled_firewall_rules_master'] = %w(firewall_master)
+default['cookbook-openshift3']['enabled_firewall_rules_master_cluster'] = %w(firewall_master_cluster)
+default['cookbook-openshift3']['enabled_firewall_rules_node'] = %w(firewall_node)
 default['cookbook-openshift3']['enabled_firewall_additional_rules_node'] = []
-default['cookbook-openshift3']['enabled_firewall_rules_etcd'] = %w[firewall_etcd]
-default['cookbook-openshift3']['enabled_firewall_rules_lb'] = %w[firewall_lb]
+default['cookbook-openshift3']['enabled_firewall_rules_etcd'] = %w(firewall_etcd)
+default['cookbook-openshift3']['enabled_firewall_rules_lb'] = %w(firewall_lb)
 default['cookbook-openshift3']['openshift_service_type'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'atomic-openshift' : 'origin'
 default['cookbook-openshift3']['registry_persistent_volume'] = ''
-default['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? %w[] : originrepos.find_all { |x| x['name'] =~ /origin#{node['cookbook-openshift3']['ose_major_version'].tr('.', '')}/ }
+default['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? %w() : originrepos.find_all { |x| x['name'] =~ /origin#{node['cookbook-openshift3']['ose_major_version'].tr('.', '')}/ }
 default['cookbook-openshift3']['openshift_http_proxy'] = ''
 default['cookbook-openshift3']['openshift_https_proxy'] = ''
 default['cookbook-openshift3']['openshift_no_proxy'] = ''
@@ -109,7 +109,7 @@ default['cookbook-openshift3']['openshift_master_bind_addr'] = '0.0.0.0'
 default['cookbook-openshift3']['openshift_master_auditconfig'] = { 'enable' => false }
 default['cookbook-openshift3']['openshift_master_api_port'] = '8443'
 default['cookbook-openshift3']['openshift_lb_port'] = '8443'
-default['cookbook-openshift3']['openshift_master_certs'] = %w[admin.crt admin.key admin.kubeconfig master.kubelet-client.crt master.kubelet-client.key ca.crt ca.key ca.serial.txt ca-bundle.crt serviceaccounts.private.key serviceaccounts.public.key master.proxy-client.crt master.proxy-client.key service-signer.crt service-signer.key]
+default['cookbook-openshift3']['openshift_master_certs'] = %w(admin.crt admin.key admin.kubeconfig master.kubelet-client.crt master.kubelet-client.key ca.crt ca.key ca.serial.txt ca-bundle.crt serviceaccounts.private.key serviceaccounts.public.key master.proxy-client.crt master.proxy-client.key service-signer.crt service-signer.key)
 default['cookbook-openshift3']['openshift_master_console_port'] = '8443'
 default['cookbook-openshift3']['openshift_master_controllers_port'] = '8444'
 default['cookbook-openshift3']['openshift_master_controller_lease_ttl'] = '30'
@@ -156,9 +156,9 @@ default['cookbook-openshift3']['openshift_master_api_systemd'] = "/usr/lib/syste
 default['cookbook-openshift3']['openshift_master_controllers_sysconfig'] = "/etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers"
 default['cookbook-openshift3']['openshift_master_controllers_systemd'] = "/usr/lib/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers.service"
 default['cookbook-openshift3']['openshift_master_ca_certificate'] = { 'data_bag_name' => nil, 'data_bag_item_name' => nil, 'secret_file' => nil }
-default['cookbook-openshift3']['openshift_master_named_certificates'] = %w[]
+default['cookbook-openshift3']['openshift_master_named_certificates'] = %w()
 default['cookbook-openshift3']['openshift_master_scheduler_conf'] = "#{node['cookbook-openshift3']['openshift_master_config_dir']}/scheduler.json"
-default['cookbook-openshift3']['openshift_master_managed_names_additional'] = %w[]
+default['cookbook-openshift3']['openshift_master_managed_names_additional'] = %w()
 default['cookbook-openshift3']['openshift_master_retain_events'] = nil
 default['cookbook-openshift3']['openshift_master_api_server_args_custom'] = {}
 default['cookbook-openshift3']['openshift_master_controller_args_custom'] = {}
@@ -227,7 +227,7 @@ default['cookbook-openshift3']['etcd_default_days'] = '365'
 default['cookbook-openshift3']['etcd_client_port'] = '2379'
 default['cookbook-openshift3']['etcd_peer_port'] = '2380'
 
-default['cookbook-openshift3']['docker_dns_search_option'] = %w[]
+default['cookbook-openshift3']['docker_dns_search_option'] = %w()
 
 default['cookbook-openshift3']['switch_off_provider_notify_version'] = '12.4.1'
 

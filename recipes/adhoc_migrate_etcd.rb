@@ -258,8 +258,8 @@ if is_master_server
   end
 
   config_options = YAML.load_file("#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml")
-  config_options['kubernetesMasterConfig']['apiServerArguments'].store('storage-backend', %w[etcd3])
-  config_options['kubernetesMasterConfig']['apiServerArguments'].store('storage-media-type', %w[application/vnd.kubernetes.protobuf])
+  config_options['kubernetesMasterConfig']['apiServerArguments'].store('storage-backend', %w(etcd3))
+  config_options['kubernetesMasterConfig']['apiServerArguments'].store('storage-media-type', %w(application/vnd.kubernetes.protobuf))
 
   file "#{node['cookbook-openshift3']['openshift_common_master_dir']}/master/master-config.yaml" do
     content config_options.to_yaml

@@ -27,7 +27,7 @@ else
 end
 
 if is_certificate_server
-  %W[/var/www/html/master #{node['cookbook-openshift3']['master_generated_certs_dir']}].each do |path|
+  %W(/var/www/html/master #{node['cookbook-openshift3']['master_generated_certs_dir']}).each do |path|
     directory path do
       mode '0755'
       owner 'apache'
@@ -104,7 +104,7 @@ unless is_certificate_server && node['fqdn'] != first_master['fqdn']
     action :nothing
   end
 
-  %w[client.crt client.key ca.crt].each do |certificate_type|
+  %w(client.crt client.key ca.crt).each do |certificate_type|
     file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}#{certificate_type}" do
       owner 'root'
       group 'root'
@@ -166,7 +166,7 @@ if is_certificate_server
     action :nothing
   end
 
-  %w[openshift-master.crt openshift-master.key openshift-master.kubeconfig].each do |loopback_master_client|
+  %w(openshift-master.crt openshift-master.key openshift-master.kubeconfig).each do |loopback_master_client|
     remote_file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{loopback_master_client}" do
       source "file://#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir/#{loopback_master_client}"
       only_if { ::File.file?("#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir/#{loopback_master_client}") }
@@ -216,9 +216,9 @@ if is_certificate_server
 
     certs = case ose_major_version.split('.')[1].to_i
             when 3..4
-              node['cookbook-openshift3']['openshift_master_certs'] + %w[openshift-registry.crt openshift-registry.key openshift-registry.kubeconfig openshift-router.crt openshift-router.key openshift-router.kubeconfig service-signer.crt service-signer.key]
+              node['cookbook-openshift3']['openshift_master_certs'] + %w(openshift-registry.crt openshift-registry.key openshift-registry.kubeconfig openshift-router.crt openshift-router.key openshift-router.kubeconfig service-signer.crt service-signer.key)
             when 5..7
-              node['cookbook-openshift3']['openshift_master_certs'] + %w[service-signer.crt service-signer.key]
+              node['cookbook-openshift3']['openshift_master_certs'] + %w(service-signer.crt service-signer.key)
             else
               node['cookbook-openshift3']['openshift_master_certs']
             end
@@ -231,7 +231,7 @@ if is_certificate_server
       end
     end
 
-    %w[client.crt client.key].each do |remove_etcd_certificate|
+    %w(client.crt client.key).each do |remove_etcd_certificate|
       file "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}#{remove_etcd_certificate}" do
         action :delete
       end

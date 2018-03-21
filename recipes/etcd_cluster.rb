@@ -33,7 +33,7 @@ if is_certificate_server
     recursive true
   end
 
-  %w[certs crl fragments].each do |etcd_ca_sub_dir|
+  %w(certs crl fragments).each do |etcd_ca_sub_dir|
     directory "#{node['cookbook-openshift3']['etcd_ca_dir']}/#{etcd_ca_sub_dir}" do
       owner 'root'
       group 'root'
@@ -65,7 +65,7 @@ if is_certificate_server
     creates "#{node['cookbook-openshift3']['etcd_ca_dir']}/ca.crt"
   end
 
-  %W[/var/www/html/etcd #{node['cookbook-openshift3']['etcd_generated_certs_dir']} #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd].each do |path|
+  %W(/var/www/html/etcd #{node['cookbook-openshift3']['etcd_generated_certs_dir']} #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd).each do |path|
     directory path do
       mode '0755'
       owner 'apache'
@@ -73,7 +73,7 @@ if is_certificate_server
     end
   end
 
-  %w[ca.crt ca.key].each do |etcd_export_certificate|
+  %w(ca.crt ca.key).each do |etcd_export_certificate|
     remote_file "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd/#{etcd_export_certificate}" do
       source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/#{etcd_export_certificate}"
       mode '0644'
@@ -88,7 +88,7 @@ if is_certificate_server
       group 'apache'
     end
 
-    %w[server peer].each do |etcd_certificates|
+    %w(server peer).each do |etcd_certificates|
       execute "ETCD Create the #{etcd_certificates} csr for #{etcd_master['fqdn']}" do
         command "openssl req -new -keyout #{etcd_certificates}.key -config #{node['cookbook-openshift3']['etcd_openssl_conf']} -out #{etcd_certificates}.csr -reqexts #{node['cookbook-openshift3']['etcd_req_ext']} -batch -nodes -subj /CN=#{etcd_master['fqdn']}"
         environment 'SAN' => "IP:#{etcd_master['ipaddress']}"
@@ -196,7 +196,7 @@ if is_etcd_server
     mode '0600'
   end
 
-  %w[cert peer].each do |certificate_type|
+  %w(cert peer).each do |certificate_type|
     file node['cookbook-openshift3']['etcd_' + certificate_type + '_file'.to_s] do
       owner 'etcd'
       group 'etcd'

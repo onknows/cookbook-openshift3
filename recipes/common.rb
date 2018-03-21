@@ -70,7 +70,7 @@ if node['cookbook-openshift3']['install_method'].eql? 'yum'
 end
 
 service 'firewalld' do
-  action %i[stop disable]
+  action %i(stop disable)
 end
 
 package 'deltarpm' do
