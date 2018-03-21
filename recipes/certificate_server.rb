@@ -17,11 +17,11 @@ if is_certificate_server || is_master_server
     end
 
     bash 'Add CLI to master(s)' do
-      code <<-EOH
+      code <<-BASH
         docker create --name temp-cli ${DOCKER_IMAGE}:${DOCKER_TAG}
         docker cp temp-cli:/usr/bin/openshift /usr/local/bin/openshift
         docker rm temp-cli
-        EOH
+        BASH
       environment(
         'DOCKER_IMAGE' => node['cookbook-openshift3']['openshift_docker_master_image'],
         'DOCKER_TAG' => node['cookbook-openshift3']['openshift_docker_image_version']

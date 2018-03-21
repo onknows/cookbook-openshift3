@@ -219,12 +219,14 @@ if is_etcd_server
     source 'etcd.conf.erb'
     notifies :restart, 'service[etcd-service]', :immediately
     notifies :enable, 'service[etcd-service]', :immediately
-    variables lazy {
-      {
-        etcd_servers: etcd_servers,
-        initial_cluster_state: etcd_servers.find { |etcd_node| etcd_node['fqdn'] == node['fqdn'] }.key?('new_node') ? 'existing' : node['cookbook-openshift3']['etcd_initial_cluster_state'],
-      }
-    }
+    variables(
+      lazy do
+        {
+          etcd_servers: etcd_servers,
+          initial_cluster_state: etcd_servers.find { |etcd_node| etcd_node['fqdn'] == node['fqdn'] }.key?('new_node') ? 'existing' : node['cookbook-openshift3']['etcd_initial_cluster_state']
+        }
+      end
+    )
   end
 
   cookbook_file '/etc/profile.d/etcdctl.sh' do

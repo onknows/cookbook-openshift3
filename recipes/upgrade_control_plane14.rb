@@ -18,8 +18,6 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = node['cookbook-openshift3']['upgrade_openshift_docker_image_version']
   node.force_override['yum']['main']['exclude'] = 'docker-1.13* etcd-3.2*'
 
-  hosted_upgrade_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : 'v' + node['cookbook-openshift3']['ose_version'].to_s.split('-')[0]
-
   server_info = OpenShiftHelper::NodeHelper.new(node)
   first_etcd = server_info.first_etcd
   is_etcd_server = server_info.on_etcd_server?
@@ -163,53 +161,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
       level :info
     end
 
-    log 'Update hosted deployment(s) to current version [STARTED]' do
-      level :info
-    end
-
-    ruby_block 'Get current router image' do
-      block do
-        node.run_state['router_image'] = Mixlib::ShellOut.new("#{node['cookbook-openshift3']['openshift_common_client_binary']} get dc/router -n #{node['cookbook-openshift3']['openshift_hosted_router_namespace']} -o jsonpath='{.spec.template.spec.containers[0].image}'").run_command.stdout.strip
-      end
-      only_if do
-        node['cookbook-openshift3']['openshift_hosted_manage_router']
-      end
-    end
-
-    ruby_block 'Get current registry image' do
-      block do
-        node.run_state['registry_image'] = Mixlib::ShellOut.new("#{node['cookbook-openshift3']['openshift_common_client_binary']} get dc/docker-registry -n #{node['cookbook-openshift3']['openshift_hosted_registry_namespace']} -o jsonpath='{.spec.template.spec.containers[0].image}'").run_command.stdout.strip
-      end
-      only_if do
-        node['cookbook-openshift3']['openshift_hosted_manage_registry']
-      end
-    end
-
-    execute "Update router image to current version \"#{hosted_upgrade_version}\"" do
-      command lazy {
-        "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
-        --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-        patch dc/router -n #{node['cookbook-openshift3']['openshift_hosted_router_namespace']} -p \
-        \'{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"router\",\"image\":\"#{node.run_state['router_image'].gsub(/:v.+/, ":#{hosted_upgrade_version}")}\",\"livenessProbe\":{\"tcpSocket\":null,\"httpGet\":{\"path\": \"/healthz\", \"port\": 1936, \"host\": \"localhost\", \"scheme\": \"HTTP\"},\"initialDelaySeconds\":10,\"timeoutSeconds\":1}}]}}}}' \
-        --api-version=v1"
-      }
-      only_if do
-        node['cookbook-openshift3']['openshift_hosted_manage_router']
-      end
-    end
-
-    execute "Update registry image to current version \"#{hosted_upgrade_version}\"" do
-      command lazy {
-        "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
-        --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-        patch dc/docker-registry -n #{node['cookbook-openshift3']['openshift_hosted_registry_namespace']} -p \
-        \'{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"registry\",\"image\":\"#{node.run_state['registry_image'].gsub(/:v.+/, ":#{hosted_upgrade_version}")}\"}]}}}}' \
-        --api-version=v1"
-      }
-      only_if do
-        node['cookbook-openshift3']['openshift_hosted_manage_registry']
-      end
-    end
+    include_recipe 'cookbook-openshift3::upgrade_managed_hosted'
 
     log 'Update hosted deployment(s) to current version [COMPLETED]' do
       level :info

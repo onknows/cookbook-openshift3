@@ -15,7 +15,7 @@ if node['cookbook-openshift3']['openshift_cloud_provider']
     end
 
     config_vars = {
-      'aws' => {},
+      'aws' => {}
     }
 
     case node['cookbook-openshift3']['openshift_cloud_provider']

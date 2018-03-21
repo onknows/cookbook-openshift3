@@ -132,7 +132,7 @@ action :create do
           CASSANDRA_KEYSTORE_PASSWD: ::File.read("#{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra-keystore.pwd"),
           METRICS_TRUSTSTORE_PASSWD: ::File.read("#{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics-truststore.pwd"),
           CASSANDRA_TRUSTSTORE_PASSWD: ::File.read("#{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra-truststore.pwd"),
-          JGROUPS_PASSWD: ::File.read("#{Chef::Config['file_cache_path']}/hosted_metric/hawkular-jgroups-keystore.pwd"),
+          JGROUPS_PASSWD: ::File.read("#{Chef::Config['file_cache_path']}/hosted_metric/hawkular-jgroups-keystore.pwd")
         }
       }
     end
@@ -154,8 +154,8 @@ action :create do
               'hawkular-metrics.htpasswd.file' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.htpasswd`,
               'hawkular-metrics.jgroups.keystore' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-jgroups.keystore`,
               'hawkular-metrics.jgroups.keystore.password' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-jgroups-keystore.pwd`,
-              'hawkular-metrics.jgroups.alias' => `echo -n hawkular | base64`,
-            },
+              'hawkular-metrics.jgroups.alias' => `echo -n hawkular | base64`
+            }
           }
         }
       end
@@ -169,8 +169,8 @@ action :create do
             labels: { 'metrics-infra' => 'hawkular-metrics' },
             data: {
               'hawkular-metrics.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.crt`,
-              'hawkular-metrics-ca.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt`,
-            },
+              'hawkular-metrics-ca.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt`
+            }
           }
         }
       end
@@ -184,8 +184,8 @@ action :create do
             labels: { 'metrics-infra' => 'hawkular-metrics' },
             data: {
               'hawkular-metrics.username' => `echo -n hawkular | base64`,
-              'hawkular-metrics.password' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.pwd`,
-            },
+              'hawkular-metrics.password' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.pwd`
+            }
           }
         }
       end
@@ -203,8 +203,8 @@ action :create do
               'cassandra.keystore.alias' => `echo -n hawkular-cassandra | base64`,
               'cassandra.truststore' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.truststore`,
               'cassandra.truststore.password' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra-truststore.pwd`,
-              'cassandra.pem' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.pem`,
-            },
+              'cassandra.pem' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.pem`
+            }
           }
         }
       end
@@ -218,8 +218,8 @@ action :create do
             labels: { 'metrics-infra' => 'hawkular-cassandra' },
             data: {
               'cassandra.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.crt`,
-              'cassandra-ca.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.pem`,
-            },
+              'cassandra-ca.certificate' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.pem`
+            }
           }
         }
       end
@@ -236,8 +236,8 @@ action :create do
               'heapster.key' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/heapster.key`,
               'heapster.client-ca' => `base64 --wrap 0 #{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt`,
               'heapster.allowed-users' => `echo -n #{node['cookbook-openshift3']['openshift_metrics_heapster_allowed_users']} | base64
-`,
-            },
+`
+            }
           }
         }
       end
@@ -255,8 +255,8 @@ action :create do
               'tls.crt' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.crt`,
               'tls.key' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.key`,
               'tls.truststore.crt' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.crt`,
-              'ca.crt' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt`,
-            },
+              'ca.crt' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt`
+            }
           }
         }
       end
@@ -271,8 +271,8 @@ action :create do
             data: {
               'hawkular-metrics.username' => `echo -n hawkular | base64`,
               'hawkular-metrics.htpasswd' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.htpasswd`,
-              'hawkular-metrics.password' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.pwd`,
-            },
+              'hawkular-metrics.password' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.pwd`
+            }
           }
         }
       end
@@ -289,8 +289,8 @@ action :create do
               'tls.crt' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.crt`,
               'tls.key' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.key`,
               'tls.peer.truststore.crt' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-cassandra.crt`,
-              'tls.client.truststore.crt' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.crt`,
-            },
+              'tls.client.truststore.crt' => `base64 --wrap 0 #{Chef::Config['file_cache_path']}/hosted_metric/hawkular-metrics.crt`
+            }
           }
         }
       end
@@ -304,8 +304,8 @@ action :create do
             labels: { 'metrics-infra' => 'heapster' },
             data: {
               'heapster.allowed-users' => `echo -n #{node['cookbook-openshift3']['openshift_metrics_heapster_allowed_users']} | base64
-`,
-            },
+`
+            }
           }
         }
       end
@@ -350,7 +350,7 @@ action :create do
             tls_key: node['cookbook-openshift3']['openshift_metrics_hawkular_key'].empty? ? '' : Mixlib::ShellOut.new("base64 --wrap 0 #{node['cookbook-openshift3']['openshift_metrics_hawkular_key']}").run_command.stdout.strip,
             tls_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_cert'].empty? ? '' : Mixlib::ShellOut.new("cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_cert']} | ruby -p -e \"gsub(/\n/, '\\n')\"").run_command.stdout.strip,
             tls_ca_certificate: node['cookbook-openshift3']['openshift_metrics_hawkular_ca'].empty? ? '' : Mixlib::ShellOut.new("cat #{node['cookbook-openshift3']['openshift_metrics_hawkular_ca']} | ruby -p -e \"gsub(/\n/, '\\n')\"").run_command.stdout.strip,
-            tls_destination_ca_certificate: Mixlib::ShellOut.new("cat #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt | ruby -p -e \"gsub(/\n/, '\\n')\"").run_command.stdout.strip,
+            tls_destination_ca_certificate: Mixlib::ShellOut.new("cat #{Chef::Config['file_cache_path']}/hosted_metric/ca.crt | ruby -p -e \"gsub(/\n/, '\\n')\"").run_command.stdout.strip
           }
         }
       end

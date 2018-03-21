@@ -14,7 +14,7 @@ action :delete do
   converge_by 'Uninstalling OpenShift' do
     %W(#{node['cookbook-openshift3']['openshift_service_type']}-node openvswitch #{node['cookbook-openshift3']['openshift_service_type']}-master #{node['cookbook-openshift3']['openshift_service_type']}-master-api #{node['cookbook-openshift3']['openshift_service_type']}-master-api-controllers etcd etcd_container haproxy).each do |remove_service|
       service remove_service do
-        action [:stop, :disable]
+        action %i(stop disable)
         ignore_failure true
       end
     end
