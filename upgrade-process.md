@@ -168,3 +168,15 @@ Feel free to override those so as to match your environment:
 * **The upgrade will not run unless it finds the file designated by the `control_upgrade_flag`**
 * **The upgrade will not run unless the `control_upgrade` is set to `true`**
 * **The upgrade will not run unless it finds a valid version to upgrade to via `control_upgrade_version`**
+
+
+##### Known Issues
+
+###### Docker containers not starting
+
+It was found in testing that upgrading docker as part of the upgrade could
+result in failures to start docker containers after an upgrade. This could
+happen even on sub-point releases, which was not expected.
+
+In these cases, running `rm -rf /var/lib/docker && systemctl restart docker`
+recovered the situation.

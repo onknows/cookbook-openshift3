@@ -15,7 +15,8 @@ action :delete do
   converge_by 'Uninstalling OpenShift' do
     helper = OpenShiftHelper::NodeHelper.new(node)
     %W(#{node['cookbook-openshift3']['openshift_service_type']}-node openvswitch #{node['cookbook-openshift3']['openshift_service_type']}-master #{node['cookbook-openshift3']['openshift_service_type']}-master-api #{node['cookbook-openshift3']['openshift_service_type']}-master-api-controllers etcd etcd_container haproxy).each do |remove_service|
-      service remove_service do
+      service do
+	service_name remove_service
         action %i(stop disable)
         ignore_failure true
       end
@@ -40,10 +41,14 @@ action :delete do
       end
     end
 
-    execute 'Unmount kube volumes' do
-      command 'find /var/lib/origin/openshift.local.volumes -type d -exec umount {} \\; || true'
+    Dir.glob('/var/lib/origin/openshift.local.volumes/**/*').select { |fn| File.directory?(fn) }.each do |dir|
+      execute 'Unmount kube volumes' do
+        command "umount #{dir}"
+	retries 30
+        retry_delay 2
+      end
     end
-
+   
     %W(#{node['cookbook-openshift3']['openshift_service_type']} #{node['cookbook-openshift3']['openshift_service_type']}-master #{node['cookbook-openshift3']['openshift_service_type']}-node #{node['cookbook-openshift3']['openshift_service_type']}-sdn-ovs #{node['cookbook-openshift3']['openshift_service_type']}-clients cockpit-bridge cockpit-docker cockpit-shell cockpit-ws openvswitch tuned-profiles-#{node['cookbook-openshift3']['openshift_service_type']}-node #{node['cookbook-openshift3']['openshift_service_type']}-excluder #{node['cookbook-openshift3']['openshift_service_type']}-docker-excluder etcd httpd haproxy).each do |remove_package|
       package remove_package do
         action :remove
