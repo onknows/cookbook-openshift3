@@ -91,6 +91,13 @@ action :delete do
       helper.remove_dir(file_to_remove)
     end
 
+    ::Dir.glob('/var/lib/origin/openshift.local.volumes/**/*').select { |fn| ::File.directory?(fn) }.each do |dir|
+      execute 'Unmount kube volumes' do
+        command "$ACTION #{dir} || true"
+        environment 'ACTION' => 'umount'
+      end
+    end
+    
     helper.remove_dir('/var/lib/origin/*')
 
     execute 'Clean Iptables rules' do
