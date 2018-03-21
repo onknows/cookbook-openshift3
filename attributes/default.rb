@@ -31,7 +31,7 @@ else
   default['cookbook-openshift3']['master_etcd_cert_prefix'] = ''
 end
 
-default['cookbook-openshift3']['ose_version'] = ''
+default['cookbook-openshift3']['ose_version'] = nil
 default['cookbook-openshift3']['persistent_storage'] = []
 default['cookbook-openshift3']['openshift_deployment_type'] = 'enterprise'
 default['cookbook-openshift3']['ose_major_version'] = '3.7'
