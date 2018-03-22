@@ -55,6 +55,7 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['enabled_firewall_rules_master_cluster']` -  Defaults to `%w(firewall_master_cluster)`.
 * `node['cookbook-openshift3']['enabled_firewall_rules_node']` -  Defaults to `%w(firewall_node)`.
 * `node['cookbook-openshift3']['enabled_firewall_additional_rules_node']` -  Defaults to `[ ... ]`.
+* `node['cookbook-openshift3']['enabled_firewall_additional_rules_master']` -  Defaults to `[ ... ]`.
 * `node['cookbook-openshift3']['enabled_firewall_rules_etcd']` -  Defaults to `%w(firewall_etcd)`.
 * `node['cookbook-openshift3']['enabled_firewall_rules_lb']` -  Defaults to `%w(firewall_lb)`.
 * `node['cookbook-openshift3']['openshift_service_type']` -  Defaults to `node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'atomic-openshift' : 'origin`.
