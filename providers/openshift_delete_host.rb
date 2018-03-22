@@ -54,6 +54,7 @@ action :delete do
       action %i(stop disable)
       ignore_failure true
     end
+
     service 'docker' do
       action :stop
       only_if { node['cookbook-openshift3']['deploy_containerized'] }

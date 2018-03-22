@@ -7,12 +7,13 @@
 server_info = OpenShiftHelper::NodeHelper.new(node)
 is_certificate_server = server_info.on_certificate_server?
 is_master_server = server_info.on_master_server?
+docker_version = node['cookbook-openshift3']['openshift_docker_image_version']
 
 if is_certificate_server || is_master_server
   if node['cookbook-openshift3']['deploy_containerized']
 
     docker_image node['cookbook-openshift3']['openshift_docker_master_image'] do
-      tag node['cookbook-openshift3']['openshift_docker_image_version']
+      tag docker_version
       action :pull_if_missing
     end
 
