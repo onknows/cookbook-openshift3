@@ -59,6 +59,7 @@ default['cookbook-openshift3']['enabled_firewall_rules_master'] = %w(firewall_ma
 default['cookbook-openshift3']['enabled_firewall_rules_master_cluster'] = %w(firewall_master_cluster)
 default['cookbook-openshift3']['enabled_firewall_rules_node'] = %w(firewall_node)
 default['cookbook-openshift3']['enabled_firewall_additional_rules_node'] = []
+default['cookbook-openshift3']['enabled_firewall_additional_rules_master'] = []
 default['cookbook-openshift3']['enabled_firewall_rules_etcd'] = %w(firewall_etcd)
 default['cookbook-openshift3']['enabled_firewall_rules_lb'] = %w(firewall_lb)
 default['cookbook-openshift3']['openshift_service_type'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'atomic-openshift' : 'origin'
