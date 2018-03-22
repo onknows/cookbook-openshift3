@@ -3,7 +3,7 @@
 
 try {
   properties([parameters([
-    string(name: 'BRANCH_NAME',                                  defaultValue: env.BRANCH_NAME,                                description: 'Branch to build'),
+    string(name: 'BRANCH_NAME',                                  defaultValue: 'master',                                       description: 'Branch to build'),
     string(name: 'builddir',                                     defaultValue: 'cookbook-openshift3-test-' + env.BUILD_NUMBER, description: 'Build directory'),
     string(name: 'nodename',                                     defaultValue: 'cage',                                         description: 'Node to build on'),
     string(name: 'OSE_VERSIONS',                                 defaultValue: '1.4 1.5 3.6 3.7',                              description: 'OSE versions to build, separated by spaces'),
