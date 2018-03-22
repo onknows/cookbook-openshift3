@@ -90,7 +90,7 @@ action :create do
         pre_buildoverrides = YAML.load_file("#{Chef::Config[:file_cache_path]}/BuildOverrides.yaml")
         pre_clusteroverrides = YAML.load_file("#{Chef::Config[:file_cache_path]}/ClusterResourceOverride.yaml")
 
-        builddefaults = pre_builddefaults['BuildDefaults']['configuration'].keys.size.eql?(2) ? {} : pre_builddefault
+        builddefaults = pre_builddefaults['BuildDefaults']['configuration'].keys.size.eql?(2) ? {} : pre_builddefaults
         buildoverrides = pre_buildoverrides['BuildOverrides']['configuration'].keys.size.eql?(2) ? {} : pre_buildoverrides
         clusteroverrides = pre_clusteroverrides['ClusterResourceOverride']['configuration'].keys.size.eql?(2) ? {} : pre_clusteroverrides
 
