@@ -18,7 +18,7 @@ depends 'docker', '>= 2.0'
 
 recipe 'cookbook-openshift3::adhoc_migrate_etcd', 'Adhoc action for migrating ETCD from v2 to v3'
 recipe 'cookbook-openshift3::adhoc_redeploy_certificates', 'Redeploy OpenShift/ETCD certificates'
-recipe 'cookbook-openshift3::adhoc_uninstall', 'Adhoc action for uninstalling Openshit from server'
+recipe 'cookbook-openshift3::adhoc_uninstall', 'Adhoc action for uninstalling Openshift from server'
 recipe 'cookbook-openshift3::certificate_server', 'Configure the certificate server'
 recipe 'cookbook-openshift3::cloud_provider', 'Configure cloud providers'
 recipe 'cookbook-openshift3::common', 'Apply common packages'
