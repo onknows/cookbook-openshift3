@@ -48,11 +48,11 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
       path  '/etc/systemd/system/docker.service.d/docker-sdn-ovs.conf'
       action :delete
       notifies :run, 'execute[daemon-reload]', :immediately
-      notifies :restart, 'service[docker]', :immediately
     end
 
     log 'Node services' do
       level :info
+      notifies :restart, 'service[docker]', :immediately
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
       notifies :restart, 'service[openvswitch]', :immediately
     end
