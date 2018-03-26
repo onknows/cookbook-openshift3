@@ -223,7 +223,7 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * cookbook-openshift3::nodes_certificates - Configure certificates for nodes
 * cookbook-openshift3::node - Configure node
 * cookbook-openshift3::etcd_cluster - Configure HA ETCD cluster
-* cookbook-openshift3::adhoc_uninstall - Adhoc action for uninstalling Openshit from server
+* cookbook-openshift3::adhoc_uninstall - Adhoc action for uninstalling Openshift from server
 
 # Libraries
 
