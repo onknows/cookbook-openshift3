@@ -223,7 +223,7 @@ default['cookbook-openshift3']['etcd_ca_exts_server'] = 'etcd_v3_ca_server'
 default['cookbook-openshift3']['etcd_initial_cluster_state'] = 'new'
 default['cookbook-openshift3']['etcd_initial_cluster_token'] = 'etcd-cluster-1'
 default['cookbook-openshift3']['etcd_data_dir'] = '/var/lib/etcd'
-default['cookbook-openshift3']['etcd_default_days'] = '365'
+default['cookbook-openshift3']['etcd_default_days'] = '1825'
 
 default['cookbook-openshift3']['etcd_client_port'] = '2379'
 default['cookbook-openshift3']['etcd_peer_port'] = '2380'
