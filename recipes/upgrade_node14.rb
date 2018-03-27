@@ -45,7 +45,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     include_recipe 'cookbook-openshift3::excluder'
 
     file 'Remove obsolete docker-sdn-ovs.conf' do
-      path  '/etc/systemd/system/docker.service.d/docker-sdn-ovs.conf'
+      path '/etc/systemd/system/docker.service.d/docker-sdn-ovs.conf'
       action :delete
       notifies :run, 'execute[daemon-reload]', :immediately
     end

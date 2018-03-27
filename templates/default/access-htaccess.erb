@@ -1,0 +1,5 @@
+<Limit GET>
+  Order Deny,Allow
+  Deny from all
+  Allow from 127.0.0.1 <%= @servers.map{ |srv| srv['ipaddress'] }.join(' ') %>
+</Limit>

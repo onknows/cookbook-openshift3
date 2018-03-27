@@ -130,5 +130,18 @@ ruby_block 'Change HTTPD port xfer' do
   notifies :restart, 'service[httpd]', :immediately
 end
 
+ruby_block 'Modify the AllowOverride options' do
+  block do
+    openshift_settings = helper.new('/etc/httpd/conf/httpd.conf')
+    openshift_settings.search_file_replace_line(
+      /AllowOverride None/,
+      'AllowOverride All'
+    )
+    openshift_settings.write_file
+  end
+  action :nothing
+  notifies :restart, 'service[httpd]', :immediately
+end
+
 include_recipe 'cookbook-openshift3::certificate_server' unless node['cookbook-openshift3']['upgrade']
 include_recipe 'cookbook-openshift3::cloud_provider'

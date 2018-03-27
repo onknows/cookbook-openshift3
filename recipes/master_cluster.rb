@@ -35,6 +35,15 @@ if is_certificate_server
     end
   end
 
+  template "#{node['cookbook-openshift3']['master_generated_certs_dir']}/.htaccess" do
+    owner 'apache'
+    group 'apache'
+    source 'access-htaccess.erb'
+    notifies :run, 'ruby_block[Modify the AllowOverride options]', :immediately
+    notifies :restart, 'service[httpd]', :immediately
+    variables(servers: master_servers)
+  end
+
   master_servers.each do |master_server|
     directory "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}" do
       mode '0755'

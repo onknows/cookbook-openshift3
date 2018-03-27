@@ -16,6 +16,7 @@ include_recipe 'cookbook-openshift3::etcd_cluster' if etcd_servers.any?
 if is_certificate_server
   package 'httpd' do
     notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
+    notifies :run, 'ruby_block[Modify the AllowOverride options]', :immediately
     notifies :enable, 'service[httpd]', :immediately
     retries 3
   end

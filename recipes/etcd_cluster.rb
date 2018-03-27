@@ -73,6 +73,15 @@ if is_certificate_server
     end
   end
 
+  template "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/.htaccess" do
+    owner 'apache'
+    group 'apache'
+    source 'access-htaccess.erb'
+    notifies :run, 'ruby_block[Modify the AllowOverride options]', :immediately
+    notifies :restart, 'service[httpd]', :immediately
+    variables(servers: etcd_servers)
+  end
+
   %w(ca.crt ca.key).each do |etcd_export_certificate|
     remote_file "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd/#{etcd_export_certificate}" do
       source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/#{etcd_export_certificate}"
