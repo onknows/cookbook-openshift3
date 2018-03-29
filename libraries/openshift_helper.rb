@@ -74,7 +74,7 @@ module OpenShiftHelper
     end
 
     def on_control_plane_server?
-      self.on_certificate_server? || self.on_etcd_server? || self.on_master_server?
+      on_certificate_server? || on_etcd_server? || on_master_server?
     end
 
     def remove_dir(path)

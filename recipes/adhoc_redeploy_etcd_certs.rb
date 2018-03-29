@@ -203,8 +203,8 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
       owner 'root'
       group 'root'
       mode '0600'
-      retries 12
-      retry_delay 5
+      retries 15
+      retry_delay 2
       sensitive true
     end
 

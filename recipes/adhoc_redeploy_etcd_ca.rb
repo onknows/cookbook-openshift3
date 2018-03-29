@@ -82,6 +82,8 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_ca_control_flag'])
     remote_file "#{node['cookbook-openshift3']['etcd_conf_dir']}/ca.crt" do
       source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd/ca-bundle.crt"
       sensitive true
+      retries 15
+      retry_delay 2
       notifies :run, 'execute[Check cluster health with new CA bundle]', :immediately
     end
 
