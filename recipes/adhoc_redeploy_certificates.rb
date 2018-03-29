@@ -4,4 +4,6 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-openshift_redeploy_certificate node['fqdn']
+include_recipe 'cookbook-openshift3::services'
+include_recipe 'cookbook-openshift3::adhoc_redeploy_etcd_ca' if node['cookbook-openshift3']['adhoc_redeploy_etcd_ca']
+include_recipe 'cookbook-openshift3::adhoc_redeploy_etcd_certs' if node['cookbook-openshift3']['adhoc_redeploy_etcd_certs']

@@ -72,11 +72,6 @@ if is_certificate_server
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.crt"
     end
 
-    remote_file "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}ca.crt" do
-      source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/ca.crt"
-      sensitive true
-    end
-
     execute "Create a tarball of the etcd master certs for #{master_server['fqdn']}" do
       command "tar czvf #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz -C #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']} . && chown -R apache:apache #{node['cookbook-openshift3']['master_generated_certs_dir']}"
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz"
@@ -113,7 +108,18 @@ unless is_certificate_server && node['fqdn'] != first_master['fqdn']
     action :nothing
   end
 
-  %w(client.crt client.key ca.crt).each do |certificate_type|
+  remote_file "Retrieve ETCD CA cert for Master[#{certificate_server['fqdn']}]" do
+    path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}ca.crt"
+    source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd/ca.crt"
+    owner 'root'
+    group 'root'
+    mode '0600'
+    retries 12
+    retry_delay 5
+    sensitive true
+  end
+
+  %w(client.crt client.key).each do |certificate_type|
     file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}#{certificate_type}" do
       owner 'root'
       group 'root'
