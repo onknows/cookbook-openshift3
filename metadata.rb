@@ -4,10 +4,10 @@ maintainer_email 'wburton@redhat.com'
 license 'MIT'
 source_url 'https://github.com/IshentRas/is_apaas_openshift_cookbook'
 issues_url 'https://github.com/IshentRas/is_apaas_openshift_cookbook/issues'
-description 'Installs/Configures Openshift 3.x (>= 3.2)'
+description 'Installs/Configures Openshift 3.x (>= 3.3)'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 chef_version '>= 12.4' if respond_to?(:chef_version)
-version '2.00.1'
+version '2.0.5'
 supports 'redhat', '>= 7.1'
 supports 'centos', '>= 7.1'
 

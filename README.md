@@ -496,36 +496,31 @@ Include the default recipe in a CHEF role so as to ease the deployment.
 
 * REDEPLOY CERTIFICATES (ADHOC)
 
+The redeployment of the certificates requires variables to be set before running.
+
+*The CHEF run will ignore any attempts unless all variables are correctly set*
+
+Variables:
+
+| NAME | PURPOSE | Default value | Mandatory |
+| ---------------- | ------------------------------- | ------------------ | ---------- |
+| adhoc_redeploy_etcd_ca | Execute an ETCD CA redeploy    | `false`    | `YES` |
+| adhoc_redeploy_etcd_certs | Execute an ETCD CERTS redeploy    | `false` | `YES` |
+| redeploy_etcd_ca_control_flag | Location of the etcd ca control flag | `"/to_be_replaced"`  | `YES` |
+| redeploy_etcd_certs_control_flag | Location of the etcd certs control flag | `"/to_be_replaced"`  | `YES` |
+
 ```json
-{
-  "name": "redeploy-certificates",
-  "description": "Common Base Role",
-  "json_class": "Chef::Role",
-  "default_attributes": {
-
-  },
   "override_attributes": {
-  },
-  "chef_type": "role",
-  "run_list": [
-    "recipe[is_apaas_openshift_cookbook::adhoc_redeploy_certificates]"
-  ],
-  "env_run_lists": {
-
+    "is_apaas_openshift_cookbook": {
+      "adhoc_redeploy_etcd_ca": true,
+      "adhoc_redeploy_etcd_certs": true,
+      "redeploy_etcd_ca_control_flag": "/tmp/caready",
+      "redeploy_etcd_certs_control_flag": "/tmp/certready"
+    }
   }
-}
 ```
 
-Some tips to know before attempting to redeploy the openshift certificates:
- - the nodes will be force-disconnected from the cluster and their pods redeployed, because of the certificate change; plan accordingly to not lose data.
- - the certificates mounted into some privileged pods (such as the router pods) may break until those pods are redeployed.
-
-If you still want to redeploy the certificates, then proceed as follows:
- 1. add `role[redeploy-certificates]` in the run-list of every node;
- 2. converge the nodes the following order: first the first master node, then the other master nodes, then the non-master nodes;
- 3. if the services do not restart automatically (thanks to systemd), restart the origin-* services to pickup the new certificates;
- 4. when done, remove `role[redeploy-certificates]` from the run-list of every node.
-If things turn bad, a backup tarball of the certificates should be present in `/etc/origin`; restore the certificates by hand doing the nodes in the order from step 2.
+[Read more about the certificate redeploy process here!](certificates-process.md)
 
 ENVIRONMENT
 ===========
