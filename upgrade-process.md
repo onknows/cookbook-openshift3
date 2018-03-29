@@ -143,8 +143,8 @@ Feel free to override those so as to match your environment:
 | upgrade_ose_version | 36 | `"3.6.1-1.0.008f2d5"` |
 | upgrade_openshift_docker_image_version | 36 | `"v3.6.1"`  |
 | upgrade_ose_major_version |  37 | `"3.7"`    |
-| upgrade_ose_version | 37 | `"3.7.0-1.0.7ed6862"` |
-| upgrade_openshift_docker_image_version | 37 | `"v3.7.0"`  |
+| upgrade_ose_version | 37 | `"3.7.1-2.el7"` |
+| upgrade_openshift_docker_image_version | 37 | `"v3.7.2"`  |
 
 ##### Enterprise Deployment
 
