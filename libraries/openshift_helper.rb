@@ -73,6 +73,10 @@ module OpenShiftHelper
       certificate_server['fqdn'] == node['fqdn']
     end
 
+    def on_control_plane_server?
+      self.on_certificate_server? || self.on_etcd_server? || self.on_master_server?
+    end
+
     def remove_dir(path)
       FileUtils.rm_rf(Dir.glob(path))
     end
