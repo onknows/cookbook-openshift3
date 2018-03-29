@@ -18,7 +18,7 @@ end
 
 service_accounts.each do |serviceaccount|
   execute "Creation service account: \"#{serviceaccount['name']}\" ; Namespace: \"#{serviceaccount['namespace']}\"" do
-    command "oc create sa ${serviceaccount} -n ${namespace} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
+    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} create sa ${serviceaccount} -n ${namespace} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
     environment(
       'serviceaccount' => serviceaccount['name'],
       'namespace' => serviceaccount['namespace']
@@ -90,7 +90,7 @@ node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
     cwd node['cookbook-openshift3']['openshift_master_config_dir']
     only_if do
       master_servers.find { |server_node| server_node['fqdn'] == nodes['fqdn'] } &&
-        !Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
+        !Mixlib::ShellOut.new("#{node['cookbook-openshift3']['openshift_common_client_binary']} get node | grep #{nodes['fqdn']}").run_command.error?
     end
   end
 
@@ -102,7 +102,7 @@ node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
     cwd node['cookbook-openshift3']['openshift_master_config_dir']
     not_if do
       master_servers.find { |server_node| server_node['fqdn'] == nodes['fqdn'] } ||
-        Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
+        Mixlib::ShellOut.new("#{node['cookbook-openshift3']['openshift_common_client_binary']} get node | grep #{nodes['fqdn']}").run_command.error?
     end
   end
 
@@ -114,7 +114,7 @@ node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|
     cwd node['cookbook-openshift3']['openshift_master_config_dir']
     only_if do
       nodes.key?('labels') &&
-        !Mixlib::ShellOut.new("oc get node | grep #{nodes['fqdn']}").run_command.error?
+        !Mixlib::ShellOut.new("#{node['cookbook-openshift3']['openshift_common_client_binary']} get node | grep #{nodes['fqdn']}").run_command.error?
     end
   end
 end

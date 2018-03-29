@@ -19,8 +19,8 @@ action :create do
         'selector_router' => node['cookbook-openshift3']['openshift_hosted_router_selector'],
         'namespace_router' => node['cookbook-openshift3']['openshift_hosted_router_namespace']
       )
-      not_if "oc get namespace/${namespace_router} --template '{{ .metadata.annotations }}' | fgrep -q openshift.io/node-selector:${selector_router}"
-      only_if 'oc get namespace/${namespace_router} --no-headers'
+      not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} get namespace/${namespace_router} --template '{{ .metadata.annotations }}' | fgrep -q openshift.io/node-selector:${selector_router}"
+      only_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} get namespace/${namespace_router} --no-headers"
     end
 
     execute 'Create Hosted Router Certificate' do
@@ -32,7 +32,7 @@ action :create do
       )
       cwd node['cookbook-openshift3']['openshift_master_config_dir']
       only_if { ::File.file?(node['cookbook-openshift3']['openshift_hosted_router_certfile']) && ::File.file?(node['cookbook-openshift3']['openshift_hosted_router_keyfile']) }
-      not_if 'oc get secret router-certs -n $namespace_router --no-headers'
+      not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} get secret router-certs -n $namespace_router --no-headers"
     end
 
     deploy_options = %w(--selector=${selector_router} -n ${namespace_router}) + Array(new_resource.deployer_options)
@@ -43,17 +43,17 @@ action :create do
         'namespace_router' => node['cookbook-openshift3']['openshift_hosted_router_namespace']
       )
       cwd node['cookbook-openshift3']['openshift_master_config_dir']
-      only_if "[[ `oc get pod --selector=router=router --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig | wc -l` -eq 0 ]]"
+      only_if "[[ `#{node['cookbook-openshift3']['openshift_common_client_binary']} get pod --selector=router=router --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig | wc -l` -eq 0 ]]"
     end
 
     execute 'Auto Scale Router based on label' do
       command "#{node['cookbook-openshift3']['openshift_common_client_binary']} scale dc/router --replicas=${replica_number} -n ${namespace_router} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
       environment(
-        'replica_number' => Mixlib::ShellOut.new("oc get node --no-headers --selector=#{node['cookbook-openshift3']['openshift_hosted_router_selector']} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig | wc -l").run_command.stdout.strip,
+        'replica_number' => Mixlib::ShellOut.new("#{node['cookbook-openshift3']['openshift_common_client_binary']} get node --no-headers --selector=#{node['cookbook-openshift3']['openshift_hosted_router_selector']} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig | wc -l").run_command.stdout.strip,
         'namespace_router' => node['cookbook-openshift3']['openshift_hosted_router_namespace']
       )
       cwd node['cookbook-openshift3']['openshift_master_config_dir']
-      not_if "[[ `oc get pod --selector=router=router --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig --no-headers | wc -l` -eq ${replica_number} ]]"
+      not_if "[[ `#{node['cookbook-openshift3']['openshift_common_client_binary']} get pod --selector=router=router --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig --no-headers | wc -l` -eq ${replica_number} ]]"
     end
   end
 end
