@@ -77,6 +77,22 @@ module OpenShiftHelper
       FileUtils.rm_rf(Dir.glob(path))
     end
 
+    def backup_dir(src, dest)
+      FileUtils.cp_r(src, dest)
+    end
+
+    def bundle_etcd_ca(old, new)
+      File.open(new, 'w+') { |f| f.puts old.map { |s| IO.read(s) } }
+    end
+
+    def valid_certificate?(ca_path, cert_path)
+      ca = OpenSSL::X509::Certificate.new(File.read(ca_path))
+      cert = OpenSSL::X509::Certificate.new(File.read(cert_path))
+      cert.verify(ca.public_key)
+    rescue OpenSSL::X509::CertificateError
+      return false
+    end
+
     protected
 
     attr_reader :node

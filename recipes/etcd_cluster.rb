@@ -82,12 +82,11 @@ if is_certificate_server
     variables(servers: etcd_servers)
   end
 
-  %w(ca.crt ca.key).each do |etcd_export_certificate|
-    remote_file "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd/#{etcd_export_certificate}" do
-      source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/#{etcd_export_certificate}"
-      mode '0644'
-      sensitive true
-    end
+  remote_file "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd/ca.crt" do
+    source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/ca.crt"
+    mode '0644'
+    sensitive true
+    action :create_if_missing
   end
 
   etcd_servers.each do |etcd_master|
@@ -113,18 +112,15 @@ if is_certificate_server
       end
     end
 
-    remote_file "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}/ca.crt" do
-      source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/ca.crt"
-      sensitive true
-    end
-
     execute "Create a tarball of the etcd certs for #{etcd_master['fqdn']}" do
       command "tar czvf #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz -C #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']} . && chown apache: #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz"
       creates "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz"
+      notifies :run, 'execute[Encrypt etcd certificate tgz files]', :immediately
     end
 
     execute 'Encrypt etcd certificate tgz files' do
       command "openssl enc -aes-256-cbc -in #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz -out #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz.enc -k '#{encrypted_file_password}'  && chmod -R  0755 #{node['cookbook-openshift3']['etcd_generated_certs_dir']} && chown -R apache: #{node['cookbook-openshift3']['etcd_generated_certs_dir']}"
+      action :nothing
     end
   end
 
@@ -174,6 +170,11 @@ if is_etcd_server
       end
       action :nothing
     end
+  end
+
+  remote_file "#{node['cookbook-openshift3']['etcd_conf_dir']}/ca.crt" do
+    source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd/ca.crt"
+    sensitive true
   end
 
   remote_file "Retrieve certificate from ETCD Master[#{certificate_server['fqdn']}]" do
