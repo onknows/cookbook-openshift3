@@ -1,18 +1,18 @@
 #
-# Cookbook Name:: cookbook-openshift3
+# Cookbook Name:: is_apaas_openshift_cookbook
 # Recipe:: adhoc_redeploy_etcd_certs
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-Chef::Log.error("The ETCD CERTS redeploy will be skipped. Could not find the flag: #{node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']}") unless ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
+Chef::Log.error("The ETCD CERTS redeploy will be skipped. Could not find the flag: #{node['is_apaas_openshift_cookbook']['redeploy_etcd_certs_control_flag']}") unless ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_etcd_certs_control_flag'])
 
-if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
+if ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_etcd_certs_control_flag'])
 
-  if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
-    secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
-    encrypted_file_password = data_bag_item(node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'], node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name'], secret_file)
+  if node['is_apaas_openshift_cookbook']['encrypted_file_password']['data_bag_name'] && node['is_apaas_openshift_cookbook']['encrypted_file_password']['data_bag_item_name']
+    secret_file = node['is_apaas_openshift_cookbook']['encrypted_file_password']['secret_file'] || nil
+    encrypted_file_password = data_bag_item(node['is_apaas_openshift_cookbook']['encrypted_file_password']['data_bag_name'], node['is_apaas_openshift_cookbook']['encrypted_file_password']['data_bag_item_name'], secret_file)
   else
-    encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
+    encrypted_file_password = node['is_apaas_openshift_cookbook']['encrypted_file_password']['default']
   end
 
   server_info = OpenShiftHelper::NodeHelper.new(node)
@@ -28,11 +28,11 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
     etcd_servers.each do |etcd_master|
       ruby_block "Remove old certs for #{etcd_master['fqdn']}" do
         block do
-          helper.remove_dir("#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}*")
+          helper.remove_dir("#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}*")
         end
       end
 
-      directory "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}" do
+      directory "#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}" do
         mode '0755'
         owner 'apache'
         group 'apache'
@@ -40,72 +40,72 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
 
       %w(server peer).each do |etcd_certificates|
         execute "ETCD Create the #{etcd_certificates} csr for #{etcd_master['fqdn']}" do
-          command "openssl req -new -keyout #{etcd_certificates}.key -config #{node['cookbook-openshift3']['etcd_openssl_conf']} -out #{etcd_certificates}.csr -reqexts #{node['cookbook-openshift3']['etcd_req_ext']} -batch -nodes -subj /CN=#{etcd_master['fqdn']}"
+          command "openssl req -new -keyout #{etcd_certificates}.key -config #{node['is_apaas_openshift_cookbook']['etcd_openssl_conf']} -out #{etcd_certificates}.csr -reqexts #{node['is_apaas_openshift_cookbook']['etcd_req_ext']} -batch -nodes -subj /CN=#{etcd_master['fqdn']}"
           environment 'SAN' => "IP:#{etcd_master['ipaddress']}"
-          cwd "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}"
-          creates "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}/#{etcd_certificates}.csr"
+          cwd "#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}"
+          creates "#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}/#{etcd_certificates}.csr"
         end
 
         execute "ETCD Sign and create the #{etcd_certificates} crt for #{etcd_master['fqdn']}" do
-          command "openssl ca -name #{node['cookbook-openshift3']['etcd_ca_name']} -config #{node['cookbook-openshift3']['etcd_openssl_conf']} -out #{etcd_certificates}.crt -in #{etcd_certificates}.csr -extensions #{node['cookbook-openshift3']["etcd_ca_exts_#{etcd_certificates}"]} -batch"
+          command "openssl ca -name #{node['is_apaas_openshift_cookbook']['etcd_ca_name']} -config #{node['is_apaas_openshift_cookbook']['etcd_openssl_conf']} -out #{etcd_certificates}.crt -in #{etcd_certificates}.csr -extensions #{node['is_apaas_openshift_cookbook']["etcd_ca_exts_#{etcd_certificates}"]} -batch"
           environment 'SAN' => ''
-          cwd "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}"
-          creates "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}/#{etcd_certificates}.crt"
+          cwd "#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}"
+          creates "#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}/#{etcd_certificates}.crt"
         end
       end
 
       execute "Create a tarball of the etcd certs for #{etcd_master['fqdn']}" do
-        command "tar czvf #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz -C #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']} . && chown apache: #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz"
-        creates "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz"
+        command "tar czvf #{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz -C #{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']} . && chown apache: #{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz"
+        creates "#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz"
       end
 
       execute 'Encrypt etcd certificate tgz files' do
-        command "openssl enc -aes-256-cbc -in #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz -out #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}-new.tgz.enc -k '#{encrypted_file_password}'  && chmod -R  0755 #{node['cookbook-openshift3']['etcd_generated_certs_dir']} && chown -R apache: #{node['cookbook-openshift3']['etcd_generated_certs_dir']}"
-        creates "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}-new.tgz.enc"
+        command "openssl enc -aes-256-cbc -in #{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz -out #{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}-new.tgz.enc -k '#{encrypted_file_password}'  && chmod -R  0755 #{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']} && chown -R apache: #{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}"
+        creates "#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}-new.tgz.enc"
       end
     end
 
     master_servers.each do |master_server|
       ruby_block "Remove old certs for #{master_server['fqdn']}" do
         block do
-          helper.remove_dir("#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}*")
+          helper.remove_dir("#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}*")
         end
       end
 
-      directory "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}" do
+      directory "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}" do
         mode '0755'
         owner 'apache'
         group 'apache'
       end
 
       execute "ETCD Create the CLIENT csr for #{master_server['fqdn']}" do
-        command "openssl req -new -keyout #{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.key -config #{node['cookbook-openshift3']['etcd_openssl_conf']} -out #{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.csr -reqexts #{node['cookbook-openshift3']['etcd_req_ext']} -batch -nodes -subj /CN=#{master_server['fqdn']}"
+        command "openssl req -new -keyout #{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}client.key -config #{node['is_apaas_openshift_cookbook']['etcd_openssl_conf']} -out #{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}client.csr -reqexts #{node['is_apaas_openshift_cookbook']['etcd_req_ext']} -batch -nodes -subj /CN=#{master_server['fqdn']}"
         environment 'SAN' => "IP:#{master_server['ipaddress']}"
-        cwd "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}"
-        creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.csr"
+        cwd "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}"
+        creates "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}/#{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}client.csr"
       end
 
       execute "ETCD Create the CLIENT csr for #{master_server['fqdn']}" do
-        command "openssl req -new -keyout #{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.key -config #{node['cookbook-openshift3']['etcd_openssl_conf']} -out #{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.csr -reqexts #{node['cookbook-openshift3']['etcd_req_ext']} -batch -nodes -subj /CN=#{master_server['fqdn']}"
+        command "openssl req -new -keyout #{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}client.key -config #{node['is_apaas_openshift_cookbook']['etcd_openssl_conf']} -out #{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}client.csr -reqexts #{node['is_apaas_openshift_cookbook']['etcd_req_ext']} -batch -nodes -subj /CN=#{master_server['fqdn']}"
         environment 'SAN' => "IP:#{master_server['ipaddress']}"
-        cwd "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}"
-        creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.csr"
+        cwd "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}"
+        creates "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}/#{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}client.csr"
       end
 
       execute "ETCD Sign and create the CLIENT crt for #{master_server['fqdn']}" do
-        command "openssl ca -name #{node['cookbook-openshift3']['etcd_ca_name']} -config #{node['cookbook-openshift3']['etcd_openssl_conf']} -out #{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.crt -in #{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.csr -batch"
+        command "openssl ca -name #{node['is_apaas_openshift_cookbook']['etcd_ca_name']} -config #{node['is_apaas_openshift_cookbook']['etcd_openssl_conf']} -out #{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}client.crt -in #{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}client.csr -batch"
         environment 'SAN' => ''
-        cwd "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}"
-        creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.crt"
+        cwd "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}"
+        creates "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}/#{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}client.crt"
       end
 
       execute "Create a tarball of the etcd master certs for #{master_server['fqdn']}" do
-        command "tar czvf #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz -C #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']} . && chown -R apache:apache #{node['cookbook-openshift3']['master_generated_certs_dir']}"
-        creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz"
+        command "tar czvf #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz -C #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']} . && chown -R apache:apache #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}"
+        creates "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz"
       end
 
       execute 'Encrypt etcd tgz files' do
-        command "openssl enc -aes-256-cbc -in #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz  -out #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}-new.tgz.enc -k '#{encrypted_file_password}' && chmod -R  0755 #{node['cookbook-openshift3']['master_generated_certs_dir']} && chown -R apache: #{node['cookbook-openshift3']['master_generated_certs_dir']}"
+        command "openssl enc -aes-256-cbc -in #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz  -out #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}-new.tgz.enc -k '#{encrypted_file_password}' && chmod -R  0755 #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']} && chown -R apache: #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}"
       end
     end
   end
@@ -113,13 +113,13 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
   if is_etcd_server
     ruby_block 'Remove old cert tarball' do
       block do
-        helper.remove_dir("#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd-#{node['fqdn']}.tgz*")
+        helper.remove_dir("#{node['is_apaas_openshift_cookbook']['etcd_conf_dir']}/etcd-#{node['fqdn']}.tgz*")
       end
     end
 
     remote_file "Retrieve certificate from ETCD Master[#{certificate_server['fqdn']}]" do
-      path "#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd-#{node['fqdn']}.tgz.enc"
-      source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd-#{node['fqdn']}-new.tgz.enc"
+      path "#{node['is_apaas_openshift_cookbook']['etcd_conf_dir']}/etcd-#{node['fqdn']}.tgz.enc"
+      source "http://#{certificate_server['ipaddress']}:#{node['is_apaas_openshift_cookbook']['httpd_xfer_port']}/etcd/generated_certs/etcd-#{node['fqdn']}-new.tgz.enc"
       action :create_if_missing
       notifies :run, 'execute[Un-encrypt etcd certificate tgz files]', :immediately
       notifies :run, 'execute[Extract certificate to ETCD folder]', :immediately
@@ -129,24 +129,24 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
 
     execute 'Un-encrypt etcd certificate tgz files' do
       command "openssl enc -d -aes-256-cbc -in etcd-#{node['fqdn']}.tgz.enc -out etcd-#{node['fqdn']}.tgz -k '#{encrypted_file_password}'"
-      cwd node['cookbook-openshift3']['etcd_conf_dir']
+      cwd node['is_apaas_openshift_cookbook']['etcd_conf_dir']
       action :nothing
     end
 
     execute 'Extract certificate to ETCD folder' do
       command "tar xzf etcd-#{node['fqdn']}.tgz"
-      cwd node['cookbook-openshift3']['etcd_conf_dir']
+      cwd node['is_apaas_openshift_cookbook']['etcd_conf_dir']
       action :nothing
     end
 
     %w(cert peer).each do |certificate_type|
-      file node['cookbook-openshift3']['etcd_' + certificate_type + '_file'.to_s] do
+      file node['is_apaas_openshift_cookbook']['etcd_' + certificate_type + '_file'.to_s] do
         owner 'etcd'
         group 'etcd'
         mode '0600'
       end
 
-      file node['cookbook-openshift3']['etcd_' + certificate_type + '_key'.to_s] do
+      file node['is_apaas_openshift_cookbook']['etcd_' + certificate_type + '_key'.to_s] do
         owner 'etcd'
         group 'etcd'
         mode '0600'
@@ -154,28 +154,28 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
     end
 
     execute 'Fix ETCD directory permissions' do
-      command "chmod 755 #{node['cookbook-openshift3']['etcd_conf_dir']}"
-      only_if "[[ $(stat -c %a #{node['cookbook-openshift3']['etcd_conf_dir']}) -ne 755 ]]"
+      command "chmod 755 #{node['is_apaas_openshift_cookbook']['etcd_conf_dir']}"
+      only_if "[[ $(stat -c %a #{node['is_apaas_openshift_cookbook']['etcd_conf_dir']}) -ne 755 ]]"
     end
 
     ruby_block 'Restart ETCD service if valid certificate' do
       block do
       end
-      notifies :restart, 'service[etcd-service]', :immediately if helper.valid_certificate?(node['cookbook-openshift3']['etcd_ca_cert'], node['cookbook-openshift3']['etcd_cert_file'])
-      only_if { helper.valid_certificate?(node['cookbook-openshift3']['etcd_ca_cert'], node['cookbook-openshift3']['etcd_cert_file']) }
+      notifies :restart, 'service[etcd-service]', :immediately if helper.valid_certificate?(node['is_apaas_openshift_cookbook']['etcd_ca_cert'], node['is_apaas_openshift_cookbook']['etcd_cert_file'])
+      only_if { helper.valid_certificate?(node['is_apaas_openshift_cookbook']['etcd_ca_cert'], node['is_apaas_openshift_cookbook']['etcd_cert_file']) }
     end
   end
 
   if is_master_server
     ruby_block 'Remove old cert tarball' do
       block do
-        helper.remove_dir("#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-master-#{node['fqdn']}.tgz*")
+        helper.remove_dir("#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/openshift-master-#{node['fqdn']}.tgz*")
       end
     end
 
     remote_file "Retrieve client certificate from Master[#{certificate_server['fqdn']}]" do
-      path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-master-#{node['fqdn']}.tgz.enc"
-      source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/master/generated_certs/openshift-master-#{node['fqdn']}-new.tgz.enc"
+      path "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/openshift-master-#{node['fqdn']}.tgz.enc"
+      source "http://#{certificate_server['ipaddress']}:#{node['is_apaas_openshift_cookbook']['httpd_xfer_port']}/master/generated_certs/openshift-master-#{node['fqdn']}-new.tgz.enc"
       action :create_if_missing
       notifies :run, 'execute[Un-encrypt master certificate tgz files]', :immediately
       notifies :run, 'execute[Extract certificate to Master folder]', :immediately
@@ -186,19 +186,19 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
 
     execute 'Un-encrypt master certificate tgz files' do
       command "openssl enc -d -aes-256-cbc -in openshift-master-#{node['fqdn']}.tgz.enc -out openshift-master-#{node['fqdn']}.tgz -k '#{encrypted_file_password}'"
-      cwd node['cookbook-openshift3']['openshift_master_config_dir']
+      cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
       action :nothing
     end
 
     execute 'Extract certificate to Master folder' do
       command "tar -xzf openshift-master-#{node['fqdn']}.tgz ./master.etcd-client.crt ./master.etcd-client.key"
-      cwd node['cookbook-openshift3']['openshift_master_config_dir']
+      cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
       action :nothing
     end
 
     remote_file "Retrieve ETCD CA cert for Master[#{certificate_server['fqdn']}]" do
-      path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}ca.crt"
-      source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/ca.crt"
+      path "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/#{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}ca.crt"
+      source "http://#{certificate_server['ipaddress']}:#{node['is_apaas_openshift_cookbook']['httpd_xfer_port']}/etcd/ca.crt"
       owner 'root'
       group 'root'
       mode '0600'
@@ -208,7 +208,7 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
     end
 
     %w(client.crt client.key).each do |certificate_type|
-      file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}#{certificate_type}" do
+      file "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/#{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}#{certificate_type}" do
         owner 'root'
         group 'root'
         mode '0600'
@@ -218,9 +218,9 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
     ruby_block 'Restart Master services if valid certificate' do
       block do
       end
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
-      only_if { helper.valid_certificate?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}ca.crt", "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.crt") }
+      notifies :restart, 'service[atomic-openshift-master-api]', :immediately
+      notifies :restart, 'service[atomic-openshift-master-controllers]', :immediately
+      only_if { helper.valid_certificate?("#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/#{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}ca.crt", "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/#{node['is_apaas_openshift_cookbook']['master_etcd_cert_prefix']}client.crt") }
     end
   end
 end
