@@ -65,7 +65,7 @@ if is_certificate_server
     creates "#{node['cookbook-openshift3']['etcd_ca_dir']}/ca.crt"
   end
 
-  %W(/var/www/html/etcd #{node['cookbook-openshift3']['etcd_generated_certs_dir']} #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd).each do |path|
+  %W(/var/www/html/etcd #{node['cookbook-openshift3']['etcd_generated_certs_dir']}).each do |path|
     directory path do
       mode '0755'
       owner 'apache'
