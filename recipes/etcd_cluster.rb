@@ -164,11 +164,8 @@ if is_etcd_server
       notifies :restart, 'service[etcd-service]', :immediately if node['cookbook-openshift3']['upgrade']
     end
 
-    ruby_block 'Mask ETCD service' do
-      block do
-        Mixlib::ShellOut.new('systemctl mask etcd').run_command
-      end
-      action :nothing
+    systemd_unit 'etcd' do
+      action :mask
     end
   end
 

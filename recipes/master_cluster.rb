@@ -429,18 +429,7 @@ if certificate_server['fqdn'] == first_master['fqdn'] || !is_certificate_server
     only_if { first_master['fqdn'] != node['fqdn'] }
   end
 
-  execute 'Disable Master service on masters' do
-    command 'echo nothing to do specific'
-    notifies :disable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately
-    notifies :run, "ruby_block[Mask #{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately
+  systemd_unit "#{node['cookbook-openshift3']['openshift_service_type']}-master" do
+    action %i(disable mask)
   end
-end
-
-# Use ruby_block as systemd service provider does not support 'mask' action
-# https://tickets.opscode.com/browse/CHEF-3369
-ruby_block "Mask #{node['cookbook-openshift3']['openshift_service_type']}-master" do
-  block do
-    Mixlib::ShellOut.new("systemctl mask #{node['cookbook-openshift3']['openshift_service_type']}-master").run_command
-  end
-  action :nothing
 end
