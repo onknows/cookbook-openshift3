@@ -170,6 +170,8 @@ if is_etcd_server
 
   remote_file "#{node['cookbook-openshift3']['etcd_conf_dir']}/ca.crt" do
     source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd/ca.crt"
+    retries 15
+    retry_delay 2
     sensitive true
   end
 
