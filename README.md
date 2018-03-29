@@ -516,7 +516,6 @@ Variables:
       "adhoc_redeploy_etcd_certs": true,
       "redeploy_etcd_ca_control_flag": "/tmp/caready",
       "redeploy_etcd_certs_control_flag": "/tmp/certready"
-      ]
     }
   }
 ```
