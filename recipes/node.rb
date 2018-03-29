@@ -37,6 +37,14 @@ if is_node_server
     recursive true
   end
 
+  directory node['cookbook-openshift3']['openshift_data_dir'] do
+    owner 'root'
+    group 'root'
+    mode '0755'
+    action :create
+    only_if { node['cookbook-openshift3']['deploy_containerized'] }
+  end
+
   if node['cookbook-openshift3']['deploy_containerized']
     docker_image node['cookbook-openshift3']['openshift_docker_node_image'] do
       tag docker_version

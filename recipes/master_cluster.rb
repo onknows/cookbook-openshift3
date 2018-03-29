@@ -110,7 +110,7 @@ unless is_certificate_server && node['fqdn'] != first_master['fqdn']
 
   remote_file "Retrieve ETCD CA cert for Master[#{certificate_server['fqdn']}]" do
     path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}ca.crt"
-    source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd/ca.crt"
+    source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/ca.crt"
     owner 'root'
     group 'root'
     mode '0600'

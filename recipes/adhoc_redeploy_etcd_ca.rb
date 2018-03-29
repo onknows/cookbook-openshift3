@@ -62,13 +62,13 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_ca_control_flag'])
 
     ruby_block 'Create ETCD CA Bundle' do
       block do
-        helper.bundle_etcd_ca(["#{node['cookbook-openshift3']['etcd_ca_dir']}/ca.crt", "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd/ca.crt"], "#{node['cookbook-openshift3']['etcd_ca_dir']}/ca-bundle.crt")
+        helper.bundle_etcd_ca(["#{node['cookbook-openshift3']['etcd_ca_dir']}/ca.crt", '/var/www/html/etcd/ca.crt'], "#{node['cookbook-openshift3']['etcd_ca_dir']}/ca-bundle.crt")
       end
       not_if { ::File.exist?("#{node['cookbook-openshift3']['etcd_ca_dir']}/ca-bundle.crt") }
     end
 
     %w(ca ca-bundle).each do |etcd_ca|
-      remote_file "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd/#{etcd_ca}.crt" do
+      remote_file "/var/www/html/etcd/#{etcd_ca}.crt" do
         source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/ca-bundle.crt"
         owner 'apache'
         group 'apache'
@@ -80,7 +80,7 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_ca_control_flag'])
 
   if is_etcd_server
     remote_file "#{node['cookbook-openshift3']['etcd_conf_dir']}/ca.crt" do
-      source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd/ca-bundle.crt"
+      source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/ca-bundle.crt"
       sensitive true
       retries 15
       retry_delay 2

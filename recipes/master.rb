@@ -79,6 +79,14 @@ if is_master_server || is_certificate_server
     recursive true
   end
 
+  directory node['cookbook-openshift3']['openshift_data_dir'] do
+    owner 'root'
+    group 'root'
+    mode '0755'
+    action :create
+    only_if { node['cookbook-openshift3']['deploy_containerized'] }
+  end
+
   if node['cookbook-openshift3']['openshift_HA']
     include_recipe 'cookbook-openshift3::master_cluster'
   else
