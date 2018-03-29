@@ -103,7 +103,7 @@ unless is_certificate_server && node['fqdn'] != first_master['fqdn']
   end
 
   execute 'Extract certificate to Master folder' do
-    command "tar -xzf openshift-master-#{node['fqdn']}.tgz ./master.etcd-*"
+    command "tar -xzf openshift-master-#{node['fqdn']}.tgz ./master.etcd-client.crt ./master.etcd-client.key"
     cwd node['cookbook-openshift3']['openshift_master_config_dir']
     action :nothing
   end
