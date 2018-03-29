@@ -61,7 +61,7 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
 
       execute 'Encrypt etcd certificate tgz files' do
         command "openssl enc -aes-256-cbc -in #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz -out #{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}-new.tgz.enc -k '#{encrypted_file_password}'  && chmod -R  0755 #{node['cookbook-openshift3']['etcd_generated_certs_dir']} && chown -R apache: #{node['cookbook-openshift3']['etcd_generated_certs_dir']}"
-	creates "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}-new.tgz.enc"
+        creates "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}-new.tgz.enc"
       end
     end
 
