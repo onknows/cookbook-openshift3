@@ -1,6 +1,14 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.5
+### Bug
+- Genral code improvements/MISC issues
+
+### Improvement 
+- Initial Support for 3.7.x
+- Capability for automated upgrade between versions
+- Certitificate redeploy for ETCD (CA/CERTS)
 
 ## v1.10.67
 ### Bug
