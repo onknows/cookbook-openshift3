@@ -14,12 +14,6 @@ version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['co
 include_recipe 'cookbook-openshift3::etcd_cluster' if etcd_servers.any?
 
 if is_certificate_server
-  package 'httpd' do
-    notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
-    notifies :run, 'ruby_block[Modify the AllowOverride options]', :immediately
-    notifies :enable, 'service[httpd]', :immediately
-    retries 3
-  end
   node['cookbook-openshift3']['enabled_firewall_rules_master'].each do |rule|
     iptables_rule rule do
       action :enable
@@ -80,14 +74,6 @@ if is_master_server || is_certificate_server
     group 'root'
     action :create
     recursive true
-  end
-
-  directory node['cookbook-openshift3']['openshift_data_dir'] do
-    owner 'root'
-    group 'root'
-    mode '0755'
-    action :create
-    only_if { node['cookbook-openshift3']['deploy_containerized'] }
   end
 
   if node['cookbook-openshift3']['openshift_HA']

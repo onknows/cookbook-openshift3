@@ -11,10 +11,10 @@ version '2.0.5'
 supports 'redhat', '>= 7.1'
 supports 'centos', '>= 7.1'
 
-depends 'yum', '>= 3.6.1'
-depends 'iptables', '>= 1.0.0'
+depends 'yum', '>= 5.0'
+depends 'iptables', '>= 4.0.0'
 depends 'selinux_policy'
-depends 'docker', '>= 2.0'
+depends 'docker', '>= 4.0'
 
 recipe 'cookbook-openshift3::adhoc_migrate_etcd', 'Adhoc action for migrating ETCD from v2 to v3'
 recipe 'cookbook-openshift3::adhoc_redeploy_certificates', 'Redeploy OpenShift/ETCD certificates'

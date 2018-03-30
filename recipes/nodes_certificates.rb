@@ -54,6 +54,7 @@ if node['cookbook-openshift3']['use_wildcard_nodes']
 
   execute 'Encrypt Wildcard node servers tgz files' do
     command "openssl enc -aes-256-cbc -in #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/wildcard_nodes.tgz -out #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/wildcard_nodes.tgz.enc -k '#{encrypted_file_password}'  && chmod -R  0755 #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']} && chown -R apache: #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}"
+    creates "#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/wildcard_nodes.tgz.enc"
   end
 else
   node_servers.each do |node_server|
@@ -85,8 +86,9 @@ else
                -C #{Chef::Config[:file_cache_path]}/#{node_server['fqdn']} . --remove-files && chown apache: #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tgz"
       creates "#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tgz"
     end
-    execute 'Encrypt Wildcard node servers tgz files' do
+    execute "Encrypt node servers tgz files for #{node_server['fqdn']}" do
       command "openssl enc -aes-256-cbc -in #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tgz -out #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tgz.enc -k '#{encrypted_file_password}' && chmod -R  0755 #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']} && chown -R apache: #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}"
+      creates "#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tgz.enc"
     end
   end
 end

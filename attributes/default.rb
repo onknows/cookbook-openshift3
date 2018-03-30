@@ -54,6 +54,8 @@ default['cookbook-openshift3']['deploy_example_xpaas-templates'] = false
 default['cookbook-openshift3']['docker_version'] = nil
 default['cookbook-openshift3']['docker_log_driver'] = 'json-file'
 default['cookbook-openshift3']['docker_log_options'] = {}
+default['cookbook-openshift3']['docker_redhat_registry'] = true
+default['cookbook-openshift3']['openshift_docker_add_redhat_registry'] = node['cookbook-openshift3']['docker_redhat_registry'] == true ? '--add-registry registry.access.redhat.com' : ''
 default['cookbook-openshift3']['install_method'] = 'yum'
 default['cookbook-openshift3']['httpd_xfer_port'] = '9999'
 default['cookbook-openshift3']['core_packages'] = %w(libselinux-python wget vim-enhanced net-tools bind-utils git bash-completion dnsmasq yum-utils)
