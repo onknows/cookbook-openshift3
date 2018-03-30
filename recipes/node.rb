@@ -37,14 +37,6 @@ if is_node_server
     recursive true
   end
 
-  directory node['is_apaas_openshift_cookbook']['openshift_data_dir'] do
-    owner 'root'
-    group 'root'
-    mode '0755'
-    action :create
-    only_if { node['is_apaas_openshift_cookbook']['deploy_containerized'] }
-  end
-
   if node['is_apaas_openshift_cookbook']['deploy_containerized']
     docker_image node['is_apaas_openshift_cookbook']['openshift_docker_node_image'] do
       tag docker_version

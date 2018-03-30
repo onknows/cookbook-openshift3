@@ -14,19 +14,16 @@ version = node['is_apaas_openshift_cookbook']['deploy_containerized'] == true ? 
 include_recipe 'is_apaas_openshift_cookbook::etcd_cluster' if etcd_servers.any?
 
 if is_certificate_server
-  package 'httpd' do
-    notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
-    notifies :run, 'ruby_block[Modify the AllowOverride options]', :immediately
-    notifies :enable, 'service[httpd]', :immediately
-    retries 3
-  end
   node['is_apaas_openshift_cookbook']['enabled_firewall_rules_master'].each do |rule|
     iptables_rule rule do
       action :enable
     end
   end
   # Do this immediately, so clients can connect (iptables cookbook delays).
-  execute '/usr/sbin/rebuild-iptables'
+  execute '/usr/sbin/rebuild-iptables' do
+    retry_delay 10
+    retries 3
+  end
 end
 
 if is_master_server || is_certificate_server
@@ -77,14 +74,6 @@ if is_master_server || is_certificate_server
     group 'root'
     action :create
     recursive true
-  end
-
-  directory node['is_apaas_openshift_cookbook']['openshift_data_dir'] do
-    owner 'root'
-    group 'root'
-    mode '0755'
-    action :create
-    only_if { node['is_apaas_openshift_cookbook']['deploy_containerized'] }
   end
 
   if node['is_apaas_openshift_cookbook']['openshift_HA']

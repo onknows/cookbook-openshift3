@@ -54,6 +54,8 @@ default['is_apaas_openshift_cookbook']['deploy_example_xpaas-templates'] = false
 default['is_apaas_openshift_cookbook']['docker_version'] = nil
 default['is_apaas_openshift_cookbook']['docker_log_driver'] = 'json-file'
 default['is_apaas_openshift_cookbook']['docker_log_options'] = {}
+default['is_apaas_openshift_cookbook']['docker_redhat_registry'] = true
+default['is_apaas_openshift_cookbook']['openshift_docker_add_redhat_registry'] = node['is_apaas_openshift_cookbook']['docker_redhat_registry'] == true ? '--add-registry registry.access.redhat.com' : ''
 default['is_apaas_openshift_cookbook']['install_method'] = 'yum'
 default['is_apaas_openshift_cookbook']['httpd_xfer_port'] = '9999'
 default['is_apaas_openshift_cookbook']['core_packages'] = %w(libselinux-python wget vim-enhanced net-tools bind-utils git bash-completion dnsmasq yum-utils)

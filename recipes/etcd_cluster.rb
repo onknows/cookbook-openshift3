@@ -19,12 +19,6 @@ else
 end
 
 if is_certificate_server
-  package 'httpd' do
-    notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
-    notifies :enable, 'service[httpd]', :immediately
-    retries 3
-  end
-
   directory node['is_apaas_openshift_cookbook']['etcd_ca_dir'] do
     owner 'root'
     group 'root'

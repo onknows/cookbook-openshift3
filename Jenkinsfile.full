@@ -5,7 +5,6 @@ try {
   properties([parameters([
     string(name: 'BRANCH_NAME',                                  defaultValue: 'master',                                       description: 'Branch to build'),
     string(name: 'builddir',                                     defaultValue: 'is_apaas_openshift_cookbook-test-' + env.BUILD_NUMBER, description: 'Build directory'),
-    string(name: 'nodename',                                     defaultValue: 'cage',                                         description: 'Node to build on'),
     string(name: 'OSE_VERSIONS',                                 defaultValue: '1.4 3.7',                                      description: 'OSE versions to build, separated by spaces'),
     string(name: 'CHEF_IPTABLES_COOKBOOK_VERSION',               defaultValue: 'latest',                                       description: 'IPtables cookbook version, eg 1.0.0'),
     string(name: 'CHEF_SELINUX_COOKBOOK_VERSION',                defaultValue: 'latest',                                       description: 'SELinux cookbook version, eg 0.7.2'),
@@ -20,59 +19,58 @@ try {
     booleanParam(name: 'doshutit',                               defaultValue: true,                                           description: 'Whether to run shutit tests'),
     booleanParam(name: 'dorubocop',                              defaultValue: true,                                           description: 'Whether to run rubocop tests')
   ])])
-  lock('cookbook_openshift3_test_lock_1') {
-    stage('setupenv') {
-      node(nodename) {
-        sh 'mkdir -p ' + builddir
+  stage('setupenv') {
+    node() {
+      sh 'mkdir -p ' + builddir
+      dir(builddir) {
+        ////when in source...
+        checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/IshentRas/is_apaas_openshift_cookbook']]])
+      }
+    }
+  }
+  stage('debug') {
+      node() {
+          sh 'env'
+          sh 'echo ' + dokitchen
+          sh 'echo ' + doshutit
+          sh 'echo ' + dorubocop
+      }
+  }
+  if (params.dorubocop) {
+    stage('rubocop') {
+      node() {
         dir(builddir) {
-          ////when in source...
-          checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/IshentRas/is_apaas_openshift_cookbook']]])
+          sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk rubocop -D'
         }
       }
     }
-    stage('debug') {
-        node(nodename) {
-            sh 'env'
-            sh 'echo ' + dokitchen
-            sh 'echo ' + doshutit
-            sh 'echo ' + dorubocop
-        }
-    }
-    if (params.dorubocop) {
-      stage('rubocop') {
-        node(nodename) {
-          dir(builddir) {
-            sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk rubocop -D'
-          }
-        }
-      }
-    }
-    if (params.doshutit) {
-      stage('shutit_tests') {
-        node(nodename) {
-          dir(builddir) {
-            sh 'git clone --recursive --depth 1 https://github.com/ianmiell/shutit-openshift-cluster'
-            dir('shutit-openshift-cluster') {
-              withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
-                sh './run_tests.sh --interactive 0'
-              }
+  }
+  if (params.doshutit) {
+    stage('shutit_tests') {
+      node() {
+        dir(builddir) {
+          // Clone, or update if this is a re-run
+          sh 'git clone --recursive --depth 1 https://github.com/ianmiell/shutit-openshift-cluster || (cd shutit-openshift-cluster && git pull)'
+          dir('shutit-openshift-cluster') {
+            withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
+              sh './run_tests.sh --interactive 0'
             }
           }
         }
       }
     }
-    if (params.dokitchen) {
-      stage('kitchen') {
-        node(nodename) {
-          dir(builddir) {
-            def l = sh(script: 'kitchen list -b', returnStdout: true).trim().tokenize()
-            for (f in l) {
-              // Seeing persistent 'SCP did not finish successfully (255):  (Net::SCP::Error)' errors, so retry added.
-              retry(10) {
-                sh('kitchen converge ' + f)
-                sh('kitchen verify ' + f)
-                sh('kitchen destroy ' + f)
-              }
+  }
+  if (params.dokitchen) {
+    stage('kitchen') {
+      node() {
+        dir(builddir) {
+          def l = sh(script: 'kitchen list -b', returnStdout: true).trim().tokenize()
+          for (f in l) {
+            // Seeing persistent 'SCP did not finish successfully (255):  (Net::SCP::Error)' errors, so retry added.
+            retry(10) {
+              sh('kitchen converge ' + f)
+              sh('kitchen verify ' + f)
+              sh('kitchen destroy ' + f)
             }
           }
         }
@@ -90,9 +88,9 @@ RELEASE
 - git push --tag
 - knife cookbook site share is_apaas_openshift_cookbook # on rothko
 
-''', cc: '', from: 'is_apaas_openshift_cookbook@jenkins.meirionconsulting.com', replyTo: '', subject: 'Build OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
+''', cc: '', from: 'is_apaas_openshift_cookbook@jenkins.meirionconsulting.com', replyTo: '', subject: 'Full Build OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
   stage('cleanup') {
-    node(nodename) {
+    node() {
       dir(builddir) {
         dir('shutit-openshift-cluster') {
           sh('yes | ./destroy_vms.sh || true')
@@ -103,11 +101,11 @@ RELEASE
 } catch(err) {
   mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/job/is_apaas_openshift_cookbook-pipeline
 
-''' + err, cc: '', from: 'is_apaas_openshift_cookbook@jenkins.meirionconsulting.com', replyTo: '', subject: 'Build failure', to: 'ian.miell@gmail.com'
+''' + err, cc: '', from: 'is_apaas_openshift_cookbook@jenkins.meirionconsulting.com', replyTo: '', subject: 'Full Build Failure', to: 'ian.miell@gmail.com'
   throw(err)
   if (params.doshutit) {
     stage('cleanup') {
-      node(nodename) {
+      node() {
         dir(builddir) {
           dir('shutit-openshift-cluster') {
             sh('yes | ./destroy_vms.sh || true')

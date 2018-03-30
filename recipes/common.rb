@@ -9,7 +9,9 @@ helper = OpenShiftHelper::UtilHelper
 master_servers = server_info.master_servers
 etcd_servers = server_info.etcd_servers
 lb_servers = server_info.lb_servers
+is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
+is_control_plane_server = server_info.on_control_plane_server?
 certificate_server = server_info.certificate_server
 
 include_recipe 'iptables::default'
@@ -141,6 +143,21 @@ ruby_block 'Modify the AllowOverride options' do
   end
   action :nothing
   notifies :restart, 'service[httpd]', :immediately
+end
+
+package 'httpd' do
+  notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
+  notifies :enable, 'service[httpd]', :immediately
+  retries 3
+  only_if { is_control_plane_server }
+end
+
+directory node['is_apaas_openshift_cookbook']['openshift_data_dir'] do
+  owner 'root'
+  group 'root'
+  mode '0755'
+  action :create
+  only_if { node['is_apaas_openshift_cookbook']['deploy_containerized'] && (is_master_server || is_node_server) }
 end
 
 include_recipe 'is_apaas_openshift_cookbook::certificate_server' unless node['is_apaas_openshift_cookbook']['upgrade']

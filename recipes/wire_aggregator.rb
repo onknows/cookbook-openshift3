@@ -56,8 +56,9 @@ if is_certificate_server
     creates "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/wire_aggregator-masters.tgz"
   end
 
-  execute 'Encrypt master master tgz files' do
+  execute 'Encrypt wire aggregator master tgz files' do
     command "openssl enc -aes-256-cbc -in #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/wire_aggregator-masters.tgz  -out #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/wire_aggregator-masters.tgz.enc -k '#{encrypted_file_password}' && chmod -R  0755 #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']} && chown -R apache: #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}"
+    creates "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/wire_aggregator-masters.tgz.enc"
   end
 end
 
