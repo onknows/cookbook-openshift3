@@ -36,7 +36,7 @@ try {
   }
   mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/job/cookbook-openshift3-upgrades-pipeline
 
-''', cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: 'Build OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
+''', cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: 'Upgrades Build OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
   stage('cleanup') {
     node(nodename) {
       dir(builddir) {
@@ -49,7 +49,7 @@ try {
 } catch(err) {
   mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/job/cookbook-openshift3-pipeline
 
-''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: 'Build failure', to: 'ian.miell@gmail.com'
+''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: 'Upgrades Build Failure', to: 'ian.miell@gmail.com'
   throw(err)
   if (params.doshutit) {
     stage('cleanup') {
