@@ -26,7 +26,10 @@ if is_certificate_server
     end
   end
   # Do this immediately, so clients can connect (iptables cookbook delays).
-  execute '/usr/sbin/rebuild-iptables'
+  execute '/usr/sbin/rebuild-iptables' do
+    retry_delay 10
+    retries 3
+  end
 end
 
 if is_master_server || is_certificate_server
