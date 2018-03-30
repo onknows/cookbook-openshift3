@@ -49,7 +49,8 @@ try {
     stage('shutit_tests') {
       node() {
         dir(builddir) {
-          sh 'git clone --recursive --depth 1 https://github.com/ianmiell/shutit-openshift-cluster'
+          // Clone, or update if this is a re-run
+          sh 'git clone --recursive --depth 1 https://github.com/ianmiell/shutit-openshift-cluster || (cd shutit-openshift-cluster && git pull)'
           dir('shutit-openshift-cluster') {
             withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
               sh './run_tests.sh --interactive 0'
