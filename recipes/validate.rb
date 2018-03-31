@@ -79,10 +79,11 @@ if first_master.nil?
   node.run_state['issues_detected'] = true
 end
 
-if first_etcd.nil?
-  Chef::Log.error('first_etcd not set')
-  node.run_state['issues_detected'] = true
-  only_if { node['cookbook-openshift3']['openshift_HA'] }
+if node['cookbook-openshift3']['openshift_HA']
+  if first_etcd.nil?
+    Chef::Log.error('first_etcd not set')
+    node.run_state['issues_detected'] = true
+  end
 end
 
 if certificate_server.nil?
