@@ -1,6 +1,14 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.6
+### Improvement 
+- Add logic for removing redhat registry (Fixed issue 206)
+- Improve IPtables logic
+
+### Bug
+- Genral code improvements/MISC issues
+
 ## v2.0.5
 ### Bug
 - Genral code improvements/MISC issues
