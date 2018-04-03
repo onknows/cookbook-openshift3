@@ -97,6 +97,13 @@ module OpenShiftHelper
       return false
     end
 
+    def turn_off_swap
+      regex = /(^[^#].*swap.*)\n/m
+      fstab_file = Chef::Util::FileEdit.new('/etc/fstab')
+      fstab_file.search_file_replace(regex, '# \1')
+      fstab_file.write_file
+    end
+
     protected
 
     attr_reader :node

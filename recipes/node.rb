@@ -21,6 +21,13 @@ else
 end
 
 if is_node_server
+  ruby_block 'Turn off SWAP for nodes' do
+    block do
+      server_info.turn_off_swap
+    end
+    only_if { ::File.readlines('/etc/fstab').grep(/(^[^#].*swap.*)\n/).any? }
+  end
+
   file '/usr/local/etc/.firewall_node_additional.txt' do
     content node['is_apaas_openshift_cookbook']['enabled_firewall_additional_rules_node'].join("\n")
     owner 'root'
