@@ -1,12 +1,21 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.9
+### Bug
+- Fix issue when creating PV (NFS)
+- General code improvements/MISC issues
+
+## v2.0.8
+### Bug
+- General code improvements/MISC issues
+
 ## v2.0.7
 ### Improvement 
 - Improve creating PV/PVC
 
 ### Bug
-- Genral code improvements/MISC issues
+- General code improvements/MISC issues
 
 ## v2.0.6
 ### Improvement 
@@ -14,11 +23,11 @@ This file is used to list changes made in each version of the Openshift 3 cookbo
 - Improve IPtables logic
 
 ### Bug
-- Genral code improvements/MISC issues
+- General code improvements/MISC issues
 
 ## v2.0.5
 ### Bug
-- Genral code improvements/MISC issues
+- General code improvements/MISC issues
 
 ### Improvement 
 - Initial Support for 3.7.x

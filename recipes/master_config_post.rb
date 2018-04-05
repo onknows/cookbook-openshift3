@@ -79,6 +79,7 @@ end
 
 openshift_create_pv 'Create Persistent Storage' do
   persistent_storage node['cookbook-openshift3']['persistent_storage']
+  not_if { node['cookbook-openshift3']['persistent_storage'].empty? }
 end
 
 node_servers.reject { |h| h.key?('skip_run') }.each do |nodes|

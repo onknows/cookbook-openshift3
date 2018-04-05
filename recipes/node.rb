@@ -132,7 +132,7 @@ if is_node_server
     action :create_if_missing
     notifies :run, 'execute[Un-encrypt node certificate tgz files]', :immediately
     notifies :run, 'execute[Extract certificate to Node folder]', :immediately
-    retries 12
+    retries 60
     retry_delay 5
   end
 
