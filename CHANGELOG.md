@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.11
+### Bug
+- General code improvements/MISC issues
+
 ## v2.0.10
 ### Bug
 - Fix issue for upgrade when being a master only (No need to restart Docker)

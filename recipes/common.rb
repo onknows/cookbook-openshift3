@@ -5,14 +5,11 @@
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
-helper = OpenShiftHelper::UtilHelper
 master_servers = server_info.master_servers
-etcd_servers = server_info.etcd_servers
 lb_servers = server_info.lb_servers
 is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
 is_control_plane_server = server_info.on_control_plane_server?
-certificate_server = server_info.certificate_server
 
 include_recipe 'iptables::default'
 include_recipe 'selinux_policy::default'
@@ -112,37 +109,6 @@ if is_node_server || node['cookbook-openshift3']['deploy_containerized']
     notifies :restart, 'service[docker]', :immediately
     notifies :enable, 'service[docker]', :immediately
   end
-end
-
-ruby_block 'Change HTTPD port xfer' do
-  block do
-    http_addresses = [etcd_servers, master_servers, [certificate_server]].each_with_object([]) do |candidate_servers, memo|
-      this_server = candidate_servers.find { |server_candidate| server_candidate['fqdn'] == node['fqdn'] }
-      memo << this_server['ipaddress'] if this_server
-    end.sort.uniq
-
-    openshift_settings = helper.new('/etc/httpd/conf/httpd.conf')
-    openshift_settings.search_file_replace_line(
-      /(^Listen.*?\n)+/m,
-      http_addresses.map { |addr| "Listen #{addr}:#{node['cookbook-openshift3']['httpd_xfer_port']}\n" }.join
-    )
-    openshift_settings.write_file
-  end
-  action :nothing
-  notifies :restart, 'service[httpd]', :immediately
-end
-
-ruby_block 'Modify the AllowOverride options' do
-  block do
-    openshift_settings = helper.new('/etc/httpd/conf/httpd.conf')
-    openshift_settings.search_file_replace_line(
-      /AllowOverride None/,
-      'AllowOverride All'
-    )
-    openshift_settings.write_file
-  end
-  action :nothing
-  notifies :restart, 'service[httpd]', :immediately
 end
 
 package 'httpd' do
