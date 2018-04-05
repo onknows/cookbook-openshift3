@@ -174,7 +174,7 @@ default['is_apaas_openshift_cookbook']['openshift_node_config_file'] = "#{node['
 default['is_apaas_openshift_cookbook']['openshift_node_debug_level'] = '2'
 default['is_apaas_openshift_cookbook']['openshift_node_docker-storage'] = {}
 default['is_apaas_openshift_cookbook']['openshift_node_generated_configs_dir'] = '/var/www/html/node/generated-configs'
-default['is_apaas_openshift_cookbook']['openshift_node_kubelet_args_default'] = { 'max-pods' => '250', 'image-gc-high-threshold' => '90', 'image-gc-low-threshold' => '80' }
+default['is_apaas_openshift_cookbook']['openshift_node_kubelet_args_default'] = {}
 default['is_apaas_openshift_cookbook']['openshift_node_kubelet_args_custom'] = {}
 default['is_apaas_openshift_cookbook']['openshift_node_iptables_sync_period'] = '30s'
 default['is_apaas_openshift_cookbook']['openshift_node_port_range'] = ''
