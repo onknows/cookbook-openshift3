@@ -7,14 +7,13 @@
 server_info = OpenShiftHelper::NodeHelper.new(node)
 is_certificate_server = server_info.on_certificate_server?
 is_master_server = server_info.on_master_server?
-docker_version = node['is_apaas_openshift_cookbook']['openshift_docker_image_version']
 
 if is_certificate_server || is_master_server
   if node['is_apaas_openshift_cookbook']['deploy_containerized']
 
-    docker_image node['is_apaas_openshift_cookbook']['openshift_docker_master_image'] do
-      tag docker_version
-      action :pull_if_missing
+    execute 'Pull CLI docker image' do
+      command "docker pull #{node['is_apaas_openshift_cookbook']['openshift_docker_master_image']}:#{node['is_apaas_openshift_cookbook']['openshift_docker_image_version']}"
+      not_if "docker images  | grep #{node['is_apaas_openshift_cookbook']['openshift_docker_master_image']}.*#{node['is_apaas_openshift_cookbook']['openshift_docker_image_version']}"
     end
 
     bash 'Add CLI to master(s)' do
