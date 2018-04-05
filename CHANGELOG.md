@@ -1,10 +1,6 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
-## v2.0.8
-### Bug
-- Genral code improvements/MISC issues
-
 ## v2.0.7
 ### Improvement 
 - Improve creating PV/PVC
