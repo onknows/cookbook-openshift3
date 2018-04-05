@@ -85,7 +85,7 @@ unless is_certificate_server && node['fqdn'] != first_master['fqdn']
     action :create_if_missing
     notifies :run, 'execute[Un-encrypt master certificate tgz files]', :immediately
     notifies :run, 'execute[Extract certificate to Master folder]', :immediately
-    retries 12
+    retries 60
     retry_delay 5
     sensitive true
   end
@@ -108,7 +108,7 @@ unless is_certificate_server && node['fqdn'] != first_master['fqdn']
     owner 'root'
     group 'root'
     mode '0600'
-    retries 12
+    retries 60
     retry_delay 5
     sensitive true
   end
@@ -265,7 +265,7 @@ unless is_certificate_server
     action :create_if_missing
     notifies :run, 'execute[Un-encrypt master certificate master tgz files]', :immediately
     notifies :run, 'execute[Extract master certificate to Master folder]', :immediately
-    retries 12
+    retries 60
     retry_delay 5
     sensitive true
   end
