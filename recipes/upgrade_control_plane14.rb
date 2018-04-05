@@ -107,7 +107,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
     log 'Restart Master & Node services' do
       level :info
-      notifies :restart, 'service[docker]', :immediately
+      notifies :restart, 'service[docker]', :immediately if is_node_server || node['cookbook-openshift3']['deploy_containerized']
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
