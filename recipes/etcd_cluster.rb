@@ -165,8 +165,8 @@ if is_etcd_server
 
   remote_file "#{node['is_apaas_openshift_cookbook']['etcd_conf_dir']}/ca.crt" do
     source "http://#{certificate_server['ipaddress']}:#{node['is_apaas_openshift_cookbook']['httpd_xfer_port']}/etcd/ca.crt"
-    retries 15
-    retry_delay 2
+    retries 60
+    retry_delay 5
     sensitive true
   end
 
@@ -176,7 +176,7 @@ if is_etcd_server
     action :create_if_missing
     notifies :run, 'execute[Un-encrypt etcd certificate tgz files]', :immediately
     notifies :run, 'execute[Extract certificate to ETCD folder]', :immediately
-    retries 12
+    retries 60
     retry_delay 5
   end
 
