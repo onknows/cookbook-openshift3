@@ -7,6 +7,7 @@
 server_info = OpenShiftHelper::NodeHelper.new(node)
 helper = OpenShiftHelper::UtilHelper
 etcd_servers = server_info.etcd_servers
+master_servers = server_info.master_servers
 certificate_server = server_info.certificate_server
 
 service 'atomic-openshift-master'
