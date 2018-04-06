@@ -18,6 +18,7 @@ if defined? node['is_apaas_openshift_cookbook']['upgrade_repos']
 end
 
 include_recipe 'yum::default'
+include_recipe 'is_apaas_openshift_cookbook::packages'
 
 if is_master_server || is_node_server
   %w(excluder docker-excluder).each do |pkg|
@@ -45,7 +46,6 @@ if is_etcd_server
   end
 
   include_recipe 'is_apaas_openshift_cookbook'
-  include_recipe 'is_apaas_openshift_cookbook::common'
   include_recipe 'is_apaas_openshift_cookbook::etcd_cluster'
 
   execute 'Generate etcd backup after upgrade' do
