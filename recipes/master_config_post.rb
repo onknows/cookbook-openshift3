@@ -17,6 +17,15 @@ execute 'Check Master API' do
 end
 
 service_accounts.each do |serviceaccount|
+  execute "Creation of namespace \"#{serviceaccount['namespace']}\"" do
+    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} adm new-project ${namespace} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
+    environment(
+      'namespace' => serviceaccount['namespace']
+    )
+    cwd node['cookbook-openshift3']['openshift_master_config_dir']
+    not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} get project #{serviceaccount['namespace']} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
+  end
+
   execute "Creation service account: \"#{serviceaccount['name']}\" ; Namespace: \"#{serviceaccount['namespace']}\"" do
     command "#{node['cookbook-openshift3']['openshift_common_client_binary']} create sa ${serviceaccount} -n ${namespace} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
     environment(

@@ -1,6 +1,11 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.13
+### Bug
+- Fix race condition for certs
+- Fix issue when deploying hosted services outside of the default project
+
 ## v2.0.12
 ### Bug
 - General code improvements/MISC issues
