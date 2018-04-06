@@ -34,6 +34,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   end
 
   include_recipe 'yum::default'
+  include_recipe 'cookbook-openshift3::packages'
 
   if is_master_server || is_node_server
     %w(excluder docker-excluder).each do |pkg|
@@ -61,7 +62,6 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     end
 
     include_recipe 'cookbook-openshift3'
-    include_recipe 'cookbook-openshift3::common'
     include_recipe 'cookbook-openshift3::etcd_cluster'
 
     execute 'Generate etcd backup after upgrade' do

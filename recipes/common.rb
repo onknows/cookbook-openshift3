@@ -11,6 +11,7 @@ is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
 is_control_plane_server = server_info.on_control_plane_server?
 
+include_recipe 'cookbook-openshift3::packages'
 include_recipe 'iptables::default'
 include_recipe 'selinux_policy::default'
 
