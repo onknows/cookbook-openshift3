@@ -7,7 +7,7 @@ issues_url 'https://github.com/IshentRas/cookbook-openshift3/issues'
 description 'Installs/Configures Openshift 3.x (>= 3.3)'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 chef_version '>= 12.4' if respond_to?(:chef_version)
-version '2.0.14'
+version '2.0.15'
 supports 'redhat', '>= 7.1'
 supports 'centos', '>= 7.1'
 
@@ -24,6 +24,7 @@ recipe 'cookbook-openshift3::cloud_provider', 'Configure cloud providers'
 recipe 'cookbook-openshift3::common', 'Apply common packages'
 recipe 'cookbook-openshift3::commons', 'Apply common logic'
 recipe 'cookbook-openshift3::default', 'Default recipe'
+recipe 'cookbook-openshift3::docker', 'Install/Configure docker service'
 recipe 'cookbook-openshift3::etcd_cluster', 'Configure ETCD cluster'
 recipe 'cookbook-openshift3::excluder', 'Install/Configure the excluder packages'
 recipe 'cookbook-openshift3::master_cluster', 'Configure HA cluster master (Only Native method)'

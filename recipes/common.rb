@@ -12,6 +12,7 @@ is_node_server = server_info.on_node_server?
 is_control_plane_server = server_info.on_control_plane_server?
 
 include_recipe 'cookbook-openshift3::packages'
+include_recipe 'cookbook-openshift3::docker'
 include_recipe 'iptables::default'
 include_recipe 'selinux_policy::default'
 
@@ -55,21 +56,6 @@ if !lb_servers.nil? && lb_servers.find { |lb| lb['fqdn'] == node['fqdn'] }
   end
 end
 
-if node['cookbook-openshift3']['install_method'].eql? 'yum'
-  node['cookbook-openshift3']['yum_repositories'].each do |repo|
-    yum_repository repo['name'] do
-      description "#{repo['name'].capitalize} aPaaS Repository"
-      baseurl repo['baseurl']
-      gpgcheck repo['gpgcheck'] if repo.key?(:gpgcheck) && !repo['gpgcheck'].nil?
-      gpgkey repo['gpgkey'] if repo.key?(:gpgkey) && !repo['gpgkey'].nil?
-      sslverify repo['sslverify'] if repo.key?(:sslverify) && !repo['sslverify'].nil?
-      exclude repo['exclude'] if repo.key?(:exclude) && !repo['exclude'].nil?
-      enabled repo['enabled'] if repo.key?(:enabled) && !repo['enabled'].nil?
-      action :create
-    end
-  end
-end
-
 service 'firewalld' do
   action %i(stop disable)
 end
@@ -81,34 +67,6 @@ end
 node['cookbook-openshift3']['core_packages'].each do |pkg|
   package pkg do
     retries 3
-  end
-end
-
-if is_node_server || node['cookbook-openshift3']['deploy_containerized']
-  yum_package 'docker' do
-    action :upgrade if node['cookbook-openshift3']['upgrade']
-    version node['cookbook-openshift3']['docker_version'] unless node['cookbook-openshift3']['docker_version'].nil?
-    retries 3
-    notifies :restart, 'service[docker]', :immediately if node['cookbook-openshift3']['upgrade']
-  end
-
-  bash "Configure Docker to use the default FS type for #{node['fqdn']}" do
-    code <<-BASH
-      correct_fs=$(df -T /var | egrep -o 'xfs|ext4')
-      sed -i "s/xfs/$correct_fs/" /usr/bin/docker-storage-setup
-    BASH
-    not_if "grep $(df -T /var | egrep -o 'xfs|ext4') /usr/bin/docker-storage-setup"
-    timeout 60
-  end
-
-  template '/etc/sysconfig/docker-storage-setup' do
-    source 'docker-storage.erb'
-  end
-
-  template '/etc/sysconfig/docker' do
-    source 'service_docker.sysconfig.erb'
-    notifies :restart, 'service[docker]', :immediately
-    notifies :enable, 'service[docker]', :immediately
   end
 end
 

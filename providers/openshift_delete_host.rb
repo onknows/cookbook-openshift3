@@ -115,8 +115,16 @@ action :delete do
     Mixlib::ShellOut.new('systemctl daemon-reload').run_command
 
     service 'docker' do
-      action :start
-      only_if { node['cookbook-openshift3']['deploy_containerized'] }
+      action :restart
+    end
+
+    service 'iptables' do
+      action :restart
+    end
+
+    execute '/usr/sbin/rebuild-iptables' do
+      retry_delay 10
+      retries 3
     end
   end
 end

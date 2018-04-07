@@ -95,24 +95,13 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
       include_recipe 'cookbook-openshift3::master_standalone'
     end
 
-    include_recipe 'cookbook-openshift3::node' if is_node_server
-
     include_recipe 'cookbook-openshift3::excluder'
 
-    file 'Remove obsolete docker-sdn-ovs.conf' do
-      path '/etc/systemd/system/docker.service.d/docker-sdn-ovs.conf'
-      action :delete
-      notifies :run, 'execute[daemon-reload]', :immediately
-    end
-
-    log 'Restart Master & Node services' do
+    log 'Restart Master services' do
       level :info
-      notifies :restart, 'service[docker]', :immediately if is_node_server || node['cookbook-openshift3']['deploy_containerized']
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately if is_node_server
-      notifies :restart, 'service[openvswitch]', :immediately if is_node_server
     end
 
     execute "Set upgrade markup for master : #{node['fqdn']}" do
@@ -169,5 +158,6 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     end
 
     include_recipe 'cookbook-openshift3::upgrade_managed_hosted'
+    include_recipe 'cookbook-openshift3::upgrade_node14' if is_node_server
   end
 end

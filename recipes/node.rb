@@ -108,7 +108,6 @@ if is_node_server
     options node['cookbook-openshift3']['yum_options'] unless node['cookbook-openshift3']['yum_options'].nil?
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
     retries 3
-    notifies :restart, 'service[Restart Node]', :immediately unless node['cookbook-openshift3']['upgrade']
   end
 
   package "#{node['cookbook-openshift3']['openshift_service_type']}-sdn-ovs" do
@@ -236,8 +235,8 @@ if is_node_server
       kubelet_args: node['cookbook-openshift3']['openshift_node_kubelet_args_default'].merge(node['cookbook-openshift3']['openshift_node_kubelet_args_custom'])
     )
     notifies :run, 'execute[daemon-reload]', :immediately
-    notifies :restart, 'service[Restart Node]', :immediately unless node['cookbook-openshift3']['upgrade']
-    notifies :enable, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
+    notifies :restart, 'service[Restart Node]', :immediately
+    notifies :enable, "systemd_unit[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
   end
 
   selinux_policy_boolean 'virt_use_nfs' do
@@ -248,11 +247,7 @@ if is_node_server
     command "[[ $(curl --silent #{node['cookbook-openshift3']['openshift_master_api_url']}/healthz/ready --cacert #{node['cookbook-openshift3']['openshift_node_config_dir']}/ca.crt) =~ \"ok\" ]]"
     retries 120
     retry_delay 1
-  end
-
-  service "#{node['cookbook-openshift3']['openshift_service_type']}-node" do
-    retries 5
-    retry_delay 2
-    action :start
+    notifies :start, 'service[Restart Node]', :immediately unless node['cookbook-openshift3']['upgrade'] && node['cookbook-openshift3']['deploy_containerized']
+    notifies :restart, 'service[Restart Node]', :immediately if node['cookbook-openshift3']['upgrade'] && node['cookbook-openshift3']['deploy_containerized']
   end
 end

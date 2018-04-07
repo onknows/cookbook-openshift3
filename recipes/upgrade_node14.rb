@@ -26,6 +26,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   end
 
   include_recipe 'yum::default'
+  include_recipe 'cookbook-openshift3::packages'
 
   if is_node_server
     log 'Upgrade for NODE [STARTED]' do
@@ -40,8 +41,8 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     end
 
     include_recipe 'cookbook-openshift3'
-    include_recipe 'cookbook-openshift3::common'
     include_recipe 'cookbook-openshift3::node'
+    include_recipe 'cookbook-openshift3::docker'
     include_recipe 'cookbook-openshift3::excluder'
 
     file 'Remove obsolete docker-sdn-ovs.conf' do
@@ -52,8 +53,6 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
     log 'Node services' do
       level :info
-      notifies :restart, 'service[docker]', :immediately
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately
       notifies :restart, 'service[openvswitch]', :immediately
     end
 

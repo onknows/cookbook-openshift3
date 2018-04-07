@@ -58,7 +58,13 @@ end
 service 'Restart Node' do
   service_name "#{node['cookbook-openshift3']['openshift_service_type']}-node"
   action :nothing
-  only_if "systemctl is-active #{node['cookbook-openshift3']['openshift_service_type']}-node"
+  only_if "systemctl is-enabled #{node['cookbook-openshift3']['openshift_service_type']}-node"
+  retries 5
+  retry_delay 2
+end
+
+systemd_unit "#{node['cookbook-openshift3']['openshift_service_type']}-node" do
+  action :nothing
 end
 
 if node['cookbook-openshift3']['deploy_containerized']
@@ -101,5 +107,5 @@ ruby_block 'Modify the AllowOverride options' do
     openshift_settings.write_file
   end
   action :nothing
-  notifies :restart, 'service[httpd]', :immediately
+  notifies :reload, 'service[httpd]', :immediately
 end

@@ -1,6 +1,11 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.15
+### Improvement
+- Improve the general experience during upgrades
+- Restarts of services are aligned with activities (upgrade/intall)
+
 ## v2.0.14
 ### Bug
 - Fix issue during upgrade when master are separated from ETCD
