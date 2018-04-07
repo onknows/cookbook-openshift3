@@ -110,7 +110,7 @@ default['is_apaas_openshift_cookbook']['openshift_docker_insecure_registries'] =
 default['is_apaas_openshift_cookbook']['openshift_docker_master_image'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/ose' : 'openshift/origin'
 default['is_apaas_openshift_cookbook']['openshift_docker_node_image'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/node' : 'openshift/node'
 default['is_apaas_openshift_cookbook']['openshift_docker_ovs_image'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/openvswitch' : 'openshift/openvswitch'
-default['is_apaas_openshift_cookbook']['openshift_docker_etcd_image'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'registry.access.redhat.com/rhel7/etcd' : 'registry.fedoraproject.org/f26/etcd'
+default['is_apaas_openshift_cookbook']['openshift_docker_etcd_image'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'registry.access.redhat.com/rhel7/etcd' : 'registry.fedoraproject.org/f27/etcd'
 default['is_apaas_openshift_cookbook']['openshift_master_config_dir'] = "#{node['is_apaas_openshift_cookbook']['openshift_common_master_dir']}/master"
 default['is_apaas_openshift_cookbook']['openshift_master_bind_addr'] = '0.0.0.0'
 default['is_apaas_openshift_cookbook']['openshift_master_auditconfig'] = { 'enable' => false }
@@ -190,6 +190,8 @@ default['is_apaas_openshift_cookbook']['openshift_node_image_gc_low_threshold'] 
 default['is_apaas_openshift_cookbook']['openshift_node_cadvisor_port'] = nil # usually set to '4194'
 default['is_apaas_openshift_cookbook']['openshift_node_read_only_port'] = nil # usually set to '10255'
 
+default['is_apaas_openshift_cookbook']['openshift_hosted_deploy_custom_router'] = false
+default['is_apaas_openshift_cookbook']['openshift_hosted_deploy_custom_router_file'] = ''
 default['is_apaas_openshift_cookbook']['openshift_hosted_manage_router'] = true
 default['is_apaas_openshift_cookbook']['openshift_hosted_router_selector'] = 'region=infra'
 default['is_apaas_openshift_cookbook']['openshift_hosted_router_namespace'] = 'default'

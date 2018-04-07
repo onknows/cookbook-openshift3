@@ -108,7 +108,6 @@ ersion']}"
     options node['is_apaas_openshift_cookbook']['yum_options'] unless node['is_apaas_openshift_cookbook']['yum_options'].nil?
     not_if { node['is_apaas_openshift_cookbook']['deploy_containerized'] }
     retries 3
-    notifies :restart, 'service[Restart Node]', :immediately unless node['is_apaas_openshift_cookbook']['upgrade']
   end
 
   package 'atomic-openshift-sdn-ovs' do
@@ -236,8 +235,8 @@ ersion']}"
       kubelet_args: node['is_apaas_openshift_cookbook']['openshift_node_kubelet_args_default'].merge(node['is_apaas_openshift_cookbook']['openshift_node_kubelet_args_custom'])
     )
     notifies :run, 'execute[daemon-reload]', :immediately
-    notifies :restart, 'service[Restart Node]', :immediately unless node['is_apaas_openshift_cookbook']['upgrade']
-    notifies :enable, 'service[atomic-openshift-node]', :immediately
+    notifies :restart, 'service[Restart Node]', :immediately
+    notifies :enable, 'systemd_unit[atomic-openshift-node]', :immediately
   end
 
   selinux_policy_boolean 'virt_use_nfs' do
@@ -248,11 +247,7 @@ ersion']}"
     command "[[ $(curl --silent #{node['is_apaas_openshift_cookbook']['openshift_master_api_url']}/healthz/ready --cacert #{node['is_apaas_openshift_cookbook']['openshift_node_config_dir']}/ca.crt) =~ \"ok\" ]]"
     retries 120
     retry_delay 1
-  end
-
-  service 'atomic-openshift-node' do
-    retries 5
-    retry_delay 2
-    action :start
+    notifies :start, 'service[Restart Node]', :immediately unless node['is_apaas_openshift_cookbook']['upgrade'] && node['is_apaas_openshift_cookbook']['deploy_containerized']
+    notifies :restart, 'service[Restart Node]', :immediately if node['is_apaas_openshift_cookbook']['upgrade'] && node['is_apaas_openshift_cookbook']['deploy_containerized']
   end
 end

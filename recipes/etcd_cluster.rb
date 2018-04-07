@@ -48,8 +48,15 @@ if is_certificate_server
   end
 
   file "#{node['is_apaas_openshift_cookbook']['etcd_ca_dir']}/serial" do
-    content '01'
     action :create_if_missing
+    mode '0644'
+    notifies :create, 'file[Initialise ETCD CA Serial]', :immediately
+  end
+
+  file 'Initialise ETCD CA Serial' do
+    path "#{node['is_apaas_openshift_cookbook']['etcd_ca_dir']}/serial"
+    content '01'
+    action :nothing
   end
 
   execute "ETCD Generate CA certificate for #{node['fqdn']}" do
@@ -72,7 +79,6 @@ if is_certificate_server
     group 'apache'
     source 'access-htaccess.erb'
     notifies :run, 'ruby_block[Modify the AllowOverride options]', :immediately
-    notifies :restart, 'service[httpd]', :immediately
     variables(servers: etcd_servers)
   end
 

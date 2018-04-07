@@ -58,7 +58,13 @@ end
 service 'Restart Node' do
   service_name 'atomic-openshift-node'
   action :nothing
-  only_if 'systemctl is-active atomic-openshift-node'
+  only_if 'systemctl is-enabled atomic-openshift-node'
+  retries 5
+  retry_delay 2
+end
+
+systemd_unit 'atomic-openshift-node' do
+  action :nothing
 end
 
 if node['is_apaas_openshift_cookbook']['deploy_containerized']
@@ -101,5 +107,5 @@ ruby_block 'Modify the AllowOverride options' do
     openshift_settings.write_file
   end
   action :nothing
-  notifies :restart, 'service[httpd]', :immediately
+  notifies :reload, 'service[httpd]', :immediately
 end

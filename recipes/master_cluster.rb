@@ -40,7 +40,6 @@ if is_certificate_server
     group 'apache'
     source 'access-htaccess.erb'
     notifies :run, 'ruby_block[Modify the AllowOverride options]', :immediately
-    notifies :restart, 'service[httpd]', :immediately
     variables(servers: master_servers)
   end
 
@@ -140,9 +139,15 @@ if is_certificate_server
     end
 
     file "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/ca.serial.txt" do
-      content '00'
-      mode '0644'
       action :create_if_missing
+      mode '0644'
+      notifies :create, 'file[Initialise Master CA Serial]', :immediately
+    end
+
+    file 'Initialise Master CA Serial' do
+      path "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/ca.serial.txt"
+      content '00'
+      action :nothing
     end
   end
 

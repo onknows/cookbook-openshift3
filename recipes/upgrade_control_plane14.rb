@@ -95,24 +95,13 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
       include_recipe 'is_apaas_openshift_cookbook::master_standalone'
     end
 
-    include_recipe 'is_apaas_openshift_cookbook::node' if is_node_server
-
     include_recipe 'is_apaas_openshift_cookbook::excluder'
 
-    file 'Remove obsolete docker-sdn-ovs.conf' do
-      path '/etc/systemd/system/docker.service.d/docker-sdn-ovs.conf'
-      action :delete
-      notifies :run, 'execute[daemon-reload]', :immediately
-    end
-
-    log 'Restart Master & Node services' do
+    log 'Restart Master services' do
       level :info
-      notifies :restart, 'service[docker]', :immediately if is_node_server || node['is_apaas_openshift_cookbook']['deploy_containerized']
       notifies :restart, 'service[atomic-openshift-master]', :immediately unless node['is_apaas_openshift_cookbook']['openshift_HA']
       notifies :restart, 'service[atomic-openshift-master-api]', :immediately if node['is_apaas_openshift_cookbook']['openshift_HA']
       notifies :restart, 'service[atomic-openshift-master-controllers]', :immediately if node['is_apaas_openshift_cookbook']['openshift_HA']
-      notifies :restart, 'service[atomic-openshift-node]', :immediately if is_node_server
-      notifies :restart, 'service[openvswitch]', :immediately if is_node_server
     end
 
     execute "Set upgrade markup for master : #{node['fqdn']}" do
@@ -169,5 +158,6 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
     end
 
     include_recipe 'is_apaas_openshift_cookbook::upgrade_managed_hosted'
+    include_recipe 'is_apaas_openshift_cookbook::upgrade_node14' if is_node_server
   end
 end

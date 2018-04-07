@@ -55,5 +55,34 @@ action :create do
       cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
       not_if "[[ `#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} get pod --selector=router=router --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig --no-headers | wc -l` -eq ${replica_number} ]]"
     end
+
+    if node['is_apaas_openshift_cookbook']['openshift_hosted_deploy_custom_router'] && ::File.exist?(node['is_apaas_openshift_cookbook']['openshift_hosted_deploy_custom_router_file'])
+      execute 'Create ConfigMap of the customised Hosted Router' do
+        command "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} create configmap customrouter --from-file=haproxy-config.template=#{node['is_apaas_openshift_cookbook']['openshift_hosted_deploy_custom_router_file']} -n ${namespace_router} --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig"
+        environment(
+          'namespace_router' => node['is_apaas_openshift_cookbook']['openshift_hosted_router_namespace']
+        )
+        cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
+        not_if "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} get configmap customrouter -n ${namespace_router} --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig"
+      end
+
+      execute 'Set ENV TEMPLATE_FILE for customised Hosted Router' do
+        command "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} set env dc/router TEMPLATE_FILE=/var/lib/haproxy/conf/custom/haproxy-config.template -n ${namespace_router} --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig"
+        environment(
+          'namespace_router' => node['is_apaas_openshift_cookbook']['openshift_hosted_router_namespace']
+        )
+        cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
+        not_if "[[ `#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} env dc/router --list -n ${namespace_router} --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig` =~ \"TEMPLATE_FILE=/var/lib/haproxy/conf/custom/haproxy-config.template\" ]]"
+      end
+
+      execute 'Set Volume for customised Hosted Router' do
+        command "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} volume dc/router --add --overwrite --name=config-volume --mount-path=/var/lib/haproxy/conf/custom --type=configmap --configmap-name=customrouter -n ${namespace_router} --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig"
+        environment(
+          'namespace_router' => node['is_apaas_openshift_cookbook']['openshift_hosted_router_namespace']
+        )
+        cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
+        not_if "[[ `#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} get -o template dc/router --template={{.spec.template.spec.volumes}} -n ${namespace_router} --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig` =~ \"config-volume\" ]]"
+      end
+    end
   end
 end

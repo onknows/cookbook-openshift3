@@ -23,9 +23,15 @@ if node['is_apaas_openshift_cookbook']['openshift_master_ca_certificate']['data_
   end
 
   file "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/ca.serial.txt" do
-    content '00'
-    mode '0644'
     action :create_if_missing
+    mode '0644'
+    notifies :create, 'file[Initialise Master CA Serial]', :immediately
+  end
+
+  file 'Initialise Master CA Serial' do
+    path "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/ca.serial.txt"
+    content '00'
+    action :nothing
   end
 end
 

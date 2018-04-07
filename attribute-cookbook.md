@@ -168,6 +168,8 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['is_apaas_openshift_cookbook']['openshift_node_image_gc_low_threshold']` -  Defaults to `80`. (Deprecated use `openshift_node_kubelet_args_custom`)
 * `node['is_apaas_openshift_cookbook']['openshift_node_cadvisor_port']` -  Defaults to `nil`.
 * `node['is_apaas_openshift_cookbook']['openshift_node_read_only_port']` -  Defaults to `nil`.
+* `node['is_apaas_openshift_cookbook']['openshift_hosted_deploy_custom_router']` - Defaults to `false`.
+* `node['is_apaas_openshift_cookbook']['openshift_hosted_deploy_custom_router_file']` - Defaults to `""`.
 * `node['is_apaas_openshift_cookbook']['openshift_hosted_manage_router']` -  Defaults to `true`.
 * `node['is_apaas_openshift_cookbook']['openshift_hosted_router_selector']` -  Defaults to `region=infra`.
 * `node['is_apaas_openshift_cookbook']['openshift_hosted_router_namespace']` -  Defaults to `default`.

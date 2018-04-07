@@ -25,6 +25,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
   end
 
   include_recipe 'yum::default'
+  include_recipe 'is_apaas_openshift_cookbook::packages'
 
   if is_node_server
     log 'Upgrade for NODE [STARTED]' do
@@ -40,11 +41,11 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
     include_recipe 'is_apaas_openshift_cookbook'
     include_recipe 'is_apaas_openshift_cookbook::common'
     include_recipe 'is_apaas_openshift_cookbook::node'
+    include_recipe 'is_apaas_openshift_cookbook::docker'
     include_recipe 'is_apaas_openshift_cookbook::excluder'
 
     log 'Node services' do
       level :info
-      notifies :restart, 'service[atomic-openshift-node]', :immediately
       notifies :restart, 'service[openvswitch]', :immediately
     end
 

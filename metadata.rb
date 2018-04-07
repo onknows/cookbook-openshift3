@@ -7,7 +7,7 @@ issues_url 'https://github.com/IshentRas/is_apaas_openshift_cookbook/issues'
 description 'Installs/Configures Openshift 3.x (>= 3.3)'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 chef_version '>= 12.4' if respond_to?(:chef_version)
-version '2.0.14'
+version '2.0.15'
 supports 'redhat', '>= 7.1'
 supports 'centos', '>= 7.1'
 
@@ -24,6 +24,7 @@ recipe 'is_apaas_openshift_cookbook::cloud_provider', 'Configure cloud providers
 recipe 'is_apaas_openshift_cookbook::common', 'Apply common packages'
 recipe 'is_apaas_openshift_cookbook::commons', 'Apply common logic'
 recipe 'is_apaas_openshift_cookbook::default', 'Default recipe'
+recipe 'is_apaas_openshift_cookbook::docker', 'Install/Configure docker service'
 recipe 'is_apaas_openshift_cookbook::etcd_cluster', 'Configure ETCD cluster'
 recipe 'is_apaas_openshift_cookbook::excluder', 'Install/Configure the excluder packages'
 recipe 'is_apaas_openshift_cookbook::master_cluster', 'Configure HA cluster master (Only Native method)'

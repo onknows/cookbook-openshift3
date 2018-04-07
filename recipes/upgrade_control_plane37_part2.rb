@@ -66,17 +66,14 @@ if is_master_server
 
   include_recipe 'is_apaas_openshift_cookbook::master_cluster'
 
-  include_recipe 'is_apaas_openshift_cookbook::node' if is_node_server
-
   include_recipe 'is_apaas_openshift_cookbook::excluder'
 
-  log 'Restart Master & Node services' do
+  log 'Restart Master services' do
     level :info
     notifies :restart, 'service[atomic-openshift-master]', :immediately unless node['is_apaas_openshift_cookbook']['openshift_HA']
     notifies :restart, 'service[atomic-openshift-master-api]', :immediately if node['is_apaas_openshift_cookbook']['openshift_HA']
     notifies :restart, 'service[atomic-openshift-master-controllers]', :immediately if node['is_apaas_openshift_cookbook']['openshift_HA']
     notifies :restart, 'service[atomic-openshift-node]', :immediately if is_node_server
-    notifies :restart, 'service[openvswitch]', :immediately if is_node_server
   end
 
   execute "Set upgrade markup for master : #{node['fqdn']}" do
@@ -143,3 +140,4 @@ if is_master_server
 end
 
 include_recipe 'is_apaas_openshift_cookbook::upgrade_managed_hosted' if is_master_server && is_first_master
+include_recipe 'is_apaas_openshift_cookbook::upgrade_node37' if is_node_server
