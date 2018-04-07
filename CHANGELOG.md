@@ -5,6 +5,7 @@ This file is used to list changes made in each version of the Openshift 3 cookbo
 ### Improvement
 - Improve the general experience during upgrades
 - Restarts of services are aligned with activities (upgrade/intall)
+- Give the possibility for deploying custom router (openshift_hosted_deploy_custom_router)
 
 ## v2.0.14
 ### Bug

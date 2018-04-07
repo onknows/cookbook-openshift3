@@ -190,6 +190,8 @@ default['cookbook-openshift3']['openshift_node_image_gc_low_threshold'] = ''
 default['cookbook-openshift3']['openshift_node_cadvisor_port'] = nil # usually set to '4194'
 default['cookbook-openshift3']['openshift_node_read_only_port'] = nil # usually set to '10255'
 
+default['cookbook-openshift3']['openshift_hosted_deploy_custom_router'] = false
+default['cookbook-openshift3']['openshift_hosted_deploy_custom_router_file'] = ''
 default['cookbook-openshift3']['openshift_hosted_manage_router'] = true
 default['cookbook-openshift3']['openshift_hosted_router_selector'] = 'region=infra'
 default['cookbook-openshift3']['openshift_hosted_router_namespace'] = 'default'
