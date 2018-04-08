@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.16
+### Bug
+- Fix issue during uninstall when server has not got docker installed
+
 ## v2.0.15
 ### Improvement
 - Improve the general experience during upgrades

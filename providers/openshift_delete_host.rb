@@ -14,6 +14,7 @@ end
 action :delete do
   converge_by 'Uninstalling OpenShift' do
     helper = OpenShiftHelper::NodeHelper.new(node)
+    is_node_server = helper.on_node_server?
 
     service "#{node['cookbook-openshift3']['openshift_service_type']}-node" do
       action %i(stop disable)
@@ -57,7 +58,7 @@ action :delete do
 
     service 'docker' do
       action :stop
-      only_if { node['cookbook-openshift3']['deploy_containerized'] }
+      only_if { is_node_server || node['cookbook-openshift3']['deploy_containerized'] }
     end
 
     Mixlib::ShellOut.new('systemctl reset-failed').run_command
@@ -116,9 +117,10 @@ action :delete do
 
     service 'docker' do
       action :restart
+      only_if { is_node_server || node['cookbook-openshift3']['deploy_containerized'] }
     end
 
-    service 'iptables' do
+    systemd_unit 'iptables' do
       action :restart
     end
 
