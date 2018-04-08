@@ -1,3 +1,4 @@
 git checkout stash -- .
 git apply utils/docker-atomic.patch
 git rm -rf files/default/openshift_examples
+git add .
