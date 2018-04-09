@@ -45,8 +45,7 @@ if is_node_server
 
   if node['is_apaas_openshift_cookbook']['deploy_containerized']
     execute 'Pull NODE docker image' do
-      command "docker pull #{node['is_apaas_openshift_cookbook']['openshift_docker_node_image']}:#{node['is_apaas_openshift_cookbook']['openshift_docker_image_v
-ersion']}"
+      command "docker pull #{node['is_apaas_openshift_cookbook']['openshift_docker_node_image']}:#{node['is_apaas_openshift_cookbook']['openshift_docker_image_version']}"
       not_if "docker images  | grep #{node['is_apaas_openshift_cookbook']['openshift_docker_node_image']}.*#{node['is_apaas_openshift_cookbook']['openshift_docker_image_version']}"
     end
 
