@@ -25,7 +25,7 @@ try {
           sh 'git clone --recursive --depth 1 https://github.com/ianmiell/shutit-openshift-cluster || (cd shutit-openshift-cluster && git pull)'
           dir('shutit-openshift-cluster') {
             withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
-              sh './run_tests.sh -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_13_14 true --interactive 0'
+              sh './run_tests.sh -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_13_14 true -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_14_15 true -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_15_36 true -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_36_37 true --interactive 0'
             }
           }
         }
