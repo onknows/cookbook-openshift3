@@ -56,6 +56,19 @@ action :create do
       not_if "[[ `#{node['cookbook-openshift3']['openshift_common_client_binary']} get pod --selector=router=router --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig --no-headers | wc -l` -eq ${replica_number} ]]"
     end
 
+    unless node['cookbook-openshift3']['openshift_hosted_deploy_env_router'].empty?
+      node['cookbook-openshift3']['openshift_hosted_deploy_env_router'].each do |env|
+        execute "Set ENV \"#{env.upcase}\" for Hosted Router" do
+          command "#{node['cookbook-openshift3']['openshift_common_client_binary']} set env dc/router #{env} -n ${namespace_router} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
+          environment(
+            'namespace_router' => node['cookbook-openshift3']['openshift_hosted_router_namespace']
+          )
+          cwd node['cookbook-openshift3']['openshift_master_config_dir']
+          not_if "[[ `#{node['cookbook-openshift3']['openshift_common_client_binary']} env dc/router --list -n ${namespace_router} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig` =~ \"#{env}\" ]]"
+        end
+      end
+    end
+
     if node['cookbook-openshift3']['openshift_hosted_deploy_custom_router'] && ::File.exist?(node['cookbook-openshift3']['openshift_hosted_deploy_custom_router_file'])
       execute 'Create ConfigMap of the customised Hosted Router' do
         command "#{node['cookbook-openshift3']['openshift_common_client_binary']} create configmap customrouter --from-file=haproxy-config.template=#{node['cookbook-openshift3']['openshift_hosted_deploy_custom_router_file']} -n ${namespace_router} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"

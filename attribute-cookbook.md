@@ -168,6 +168,7 @@ Installs/Configures Openshift 3.x (>= 3.2)
 * `node['cookbook-openshift3']['openshift_node_image_gc_low_threshold']` -  Defaults to `80`. (Deprecated use `openshift_node_kubelet_args_custom`)
 * `node['cookbook-openshift3']['openshift_node_cadvisor_port']` -  Defaults to `nil`.
 * `node['cookbook-openshift3']['openshift_node_read_only_port']` -  Defaults to `nil`.
+* `node['cookbook-openshift3']['openshift_hosted_deploy_env_router']` - Defaults to `[]`.
 * `node['cookbook-openshift3']['openshift_hosted_deploy_custom_router']` - Defaults to `false`.
 * `node['cookbook-openshift3']['openshift_hosted_deploy_custom_router_file']` - Defaults to `""`.
 * `node['cookbook-openshift3']['openshift_hosted_manage_router']` -  Defaults to `true`.

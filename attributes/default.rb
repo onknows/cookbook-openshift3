@@ -192,6 +192,7 @@ default['cookbook-openshift3']['openshift_node_read_only_port'] = nil # usually 
 
 default['cookbook-openshift3']['openshift_hosted_deploy_custom_router'] = false
 default['cookbook-openshift3']['openshift_hosted_deploy_custom_router_file'] = ''
+default['cookbook-openshift3']['openshift_hosted_deploy_env_router'] = []
 default['cookbook-openshift3']['openshift_hosted_manage_router'] = true
 default['cookbook-openshift3']['openshift_hosted_router_selector'] = 'region=infra'
 default['cookbook-openshift3']['openshift_hosted_router_namespace'] = 'default'
