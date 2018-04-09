@@ -12,7 +12,7 @@ def whyrun_supported?
 end
 
 action :create do
-  converge_by 'Deploy Router' do
+  converge_by "Deploy Router on #{node['fqdn']}" do
     execute 'Annotate Hosted Router Project' do
       command "#{node['cookbook-openshift3']['openshift_common_client_binary']} annotate --overwrite namespace/${namespace_router} openshift.io/node-selector=${selector_router}"
       environment(
