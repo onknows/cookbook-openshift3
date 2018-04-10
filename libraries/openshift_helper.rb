@@ -70,7 +70,7 @@ module OpenShiftHelper
     end
 
     def on_certificate_server?
-      certificate_server['fqdn'] == node['fqdn']
+      certificate_server.find { |server_certificate| server_certificate['fqdn'] == node['fqdn'] }
     end
 
     def on_control_plane_server?
