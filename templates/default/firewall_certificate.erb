@@ -1,0 +1,1 @@
+-A OS_FIREWALL_ALLOW -m state --state NEW,ESTABLISHED -m comment --comment "OpenShift HTTPD" -m tcp -p tcp --dport <%= node['cookbook-openshift3']['httpd_xfer_port'] %> -j ACCEPT

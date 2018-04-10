@@ -61,6 +61,7 @@ default['cookbook-openshift3']['httpd_xfer_port'] = '9999'
 default['cookbook-openshift3']['core_packages'] = %w(libselinux-python wget vim-enhanced net-tools bind-utils git bash-completion dnsmasq yum-utils)
 default['cookbook-openshift3']['osn_cluster_dns_domain'] = 'cluster.local'
 default['cookbook-openshift3']['osn_cluster_dns_ip'] = node['ipaddress']
+default['cookbook-openshift3']['enabled_firewall_rules_certificate'] = %w(firewall_certificate)
 default['cookbook-openshift3']['enabled_firewall_rules_master'] = %w(firewall_master)
 default['cookbook-openshift3']['enabled_firewall_rules_master_cluster'] = %w(firewall_master_cluster)
 default['cookbook-openshift3']['enabled_firewall_rules_node'] = %w(firewall_node)
@@ -209,6 +210,7 @@ default['cookbook-openshift3']['openshift_hosted_cluster_metrics'] = false
 default['cookbook-openshift3']['erb_corsAllowedOrigins'] = ['127.0.0.1', 'localhost', node['cookbook-openshift3']['openshift_common_public_hostname']].uniq + node['cookbook-openshift3']['openshift_common_svc_names']
 
 default['cookbook-openshift3']['master_generated_certs_dir'] = '/var/www/html/master/generated_certs'
+default['cookbook-openshift3']['master_certs_generated_certs_dir'] = '/var/www/html/master_certs/generated_certs'
 default['cookbook-openshift3']['etcd_add_additional_nodes'] = false
 default['cookbook-openshift3']['etcd_service_name'] = node['cookbook-openshift3']['deploy_containerized'] == true ? 'etcd_container' : 'etcd'
 default['cookbook-openshift3']['etcd_remove_servers'] = []

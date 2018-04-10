@@ -6,27 +6,13 @@
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 etcd_servers = server_info.etcd_servers
-is_certificate_server = server_info.on_certificate_server?
 is_master_server = server_info.on_master_server?
 
 version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'][1..-1].sub(/^3/, '1').to_f.round(1) : node['cookbook-openshift3']['ose_major_version'].sub(/^3/, '1').to_f.round(1)
 
 include_recipe 'cookbook-openshift3::etcd_cluster' if etcd_servers.any?
 
-if is_certificate_server
-  node['cookbook-openshift3']['enabled_firewall_rules_master'].each do |rule|
-    iptables_rule rule do
-      action :enable
-    end
-  end
-  # Do this immediately, so clients can connect (iptables cookbook delays).
-  execute '/usr/sbin/rebuild-iptables' do
-    retry_delay 10
-    retries 3
-  end
-end
-
-if is_master_server || is_certificate_server
+if is_master_server
   file '/usr/local/etc/.firewall_master_additional.txt' do
     content node['cookbook-openshift3']['enabled_firewall_additional_rules_master'].join("\n")
     owner 'root'
@@ -76,6 +62,8 @@ if is_master_server || is_certificate_server
     recursive true
   end
 
+  include_recipe 'cookbook-openshift3::master_packages'
+
   if node['cookbook-openshift3']['openshift_HA']
     include_recipe 'cookbook-openshift3::master_cluster'
   else
@@ -93,8 +81,4 @@ if is_master_server || is_certificate_server
     command "cp #{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig /root/.kube/config && chmod 700 /root/.kube/config"
     creates '/root/.kube/config'
   end
-end
-
-if is_certificate_server
-  include_recipe 'cookbook-openshift3::nodes_certificates' unless node['cookbook-openshift3']['upgrade']
 end
