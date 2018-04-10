@@ -13,11 +13,6 @@ if is_certificate_server
       action :enable
     end
   end
-  # Do this immediately, so clients can connect (iptables cookbook delays).
-  execute '/usr/sbin/rebuild-iptables' do
-    retry_delay 10
-    retries 3
-  end
 
   include_recipe 'cookbook-openshift3::master_packages' unless node['cookbook-openshift3']['upgrade']
   include_recipe 'cookbook-openshift3::etcd_certificates'

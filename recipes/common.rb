@@ -72,7 +72,7 @@ end
 
 package 'httpd' do
   notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
-  notifies %i(enable start), 'service[httpd]', :immediately
+  notifies :enable, 'service[httpd]', :immediately
   retries 3
   only_if { is_certificate_server }
 end
