@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.18
+### Bug
+- Fix issue during upgrade node components
+
 ## v2.0.17
 ### Improvement
 - Give the possibility for setting ENV to router (openshift_hosted_deploy_env_router)

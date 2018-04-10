@@ -38,8 +38,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
       end
     end
 
-    include_recipe 'cookbook-openshift3'
-    include_recipe 'cookbook-openshift3::common'
+    include_recipe 'cookbook-openshift3::services'
     include_recipe 'cookbook-openshift3::node'
     include_recipe 'cookbook-openshift3::docker'
     include_recipe 'cookbook-openshift3::excluder'
