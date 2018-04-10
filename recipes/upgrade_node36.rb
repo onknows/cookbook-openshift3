@@ -39,7 +39,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
       end
     end
 
-    include_recipe 'is_apaas_openshift_cookbook'
+    include_recipe 'is_apaas_openshift_cookbook::services'
     include_recipe 'is_apaas_openshift_cookbook::node'
     include_recipe 'is_apaas_openshift_cookbook::docker'
     include_recipe 'is_apaas_openshift_cookbook::excluder'
