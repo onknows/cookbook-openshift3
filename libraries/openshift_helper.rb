@@ -38,7 +38,7 @@ module OpenShiftHelper
 
     def certificate_server
       if server_method?
-        Chef::Search::Query.new.search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0][0]
+        Chef::Search::Query.new.search(:node, "role:#{node['cookbook-openshift3']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0].sort
       else
         node['cookbook-openshift3']['certificate_server'] == {} ? first_master : node['cookbook-openshift3']['certificate_server']
       end
@@ -69,7 +69,7 @@ module OpenShiftHelper
     end
 
     def on_certificate_server?
-      certificate_server.find { |server_certificate| server_certificate['fqdn'] == node['fqdn'] }
+      certificate_server['fqdn'] == node['fqdn']
     end
 
     def on_control_plane_server?
