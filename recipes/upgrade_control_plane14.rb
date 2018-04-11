@@ -87,14 +87,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
       level :info
     end
 
-    include_recipe 'is_apaas_openshift_cookbook::certificate_server' if node['is_apaas_openshift_cookbook']['deploy_containerized']
-
-    if node['is_apaas_openshift_cookbook']['openshift_HA']
-      include_recipe 'is_apaas_openshift_cookbook::master_cluster'
-    else
-      include_recipe 'is_apaas_openshift_cookbook::master_standalone'
-    end
-
+    include_recipe 'is_apaas_openshift_cookbook::master'
     include_recipe 'is_apaas_openshift_cookbook::excluder'
 
     log 'Restart Master services' do

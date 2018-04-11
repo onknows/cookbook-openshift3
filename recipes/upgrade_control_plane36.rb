@@ -89,14 +89,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
     config_options = YAML.load_file("#{node['is_apaas_openshift_cookbook']['openshift_common_master_dir']}/master/master-config.yaml")
     node.force_override['is_apaas_openshift_cookbook']['etcd_migrated'] = false unless config_options['kubernetesMasterConfig']['apiServerArguments'].key?('storage-backend')
 
-    include_recipe 'is_apaas_openshift_cookbook::certificate_server' if node['is_apaas_openshift_cookbook']['deploy_containerized']
-
-    if node['is_apaas_openshift_cookbook']['openshift_HA']
-      include_recipe 'is_apaas_openshift_cookbook::master_cluster'
-    else
-      include_recipe 'is_apaas_openshift_cookbook::master_standalone'
-    end
-
+    include_recipe 'is_apaas_openshift_cookbook::master'
     include_recipe 'is_apaas_openshift_cookbook::excluder'
 
     log 'Restart Master services' do

@@ -62,10 +62,7 @@ if is_master_server
     not_if "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
-  include_recipe 'is_apaas_openshift_cookbook::certificate_server' if node['is_apaas_openshift_cookbook']['deploy_containerized']
-
-  include_recipe 'is_apaas_openshift_cookbook::master_cluster'
-
+  include_recipe 'is_apaas_openshift_cookbook::master'
   include_recipe 'is_apaas_openshift_cookbook::excluder'
 
   log 'Restart Master services' do
