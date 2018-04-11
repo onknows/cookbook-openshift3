@@ -4,13 +4,14 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-server_info = OpenShiftHelper::NodeHelper.new(node)
+server_info = helper = OpenShiftHelper::NodeHelper.new(node)
 first_master = server_info.first_master
 first_etcd = server_info.first_etcd
 master_servers = server_info.master_servers
 lb_servers = server_info.lb_servers
 etcd_servers = server_info.etcd_servers
 certificate_server = server_info.certificate_server
+is_certificate_server = server_info.on_certificate_server?
 
 if node['cookbook-openshift3']['ose_version']
   if node['cookbook-openshift3']['ose_version'].to_f.round(1) != node['cookbook-openshift3']['ose_major_version'].to_f.round(1)
@@ -100,5 +101,8 @@ if master_servers.empty?
   node.run_state['issues_detected'] = true
 end
 
+if is_certificate_server
+  include_recipe 'cookbook-openshift3::adhoc_migrate_certificate_server' if helper.check_certificate_server
+end
 include_recipe 'cookbook-openshift3::adhoc_redeploy_certificates' if node['cookbook-openshift3']['adhoc_redeploy_certificates']
 include_recipe 'cookbook-openshift3::commons' unless node.run_state['issues_detected']
