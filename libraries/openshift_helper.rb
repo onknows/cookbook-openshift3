@@ -87,19 +87,17 @@ module OpenShiftHelper
       File.open(new, 'w+') { |f| f.puts old.map { |s| IO.read(s) } }
     end
 
-    def valid_certificate?(ca_path, cert_path)
-      ca = OpenSSL::X509::Certificate.new(File.read(ca_path))
-      cert = OpenSSL::X509::Certificate.new(File.read(cert_path))
-      cert.verify(ca.public_key)
-    rescue OpenSSL::X509::CertificateError
-      return false
-    end
-
     def turn_off_swap
       regex = /(^[^#].*swap.*)\n/m
       fstab_file = Chef::Util::FileEdit.new('/etc/fstab')
       fstab_file.search_file_replace(regex, '# \1')
       fstab_file.write_file
+    end
+
+    def check_certificate_server
+      ca_exist = File.exist?("#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/ca.crt")
+      dir_exist = File.directory?(node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir'])
+      ca_exist && !dir_exist
     end
 
     protected
