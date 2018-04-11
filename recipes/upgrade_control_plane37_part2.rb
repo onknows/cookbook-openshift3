@@ -62,10 +62,7 @@ if is_master_server
     not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
-  include_recipe 'cookbook-openshift3::certificate_server' if node['cookbook-openshift3']['deploy_containerized']
-
-  include_recipe 'cookbook-openshift3::master_cluster'
-
+  include_recipe 'cookbook-openshift3::master'
   include_recipe 'cookbook-openshift3::excluder'
 
   log 'Restart Master services' do

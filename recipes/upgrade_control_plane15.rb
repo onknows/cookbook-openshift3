@@ -87,14 +87,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
       level :info
     end
 
-    include_recipe 'cookbook-openshift3::certificate_server' if node['cookbook-openshift3']['deploy_containerized']
-
-    if node['cookbook-openshift3']['openshift_HA']
-      include_recipe 'cookbook-openshift3::master_cluster'
-    else
-      include_recipe 'cookbook-openshift3::master_standalone'
-    end
-
+    include_recipe 'cookbook-openshift3::master'
     include_recipe 'cookbook-openshift3::excluder'
 
     log 'Restart Master services' do

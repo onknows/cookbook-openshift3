@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.20
+### Bug
+- Fix issue during upgrade when upgrading master services
+
 ## v2.0.19
 ### Improvement
 - Split the certificate server function from the other roles
