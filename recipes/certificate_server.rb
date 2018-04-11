@@ -6,47 +6,17 @@
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 is_certificate_server = server_info.on_certificate_server?
-is_master_server = server_info.on_master_server?
 
-if is_certificate_server || is_master_server
-  if node['is_apaas_openshift_cookbook']['deploy_containerized']
-
-    execute 'Pull CLI docker image' do
-      command "docker pull #{node['is_apaas_openshift_cookbook']['openshift_docker_master_image']}:#{node['is_apaas_openshift_cookbook']['openshift_docker_image_version']}"
-      not_if "docker images  | grep #{node['is_apaas_openshift_cookbook']['openshift_docker_master_image']}.*#{node['is_apaas_openshift_cookbook']['openshift_docker_image_version']}"
-    end
-
-    bash 'Add CLI to master(s)' do
-      code <<-BASH
-        docker create --name temp-cli ${DOCKER_IMAGE}:${DOCKER_TAG}
-        docker cp temp-cli:/usr/bin/openshift /usr/local/bin/openshift
-        docker rm temp-cli
-        BASH
-      environment(
-        'DOCKER_IMAGE' => node['is_apaas_openshift_cookbook']['openshift_docker_master_image'],
-        'DOCKER_TAG' => node['is_apaas_openshift_cookbook']['openshift_docker_image_version']
-      )
-      not_if { ::File.exist?('/usr/local/bin/openshift') && !node['is_apaas_openshift_cookbook']['upgrade'] }
-    end
-
-    %w(oadm oc kubectl).each do |client_symlink|
-      link "/usr/local/bin/#{client_symlink}" do
-        to '/usr/local/bin/openshift'
-        link_type :hard
-      end
-    end
-
-    execute 'Add bash completion for oc' do
-      command '/usr/local/bin/oc completion bash > /etc/bash_completion.d/oc'
-      not_if { ::File.exist?('/etc/bash_completion.d/oc') && !node['is_apaas_openshift_cookbook']['upgrade'] }
+if is_certificate_server
+  node['is_apaas_openshift_cookbook']['enabled_firewall_rules_certificate'].each do |rule|
+    iptables_rule rule do
+      action :enable
     end
   end
 
-  package 'atomic-openshift' do
-    action :install
-    version node['is_apaas_openshift_cookbook']['ose_version'] unless node['is_apaas_openshift_cookbook']['ose_version'].nil?
-    options node['is_apaas_openshift_cookbook']['yum_options'] unless node['is_apaas_openshift_cookbook']['yum_options'].nil?
-    not_if { node['is_apaas_openshift_cookbook']['deploy_containerized'] }
-    retries 3
-  end
+  include_recipe 'is_apaas_openshift_cookbook::master_packages' unless node['is_apaas_openshift_cookbook']['upgrade']
+  include_recipe 'is_apaas_openshift_cookbook::etcd_certificates'
+  include_recipe 'is_apaas_openshift_cookbook::master_cluster_ca' if node['is_apaas_openshift_cookbook']['openshift_HA']
+  include_recipe 'is_apaas_openshift_cookbook::master_cluster_certificates' if node['is_apaas_openshift_cookbook']['openshift_HA']
+  include_recipe 'is_apaas_openshift_cookbook::nodes_certificates' unless node['is_apaas_openshift_cookbook']['upgrade']
 end

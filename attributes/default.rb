@@ -6,8 +6,10 @@
 
 originrepos = [{ 'name' => 'centos-openshift-origin13', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin13/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin14', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin14/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin15', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin15/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin36', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin36/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin37', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin37/', 'gpgcheck' => false }]
 
+default['is_apaas_openshift_cookbook']['adhoc_redeploy_certificates'] = false
 default['is_apaas_openshift_cookbook']['adhoc_redeploy_etcd_ca'] = false
-default['is_apaas_openshift_cookbook']['adhoc_redeploy_etcd_certs'] = false
+default['is_apaas_openshift_cookbook']['adhoc_redeploy_cluster_ca'] = false
+
 default['is_apaas_openshift_cookbook']['use_wildcard_nodes'] = false
 default['is_apaas_openshift_cookbook']['wildcard_domain'] = ''
 default['is_apaas_openshift_cookbook']['openshift_cluster_name'] = ''
@@ -18,8 +20,13 @@ default['is_apaas_openshift_cookbook']['node_servers'] = []
 default['is_apaas_openshift_cookbook']['lb_servers'] = []
 default['is_apaas_openshift_cookbook']['certificate_server'] = {}
 default['is_apaas_openshift_cookbook']['openshift_push_via_dns'] = false
-default['is_apaas_openshift_cookbook']['redeploy_etcd_ca_control_flag'] = '/to_be_replaced'
-default['is_apaas_openshift_cookbook']['redeploy_etcd_certs_control_flag'] = '/to_be_replaced'
+
+default['is_apaas_openshift_cookbook']['redeploy_etcd_ca_control_flag'] = '/to_be_replaced_ca_etcd'
+default['is_apaas_openshift_cookbook']['redeploy_etcd_certs_control_flag'] = '/to_be_replaced_certs'
+
+default['is_apaas_openshift_cookbook']['redeploy_cluster_ca_certserver_control_flag'] = '/to_be_replaced_ca_cluster'
+default['is_apaas_openshift_cookbook']['redeploy_cluster_ca_masters_control_flag'] = '/to_be_replaced_masters'
+default['is_apaas_openshift_cookbook']['redeploy_cluster_ca_nodes_control_flag'] = '/to_be_replaced_nodes'
 
 if node['is_apaas_openshift_cookbook']['openshift_HA']
   default['is_apaas_openshift_cookbook']['openshift_common_api_hostname'] = node['is_apaas_openshift_cookbook']['openshift_cluster_name']
@@ -61,6 +68,7 @@ default['is_apaas_openshift_cookbook']['httpd_xfer_port'] = '9999'
 default['is_apaas_openshift_cookbook']['core_packages'] = %w(libselinux-python wget vim-enhanced net-tools bind-utils git bash-completion dnsmasq yum-utils)
 default['is_apaas_openshift_cookbook']['osn_cluster_dns_domain'] = 'cluster.local'
 default['is_apaas_openshift_cookbook']['osn_cluster_dns_ip'] = node['ipaddress']
+default['is_apaas_openshift_cookbook']['enabled_firewall_rules_certificate'] = %w(firewall_certificate)
 default['is_apaas_openshift_cookbook']['enabled_firewall_rules_master'] = %w(firewall_master)
 default['is_apaas_openshift_cookbook']['enabled_firewall_rules_master_cluster'] = %w(firewall_master_cluster)
 default['is_apaas_openshift_cookbook']['enabled_firewall_rules_node'] = %w(firewall_node)
@@ -209,6 +217,9 @@ default['is_apaas_openshift_cookbook']['openshift_hosted_cluster_metrics'] = fal
 default['is_apaas_openshift_cookbook']['erb_corsAllowedOrigins'] = ['127.0.0.1', 'localhost', node['is_apaas_openshift_cookbook']['openshift_common_public_hostname']].uniq + node['is_apaas_openshift_cookbook']['openshift_common_svc_names']
 
 default['is_apaas_openshift_cookbook']['master_generated_certs_dir'] = '/var/www/html/master/generated_certs'
+default['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir'] = '/var/www/html/master_certs/generated_certs'
+default['is_apaas_openshift_cookbook']['openshift_master_cert_expire_days'] = '730'
+default['is_apaas_openshift_cookbook']['openshift_ca_cert_expire_days'] = '1825'
 default['is_apaas_openshift_cookbook']['etcd_add_additional_nodes'] = false
 default['is_apaas_openshift_cookbook']['etcd_service_name'] = node['is_apaas_openshift_cookbook']['deploy_containerized'] == true ? 'etcd_container' : 'etcd'
 default['is_apaas_openshift_cookbook']['etcd_remove_servers'] = []

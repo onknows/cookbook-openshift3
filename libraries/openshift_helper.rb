@@ -1,7 +1,6 @@
 module OpenShiftHelper
   # Helper for Openshift
   class NodeHelper
-    require 'openssl'
     require 'fileutils'
 
     def initialize(node)
@@ -38,8 +37,7 @@ module OpenShiftHelper
 
     def certificate_server
       if server_method?
-        certificate_server = Chef::Search::Query.new.search(:node, "role:#{node['is_apaas_openshift_cookbook']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0][0] # ~FC001, ~FC019
-        certificate_server.nil? ? first_master : certificate_server
+        Chef::Search::Query.new.search(:node, "role:#{node['is_apaas_openshift_cookbook']['openshift_cluster_duty_discovery_id']}_openshift_certificate_server_duty")[0].sort
       else
         node['is_apaas_openshift_cookbook']['certificate_server'] == {} ? first_master : node['is_apaas_openshift_cookbook']['certificate_server']
       end
@@ -137,5 +135,18 @@ module OpenShiftHelper
     private
 
     attr_reader :contents, :original_pathname
+  end
+
+  # Helper for (Re)deploying Certs
+  class CertHelper
+    require 'openssl'
+
+    def valid_certificate?(ca_path, cert_path)
+      ca = OpenSSL::X509::Certificate.new(File.read(ca_path))
+      cert = OpenSSL::X509::Certificate.new(File.read(cert_path))
+      cert.verify(ca.public_key)
+    rescue OpenSSL::X509::CertificateError, Errno::ENOENT
+      return false
+    end
   end
 end

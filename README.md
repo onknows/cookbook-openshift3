@@ -496,7 +496,7 @@ Include the default recipe in a CHEF role so as to ease the deployment.
 
 * REDEPLOY CERTIFICATES (ADHOC)
 
-The redeployment of the certificates requires variables to be set before running.
+The redeployment of the certificates requires variables and flags to be set before running.
 
 *The CHEF run will ignore any attempts unless all variables are correctly set*
 
@@ -504,18 +504,20 @@ Variables:
 
 | NAME | PURPOSE | Default value | Mandatory |
 | ---------------- | ------------------------------- | ------------------ | ---------- |
+| adhoc_redeploy_certificates | Execute certificates redeploy    | `false`    | `YES` |
 | adhoc_redeploy_etcd_ca | Execute an ETCD CA redeploy    | `false`    | `YES` |
-| adhoc_redeploy_etcd_certs | Execute an ETCD CERTS redeploy    | `false` | `YES` |
-| redeploy_etcd_ca_control_flag | Location of the etcd ca control flag | `"/to_be_replaced"`  | `YES` |
-| redeploy_etcd_certs_control_flag | Location of the etcd certs control flag | `"/to_be_replaced"`  | `YES` |
+| adhoc_redeploy_cluster_ca | Execute a CLUSTER CA CERTS redeploy   | `false` | `YES` |
+| redeploy_etcd_ca_control_flag | Location of the etcd ca control flag | `"/to_be_replaced_ca_etcd"`  | `YES` |
+| redeploy_etcd_certs_control_flag | Location of the etcd certs control flag | `"/to_be_replaced_certs"`  | `YES` |
+| redeploy_cluster_ca_certserver_control_flag | Location of the cluster ca control flag | `"/to_be_replaced_ca_cluster"`  | `YES` |
+| redeploy_cluster_ca_masters_control_flag | Location of the cluster master ca control flag | `"/to_be_replaced_masters"`  | `YES` |
+| redeploy_cluster_ca_nodes_control_flag | Location of the node ca control flag | `"/to_be_replaced_nodes"`  | `YES` |
 
 ```json
   "override_attributes": {
     "is_apaas_openshift_cookbook": {
-      "adhoc_redeploy_etcd_ca": true,
-      "adhoc_redeploy_etcd_certs": true,
-      "redeploy_etcd_ca_control_flag": "/tmp/caready",
-      "redeploy_etcd_certs_control_flag": "/tmp/certready"
+      "redeploy_cluster_ca_certserver_control_flag": "/tmp/caready",
+      "adhoc_redeploy_etcd_ca": true
     }
   }
 ```

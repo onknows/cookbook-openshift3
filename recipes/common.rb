@@ -9,7 +9,7 @@ master_servers = server_info.master_servers
 lb_servers = server_info.lb_servers
 is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
-is_control_plane_server = server_info.on_control_plane_server?
+is_certificate_server = server_info.on_certificate_server?
 
 include_recipe 'is_apaas_openshift_cookbook::packages'
 include_recipe 'is_apaas_openshift_cookbook::docker'
@@ -74,7 +74,7 @@ package 'httpd' do
   notifies :run, 'ruby_block[Change HTTPD port xfer]', :immediately
   notifies :enable, 'service[httpd]', :immediately
   retries 3
-  only_if { is_control_plane_server }
+  only_if { is_certificate_server }
 end
 
 directory node['is_apaas_openshift_cookbook']['openshift_data_dir'] do
@@ -85,5 +85,5 @@ directory node['is_apaas_openshift_cookbook']['openshift_data_dir'] do
   only_if { node['is_apaas_openshift_cookbook']['deploy_containerized'] && (is_master_server || is_node_server) }
 end
 
-include_recipe 'is_apaas_openshift_cookbook::certificate_server' unless node['is_apaas_openshift_cookbook']['upgrade']
+include_recipe 'is_apaas_openshift_cookbook::certificate_server' if is_certificate_server
 include_recipe 'is_apaas_openshift_cookbook::cloud_provider'

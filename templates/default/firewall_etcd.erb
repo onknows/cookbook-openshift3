@@ -1,3 +1,2 @@
 -A OS_FIREWALL_ALLOW -m state --state NEW,ESTABLISHED -m comment --comment "etcd" -m tcp -p tcp --dport 2379 -j ACCEPT
 -A OS_FIREWALL_ALLOW -m state --state NEW,ESTABLISHED -m comment --comment "etcd peering" -m tcp -p tcp --dport 2380 -j ACCEPT
--A OS_FIREWALL_ALLOW -m state --state NEW,ESTABLISHED -m comment --comment "OpenShift HTTPD" -m tcp -p tcp --dport <%= node['is_apaas_openshift_cookbook']['httpd_xfer_port'] %> -j ACCEPT
