@@ -4,7 +4,7 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-server_info = OpenShiftHelper::NodeHelper.new(node)
+server_info = helper = OpenShiftHelper::NodeHelper.new(node)
 node_servers = server_info.node_servers
 certificate_server = server_info.certificate_server
 is_node_server = server_info.on_node_server?
@@ -123,6 +123,22 @@ if is_node_server
     action :install
     not_if { node['cookbook-openshift3']['deploy_containerized'] }
     retries 3
+  end
+
+  if node['cookbook-openshift3']['adhoc_redeploy_cluster_ca']
+    Chef::Log.warn("The CLUSTER CA CERTS redeploy will be skipped for Node[#{node['fqdn']}]. Could not find the flag: #{node['cookbook-openshift3']['redeploy_cluster_ca_nodes_control_flag']}") unless ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_nodes_control_flag'])
+
+    ruby_block "Redeploy CA certs for #{node['fqdn']}" do
+      block do
+        helper.remove_dir("#{node['cookbook-openshift3']['openshift_node_config_dir']}/#{node['fqdn']}.tgz*")
+      end
+      only_if { ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_nodes_control_flag']) }
+      notifies :delete, "file[#{node['cookbook-openshift3']['redeploy_cluster_ca_nodes_control_flag']}]", :immediately
+    end
+
+    file node['cookbook-openshift3']['redeploy_cluster_ca_nodes_control_flag'] do
+      action :nothing
+    end
   end
 
   remote_file "Retrieve certificate from Master[#{certificate_server['fqdn']}]" do

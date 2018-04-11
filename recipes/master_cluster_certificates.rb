@@ -5,7 +5,6 @@
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
-first_master = server_info.first_master
 master_servers = server_info.master_servers
 is_certificate_server = server_info.on_certificate_server?
 
@@ -19,12 +18,11 @@ else
 end
 
 if is_certificate_server
-  %W(/var/www/html/master #{node['cookbook-openshift3']['master_generated_certs_dir']} #{node['cookbook-openshift3']['master_certs_generated_certs_dir']}).each do |path|
+  %W(/var/www/html/master #{node['cookbook-openshift3']['master_generated_certs_dir']}).each do |path|
     directory path do
       mode '0755'
       owner 'apache'
       group 'apache'
-      recursive true
     end
   end
 
@@ -58,86 +56,14 @@ if is_certificate_server
     end
 
     execute "Create a tarball of the etcd master certs for #{master_server['fqdn']}" do
-      command "tar czvf #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz -C #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']} . && chown -R apache:apache #{node['cookbook-openshift3']['master_generated_certs_dir']}"
+      command "tar --mode='0644' --owner=root --group=root -czvf #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz -C #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']} . && chown apache:apache #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz"
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz"
     end
 
     execute "Encrypt etcd tgz files for #{master_server['fqdn']}" do
-      command "openssl enc -aes-256-cbc -in #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz  -out #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz.enc -k '#{encrypted_file_password}' && chmod -R  0755 #{node['cookbook-openshift3']['master_generated_certs_dir']} && chown -R apache: #{node['cookbook-openshift3']['master_generated_certs_dir']}"
+      command "openssl enc -aes-256-cbc -in #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz  -out #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz.enc -k '#{encrypted_file_password}' && chown apache:apache #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz.enc"
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-master-#{master_server['fqdn']}.tgz.enc"
     end
-  end
-
-  if node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'] && node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name']
-    secret_file = node['cookbook-openshift3']['openshift_master_ca_certificate']['secret_file'] || nil
-    ca_vars = data_bag_item(node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'], node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name'], secret_file)
-
-    file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key" do
-      content Base64.decode64(ca_vars['key_base64'])
-      mode '0600'
-      action :create_if_missing
-    end
-
-    file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt" do
-      content Base64.decode64(ca_vars['cert_base64'])
-      mode '0644'
-      action :create_if_missing
-    end
-
-    file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt" do
-      action :create_if_missing
-      mode '0644'
-      notifies :create, 'file[Initialise Master CA Serial]', :immediately
-    end
-
-    file 'Initialise Master CA Serial' do
-      path "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt"
-      content '00'
-      action :nothing
-    end
-  end
-
-  execute "Create the master certificates for #{first_master['fqdn']}" do
-    command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-master-certs \
-            --hostnames=#{(node['cookbook-openshift3']['erb_corsAllowedOrigins'] + [first_master['ipaddress'], first_master['fqdn'], node['cookbook-openshift3']['openshift_common_api_hostname']]).uniq.join(',')} \
-            --master=#{node['cookbook-openshift3']['openshift_master_api_url']} \
-            --public-master=#{node['cookbook-openshift3']['openshift_master_public_api_url']} \
-            --cert-dir=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']} --overwrite=false"
-    creates "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/master.server.key"
-  end
-
-  execute 'Create temp directory for loopback master client config' do
-    command "mkdir -p #{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir"
-    not_if "grep \'#{node['cookbook-openshift3']['openshift_master_loopback_context_name']}\' #{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/openshift-master.kubeconfig"
-    notifies :run, "execute[Generate the loopback master client config for #{first_master['fqdn']}]", :immediately
-  end
-
-  execute "Generate the loopback master client config for #{first_master['fqdn']}" do
-    command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} create-api-client-config \
-            --certificate-authority=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt \
-            --master=#{node['cookbook-openshift3']['openshift_master_loopback_api_url']} \
-            --public-master=#{node['cookbook-openshift3']['openshift_master_loopback_api_url']} \
-            --client-dir=#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir \
-            --groups=system:masters,system:openshift-master \
-            --signer-cert=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt \
-            --signer-key=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key \
-            --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt \
-            --user=system:openshift-master --basename=openshift-master"
-    action :nothing
-  end
-
-  %w(openshift-master.crt openshift-master.key openshift-master.kubeconfig).each do |loopback_master_client|
-    remote_file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/#{loopback_master_client}" do
-      source "file://#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir/#{loopback_master_client}"
-      only_if { ::File.file?("#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir/#{loopback_master_client}") }
-      sensitive true
-    end
-  end
-
-  directory 'Delete temp directory for loopback master client config' do
-    path "#{Chef::Config[:file_cache_path]}/openshift_ca_loopback_tmpdir"
-    recursive true
-    action :delete
   end
 
   master_servers.each do |master_server|
@@ -155,8 +81,9 @@ if is_certificate_server
               --key=#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/master.server.key \
               --signer-cert=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt \
               --signer-key=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key \
-              --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt \
+              --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt ${validty_certs}\
               --overwrite=false"
+      environment 'validty_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['cookbook-openshift3']['openshift_master_cert_expire_days']}"
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/master.server.crt"
     end
 
@@ -170,7 +97,8 @@ if is_certificate_server
               --signer-cert=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt \
               --signer-key=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key \
               --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt \
-              --user=system:openshift-master --basename=openshift-master"
+              --user=system:openshift-master --basename=openshift-master ${validty_certs}"
+      environment 'validty_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['cookbook-openshift3']['openshift_master_cert_expire_days']}"
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/openshift-master.kubeconfig"
     end
 
@@ -198,12 +126,12 @@ if is_certificate_server
     end
 
     execute "Create a tarball of the master certs for #{master_server['fqdn']}" do
-      command "tar czvf #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz -C #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']} . "
+      command "tar --mode='0644' --owner=root --group=root -czvf #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz -C #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']} . && chown apache:apache #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz"
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz"
     end
 
     execute 'Encrypt master master tgz files' do
-      command "openssl enc -aes-256-cbc -in #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz  -out #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz.enc -k '#{encrypted_file_password}' && chmod -R  0755 #{node['cookbook-openshift3']['master_generated_certs_dir']} && chown -R apache: #{node['cookbook-openshift3']['master_generated_certs_dir']}"
+      command "openssl enc -aes-256-cbc -in #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz  -out #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz.enc -k '#{encrypted_file_password}' && chown apache:apache #{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz.enc"
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz.enc"
     end
   end

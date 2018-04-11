@@ -4,10 +4,12 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-server_info = OpenShiftHelper::NodeHelper.new(node)
+server_info = helper = OpenShiftHelper::NodeHelper.new(node)
+helper_certs = OpenShiftHelper::CertHelper.new
 etcd_servers = server_info.etcd_servers
 certificate_server = server_info.certificate_server
 is_etcd_server = server_info.on_etcd_server?
+is_master_server = server_info.on_master_server?
 
 if node['cookbook-openshift3']['encrypted_file_password']['data_bag_name'] && node['cookbook-openshift3']['encrypted_file_password']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['encrypted_file_password']['secret_file'] || nil
@@ -46,14 +48,27 @@ if is_etcd_server
     end
   end
 
+  if node['cookbook-openshift3']['adhoc_redeploy_etcd_ca']
+    Chef::Log.warn("The ETCD CA CERTS redeploy will be skipped for ETCD[#{node['fqdn']}]. Could not find the flag: #{node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']}") unless ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
+
+    ruby_block "Redeploy ETCD CA certs for #{node['fqdn']}" do
+      block do
+        helper.remove_dir("#{node['cookbook-openshift3']['etcd_conf_dir']}/ca.crt")
+        helper.remove_dir("#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd-#{node['fqdn']}.tgz*")
+      end
+      only_if { ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']) }
+    end
+  end
+
   remote_file "#{node['cookbook-openshift3']['etcd_conf_dir']}/ca.crt" do
     source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/ca.crt"
     retries 60
     retry_delay 5
     sensitive true
+    action :create_if_missing
   end
 
-  remote_file "Retrieve certificate from ETCD Master[#{certificate_server['fqdn']}]" do
+  remote_file "Retrieve ETCD certificates from Certificate Server[#{certificate_server['fqdn']}]" do
     path "#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd-#{node['fqdn']}.tgz.enc"
     source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/generated_certs/etcd-#{node['fqdn']}.tgz.enc"
     action :create_if_missing
@@ -117,5 +132,17 @@ if is_etcd_server
   cookbook_file '/etc/profile.d/etcdctl.sh' do
     source 'etcdctl.sh'
     mode '0755'
+  end
+
+  ruby_block 'Restart ETCD service if valid certificate (Upgrade ETCD CA)' do
+    block do
+    end
+    notifies :restart, 'service[etcd-service]', :immediately if helper_certs.valid_certificate?(node['cookbook-openshift3']['etcd_ca_cert'], node['cookbook-openshift3']['etcd_cert_file'])
+    notifies :delete, "file[#{node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']}]", :immediately unless is_master_server
+    only_if { helper_certs.valid_certificate?(node['cookbook-openshift3']['etcd_ca_cert'], node['cookbook-openshift3']['etcd_cert_file']) && ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']) }
+  end
+
+  file node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'] do
+    action :nothing
   end
 end

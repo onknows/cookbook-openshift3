@@ -1,7 +1,6 @@
 module OpenShiftHelper
   # Helper for Openshift
   class NodeHelper
-    require 'openssl'
     require 'fileutils'
 
     def initialize(node)
@@ -136,5 +135,18 @@ module OpenShiftHelper
     private
 
     attr_reader :contents, :original_pathname
+  end
+
+  # Helper for (Re)deploying Certs
+  class CertHelper
+    require 'openssl'
+
+    def valid_certificate?(ca_path, cert_path)
+      ca = OpenSSL::X509::Certificate.new(File.read(ca_path))
+      cert = OpenSSL::X509::Certificate.new(File.read(cert_path))
+      cert.verify(ca.public_key)
+    rescue OpenSSL::X509::CertificateError, Errno::ENOENT
+      return false
+    end
   end
 end

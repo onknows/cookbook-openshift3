@@ -100,4 +100,5 @@ if master_servers.empty?
   node.run_state['issues_detected'] = true
 end
 
+include_recipe 'cookbook-openshift3::adhoc_redeploy_certificates' if node['cookbook-openshift3']['adhoc_redeploy_certificates']
 include_recipe 'cookbook-openshift3::commons' unless node.run_state['issues_detected']

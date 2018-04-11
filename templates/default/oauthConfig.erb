@@ -94,6 +94,7 @@ oauthConfig:
       url: "<%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_insecure'] ? 'ldap' : 'ldaps' %>://<%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_server'] %>/<%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_base_ou'] %>?<%= node['cookbook-openshift3']['openshift_master_identity_provider'][identityProvider]['ldap_preferred_username'] %>?sub?(objectClass=*)"
   <% end -%>
 <% end -%>
+  masterCA: ca-bundle.crt
   masterPublicURL: <%= node['cookbook-openshift3']['openshift_master_public_api_url'] %>
   masterURL: <%= node['cookbook-openshift3']['openshift_master_api_url'] %>
   sessionConfig:

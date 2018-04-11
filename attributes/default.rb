@@ -6,8 +6,10 @@
 
 originrepos = [{ 'name' => 'centos-openshift-origin13', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin13/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin14', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin14/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin15', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin15/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin36', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin36/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin37', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin37/', 'gpgcheck' => false }]
 
+default['cookbook-openshift3']['adhoc_redeploy_certificates'] = false
 default['cookbook-openshift3']['adhoc_redeploy_etcd_ca'] = false
-default['cookbook-openshift3']['adhoc_redeploy_etcd_certs'] = false
+default['cookbook-openshift3']['adhoc_redeploy_cluster_ca'] = false
+
 default['cookbook-openshift3']['use_wildcard_nodes'] = false
 default['cookbook-openshift3']['wildcard_domain'] = ''
 default['cookbook-openshift3']['openshift_cluster_name'] = ''
@@ -18,8 +20,13 @@ default['cookbook-openshift3']['node_servers'] = []
 default['cookbook-openshift3']['lb_servers'] = []
 default['cookbook-openshift3']['certificate_server'] = {}
 default['cookbook-openshift3']['openshift_push_via_dns'] = false
-default['cookbook-openshift3']['redeploy_etcd_ca_control_flag'] = '/to_be_replaced'
-default['cookbook-openshift3']['redeploy_etcd_certs_control_flag'] = '/to_be_replaced'
+
+default['cookbook-openshift3']['redeploy_etcd_ca_control_flag'] = '/to_be_replaced_ca_etcd'
+default['cookbook-openshift3']['redeploy_etcd_certs_control_flag'] = '/to_be_replaced_certs'
+
+default['cookbook-openshift3']['redeploy_cluster_ca_certserver_control_flag'] = '/to_be_replaced_ca_cluster'
+default['cookbook-openshift3']['redeploy_cluster_ca_masters_control_flag'] = '/to_be_replaced_masters'
+default['cookbook-openshift3']['redeploy_cluster_ca_nodes_control_flag'] = '/to_be_replaced_nodes'
 
 if node['cookbook-openshift3']['openshift_HA']
   default['cookbook-openshift3']['openshift_common_api_hostname'] = node['cookbook-openshift3']['openshift_cluster_name']
@@ -211,6 +218,8 @@ default['cookbook-openshift3']['erb_corsAllowedOrigins'] = ['127.0.0.1', 'localh
 
 default['cookbook-openshift3']['master_generated_certs_dir'] = '/var/www/html/master/generated_certs'
 default['cookbook-openshift3']['master_certs_generated_certs_dir'] = '/var/www/html/master_certs/generated_certs'
+default['cookbook-openshift3']['openshift_master_cert_expire_days'] = '730'
+default['cookbook-openshift3']['openshift_ca_cert_expire_days'] = '1825'
 default['cookbook-openshift3']['etcd_add_additional_nodes'] = false
 default['cookbook-openshift3']['etcd_service_name'] = node['cookbook-openshift3']['deploy_containerized'] == true ? 'etcd_container' : 'etcd'
 default['cookbook-openshift3']['etcd_remove_servers'] = []

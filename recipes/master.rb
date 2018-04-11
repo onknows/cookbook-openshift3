@@ -70,6 +70,11 @@ if is_master_server
     include_recipe 'cookbook-openshift3::master_standalone'
   end
 
+  execute 'Fix Master directory permissions' do
+    command "chmod 700 #{node['cookbook-openshift3']['openshift_master_config_dir']}"
+    only_if "[[ $(stat -c %a #{node['cookbook-openshift3']['openshift_master_config_dir']}) -ne 700 ]]"
+  end
+
   directory '/root/.kube' do
     owner 'root'
     group 'root'
@@ -80,5 +85,13 @@ if is_master_server
   execute 'Copy the OpenShift admin client config' do
     command "cp #{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig /root/.kube/config && chmod 700 /root/.kube/config"
     creates '/root/.kube/config'
+  end
+
+  ruby_block 'Update OpenShift admin client config' do
+    block do
+      require 'fileutils'
+      FileUtils.cp("#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig", '/root/.kube/config')
+    end
+    not_if { FileUtils.compare_file("#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig", '/root/.kube/config') }
   end
 end

@@ -92,7 +92,7 @@ dnsConfig:
   bindNetwork: tcp4
 <% end %>
 etcdClientInfo:
-  ca: <%= node['cookbook-openshift3']['openshift_master_embedded_etcd'] == true ? "ca.crt" : "master.etcd-ca.crt" %>
+  ca: <%= node['cookbook-openshift3']['openshift_master_embedded_etcd'] == true ? "ca-bundle.crt" : "master.etcd-ca.crt" %>
   certFile: master.etcd-client.crt
   keyFile: master.etcd-client.key
 <% if node['cookbook-openshift3']['openshift_HA'] %>
@@ -111,12 +111,12 @@ etcdConfig:
   peerServingInfo:
     bindAddress: 127.0.0.1:7001
     certFile: etcd.server.crt
-    clientCA: ca.crt
+    clientCA: ca-bundle.crt
     keyFile: etcd.server.key
   servingInfo:
     bindAddress: 127.0.0.1:<%= node['cookbook-openshift3']['openshift_master_etcd_port'] %>
     certFile: etcd.server.crt
-    clientCA: ca.crt
+    clientCA: ca-bundle.crt
     keyFile: etcd.server.key
   storageDirectory: <%= node['cookbook-openshift3']['openshift_data_dir'] %>/openshift.local.etcd
 <%- end -%>
@@ -132,7 +132,7 @@ imagePolicyConfig:
   maxImagesBulkImportedPerRepository: <%= node['cookbook-openshift3']['openshift_master_image_bulk_imported'] %>
 kind: MasterConfig
 kubeletClientInfo:
-  ca: ca.crt
+  ca: ca-bundle.crt
   certFile: master.kubelet-client.crt
   keyFile: master.kubelet-client.key
   port: 10250
@@ -261,7 +261,7 @@ serviceAccountConfig:
   - default
   - builder
   - deployer
-  masterCA: ca.crt
+  masterCA: ca-bundle.crt
   privateKeyFile: serviceaccounts.private.key
   publicKeyFiles:
   - serviceaccounts.public.key
@@ -269,7 +269,7 @@ servingInfo:
   bindAddress: <%= node['cookbook-openshift3']['openshift_master_bind_addr'] %>:<%= node['cookbook-openshift3']['openshift_master_api_port'] %>
   bindNetwork: tcp4
   certFile: master.server.crt
-  clientCA: ca.crt
+  clientCA: ca-bundle.crt
   keyFile: master.server.key
   maxRequestsInFlight: 500
   requestTimeoutSeconds: 3600

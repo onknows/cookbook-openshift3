@@ -4,7 +4,8 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-server_info = OpenShiftHelper::NodeHelper.new(node)
+server_info = helper = OpenShiftHelper::NodeHelper.new(node)
+helper_certs = OpenShiftHelper::CertHelper.new
 first_master = server_info.first_master
 master_servers = server_info.master_servers
 etcd_servers = server_info.etcd_servers
@@ -25,38 +26,67 @@ else
   encrypted_file_password = node['cookbook-openshift3']['encrypted_file_password']['default']
 end
 
-remote_file "Retrieve client certificate from Master[#{certificate_server['fqdn']}]" do
+if node['cookbook-openshift3']['adhoc_redeploy_etcd_ca']
+  Chef::Log.warn("The ETCD CA CERTS redeploy will be skipped for Master[#{node['fqdn']}]. Could not find the flag: #{node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']}") unless ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
+
+  ruby_block "Redeploy ETCD CA certs for #{node['fqdn']}" do
+    block do
+      helper.remove_dir("#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}ca.crt")
+      helper.remove_dir("#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-master-#{node['fqdn']}.tgz*")
+    end
+    only_if { ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']) }
+  end
+end
+
+if node['cookbook-openshift3']['adhoc_redeploy_cluster_ca']
+  Chef::Log.warn("The CLUSTER CA CERTS redeploy will be skipped for Master[#{node['fqdn']}]. Could not find the flag: #{node['cookbook-openshift3']['redeploy_cluster_ca_masters_control_flag']}") unless ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_masters_control_flag'])
+
+  ruby_block "Redeploy CA certs for #{node['fqdn']}" do
+    block do
+      helper.remove_dir("#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-#{node['fqdn']}.tgz*")
+    end
+    only_if { ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_masters_control_flag']) }
+    notifies :delete, "file[#{node['cookbook-openshift3']['redeploy_cluster_ca_masters_control_flag']}]", :immediately
+  end
+
+  file node['cookbook-openshift3']['redeploy_cluster_ca_masters_control_flag'] do
+    action :nothing
+  end
+end
+
+remote_file "Retrieve ETCD client certificate from Certificate Server[#{certificate_server['fqdn']}]" do
   path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-master-#{node['fqdn']}.tgz.enc"
   source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/master/generated_certs/openshift-master-#{node['fqdn']}.tgz.enc"
   action :create_if_missing
-  notifies :run, 'execute[Un-encrypt master certificate tgz files]', :immediately
-  notifies :run, 'execute[Extract certificate to Master folder]', :immediately
+  notifies :run, 'execute[Un-encrypt etcd certificates tgz files]', :immediately
+  notifies :run, 'execute[Extract etcd certificates to Master folder]', :immediately
   retries 60
   retry_delay 5
   sensitive true
 end
 
-execute 'Un-encrypt master certificate tgz files' do
+execute 'Un-encrypt etcd certificates tgz files' do
   command "openssl enc -d -aes-256-cbc -in openshift-master-#{node['fqdn']}.tgz.enc -out openshift-master-#{node['fqdn']}.tgz -k '#{encrypted_file_password}'"
   cwd node['cookbook-openshift3']['openshift_master_config_dir']
   action :nothing
 end
 
-execute 'Extract certificate to Master folder' do
+execute 'Extract etcd certificates to Master folder' do
   command "tar -xzf openshift-master-#{node['fqdn']}.tgz ./master.etcd-client.crt ./master.etcd-client.key"
   cwd node['cookbook-openshift3']['openshift_master_config_dir']
   action :nothing
 end
 
-remote_file "Retrieve ETCD CA cert for Master[#{certificate_server['fqdn']}]" do
+remote_file "Retrieve ETCD CA cert from Certificate Server[#{certificate_server['fqdn']}]" do
   path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}ca.crt"
   source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/ca.crt"
   owner 'root'
   group 'root'
   mode '0600'
-  retries 12
+  retries 60
   retry_delay 5
   sensitive true
+  action :create_if_missing
 end
 
 %w(client.crt client.key).each do |certificate_type|
@@ -67,24 +97,24 @@ end
   end
 end
 
-remote_file "Retrieve master certificate from Master[#{certificate_server['fqdn']}]" do
+remote_file "Retrieve master certificates from Certificate Server[#{certificate_server['fqdn']}]" do
   path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/openshift-#{node['fqdn']}.tgz.enc"
   source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/master/generated_certs/openshift-#{node['fqdn']}.tgz.enc"
   action :create_if_missing
-  notifies :run, 'execute[Un-encrypt master certificate master tgz files]', :immediately
-  notifies :run, 'execute[Extract master certificate to Master folder]', :immediately
+  notifies :run, 'execute[Un-encrypt master certificates master tgz files]', :immediately
+  notifies :run, 'execute[Extract master certificates to Master folder]', :immediately
   retries 60
   retry_delay 5
   sensitive true
 end
 
-execute 'Un-encrypt master certificate master tgz files' do
+execute 'Un-encrypt master certificates master tgz files' do
   command "openssl enc -d -aes-256-cbc -in openshift-#{node['fqdn']}.tgz.enc -out openshift-#{node['fqdn']}.tgz -k '#{encrypted_file_password}'"
   cwd node['cookbook-openshift3']['openshift_master_config_dir']
   action :nothing
 end
 
-execute 'Extract master certificate to Master folder' do
+execute 'Extract master certificates to Master folder' do
   command "tar -xzf openshift-#{node['fqdn']}.tgz"
   cwd node['cookbook-openshift3']['openshift_master_config_dir']
   action :nothing
@@ -223,4 +253,17 @@ end
 
 systemd_unit "#{node['cookbook-openshift3']['openshift_service_type']}-master" do
   action %i(disable mask)
+end
+
+ruby_block 'Restart Master services if valid certificate (Upgrade ETCD CA)' do
+  block do
+  end
+  notifies :delete, "file[#{node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']}]", :immediately
+  notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately
+  notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately
+  only_if { helper_certs.valid_certificate?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}ca.crt", "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{node['cookbook-openshift3']['master_etcd_cert_prefix']}client.crt") && ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']) }
+end
+
+file node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'] do
+  action :nothing
 end
