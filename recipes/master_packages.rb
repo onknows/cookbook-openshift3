@@ -46,7 +46,7 @@ package "#{node['cookbook-openshift3']['openshift_service_type']}-master" do
   version node['cookbook-openshift3']['ose_version'] unless node['cookbook-openshift3']['ose_version'].nil?
   options node['cookbook-openshift3']['yum_options'] unless node['cookbook-openshift3']['yum_options'].nil?
   notifies :run, 'execute[daemon-reload]', :immediately
-  not_if { node['cookbook-openshift3']['deploy_containerized'] || is_certificate_server && node['fqdn'] != first_master['fqdn'] }
+  not_if { node['cookbook-openshift3']['deploy_containerized'] || (is_certificate_server && node['fqdn'] != first_master['fqdn']) }
   retries 3
 end
 
