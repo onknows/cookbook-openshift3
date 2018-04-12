@@ -63,6 +63,7 @@ if is_master_server
   end
 
   include_recipe 'cookbook-openshift3::master_packages'
+  include_recipe 'cookbook-openshift3::etcd_packages'
 
   if node['cookbook-openshift3']['openshift_HA']
     include_recipe 'cookbook-openshift3::master_cluster'

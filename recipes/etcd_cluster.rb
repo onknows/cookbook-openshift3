@@ -19,12 +19,7 @@ else
 end
 
 if is_etcd_server
-  yum_package 'etcd' do
-    action :upgrade if node['cookbook-openshift3']['upgrade']
-    version node['cookbook-openshift3']['etcd_version'] unless node['cookbook-openshift3']['etcd_version'].nil?
-    retries 3
-    notifies :restart, 'service[etcd-service]', :immediately if node['cookbook-openshift3']['upgrade'] && !etcd_servers.find { |etcd| etcd['fqdn'] == node['fqdn'] }.nil?
-  end
+  include_recipe 'cookbook-openshift3::etcd_packages'
 
   node['cookbook-openshift3']['enabled_firewall_rules_etcd'].each do |rule|
     iptables_rule rule do
@@ -127,11 +122,6 @@ if is_etcd_server
         }
       end
     )
-  end
-
-  cookbook_file '/etc/profile.d/etcdctl.sh' do
-    source 'etcdctl.sh'
-    mode '0755'
   end
 
   ruby_block 'Restart ETCD service if valid certificate (Upgrade ETCD CA)' do

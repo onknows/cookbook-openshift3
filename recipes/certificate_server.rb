@@ -15,6 +15,7 @@ if is_certificate_server
   end
 
   include_recipe 'cookbook-openshift3::master_packages' unless node['cookbook-openshift3']['upgrade']
+  include_recipe 'cookbook-openshift3::etcd_packages' unless node['cookbook-openshift3']['upgrade']
   include_recipe 'cookbook-openshift3::etcd_certificates'
   include_recipe 'cookbook-openshift3::master_cluster_ca' if node['cookbook-openshift3']['openshift_HA']
   include_recipe 'cookbook-openshift3::master_cluster_certificates' if node['cookbook-openshift3']['openshift_HA']
