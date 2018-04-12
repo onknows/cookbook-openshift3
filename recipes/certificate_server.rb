@@ -14,9 +14,10 @@ if is_certificate_server
     end
   end
 
-  include_recipe 'is_apaas_openshift_cookbook::master_packages' unless node['is_apaas_openshift_cookbook']['upgrade']
+  include_recipe 'is_apaas_openshift_cookbook::master_packages'
+  include_recipe 'is_apaas_openshift_cookbook::etcd_packages'
   include_recipe 'is_apaas_openshift_cookbook::etcd_certificates'
   include_recipe 'is_apaas_openshift_cookbook::master_cluster_ca' if node['is_apaas_openshift_cookbook']['openshift_HA']
   include_recipe 'is_apaas_openshift_cookbook::master_cluster_certificates' if node['is_apaas_openshift_cookbook']['openshift_HA']
-  include_recipe 'is_apaas_openshift_cookbook::nodes_certificates' unless node['is_apaas_openshift_cookbook']['upgrade']
+  include_recipe 'is_apaas_openshift_cookbook::nodes_certificates'
 end

@@ -63,6 +63,7 @@ if is_master_server
   end
 
   include_recipe 'is_apaas_openshift_cookbook::master_packages'
+  include_recipe 'is_apaas_openshift_cookbook::etcd_packages'
 
   if node['is_apaas_openshift_cookbook']['openshift_HA']
     include_recipe 'is_apaas_openshift_cookbook::master_cluster'

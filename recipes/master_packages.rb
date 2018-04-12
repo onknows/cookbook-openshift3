@@ -46,7 +46,7 @@ package 'atomic-openshift-master' do
   version node['is_apaas_openshift_cookbook']['ose_version'] unless node['is_apaas_openshift_cookbook']['ose_version'].nil?
   options node['is_apaas_openshift_cookbook']['yum_options'] unless node['is_apaas_openshift_cookbook']['yum_options'].nil?
   notifies :run, 'execute[daemon-reload]', :immediately
-  not_if { node['is_apaas_openshift_cookbook']['deploy_containerized'] || is_certificate_server && node['fqdn'] != first_master['fqdn'] }
+  not_if { node['is_apaas_openshift_cookbook']['deploy_containerized'] || (is_certificate_server && node['fqdn'] != first_master['fqdn']) }
   retries 3
 end
 

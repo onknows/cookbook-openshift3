@@ -8,11 +8,13 @@ server_info = OpenShiftHelper::NodeHelper.new(node)
 is_etcd_server = server_info.on_etcd_server?
 is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
+is_certificate_server = server_info.on_certificate_server?
 
 include_recipe 'is_apaas_openshift_cookbook::services'
 
 if node['is_apaas_openshift_cookbook']['control_upgrade']
   begin
+    include_recipe 'is_apaas_openshift_cookbook::upgrade_certificate_server' if is_certificate_server && !is_master_server
     include_recipe "is_apaas_openshift_cookbook::upgrade_control_plane#{node['is_apaas_openshift_cookbook']['control_upgrade_version']}" if is_master_server || is_etcd_server
     include_recipe "is_apaas_openshift_cookbook::upgrade_node#{node['is_apaas_openshift_cookbook']['control_upgrade_version']}" if is_node_server && !is_master_server
   rescue Chef::Exceptions::RecipeNotFound
