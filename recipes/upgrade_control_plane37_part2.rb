@@ -70,7 +70,6 @@ if is_master_server
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
     notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
-    notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :immediately if is_node_server
   end
 
   execute "Set upgrade markup for master : #{node['fqdn']}" do
