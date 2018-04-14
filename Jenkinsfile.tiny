@@ -46,7 +46,7 @@ try {
           sh 'cd /space/jenkins_cache/shutit-openshift-cluster && git pull && git clean -f && cd /space/jenkins_cache'
           dir('shutit-openshift-cluster') {
             withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
-              sh './run_tests.sh --interactive 0'
+              sh 'cp -r /space/jenkins_cache/shutit-openshift-cluster/* . && ./run_tests.sh --interactive 0'
             }
           }
         }

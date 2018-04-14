@@ -28,7 +28,7 @@ try {
           sh 'cd /space/jenkins_cache/shutit-openshift-cluster && git pull && git clean -f && cd /space/jenkins_cache'
           dir('shutit-openshift-cluster') {
             withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
-              sh './run_tests.sh -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_13_14 ' + do_upgrade_13_14 + ' -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_14_15 ' + do_upgrade_14_15 + ' -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_15_36 ' + do_upgrade_15_36 + ' -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_36_37 ' + do_upgrade_36_37 + ' --interactive 0'
+              sh 'cp -r /space/jenkins_cache/shutit-openshift-cluster/* . && ./run_tests.sh -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_13_14 ' + do_upgrade_13_14 + ' -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_14_15 ' + do_upgrade_14_15 + ' -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_15_36 ' + do_upgrade_15_36 + ' -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_36_37 ' + do_upgrade_36_37 + ' --interactive 0'
             }
           }
         }
