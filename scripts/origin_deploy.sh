@@ -62,11 +62,6 @@ cat << BASH > environments/origin.json
       "openshift_common_default_nodeSelector": "region=infra",
       "deploy_containerized": true,
       "deploy_example": true,
-      "openshift_master_htpasswd_users": [
-        {
-          "admin": '$apr1$nagKJ7pp$yJs1.pzTVreV566gSLgZ11'
-        }
-      ],
       "openshift_master_router_subdomain": "cloudapps.${IP}.nip.io",
       "master_servers": [
         {
@@ -92,6 +87,9 @@ cat << BASH > environments/origin.json
   }
 }
 BASH
+# Update password for admin user
+htpasswd -b -c /etc/origin/openshift-passwd admin admin
+
 ### Specify the configuration details for chef-solo
 cat << BASH > /root/chef-solo-example/solo.rb
 cookbook_path [
