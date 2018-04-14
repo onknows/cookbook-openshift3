@@ -20,6 +20,58 @@ yum -y install -q https://packages.chef.io/files/stable/chef/14.0.190/el/7/chef-
 [ -d ~/chef-solo-example/cookbooks/selinux_policy ] || git clone -q https://github.com/BackSlasher/chef-selinuxpolicy.git selinux_policy
 [ -d ~/chef-solo-example/cookbooks/compat_resource ] || git clone -q https://github.com/chef-cookbooks/compat_resource.git
 cd ~/chef-solo-example
+### Create the dedicated environment for Origin deployment
+cat << BASH > environments/origin.json
+{
+  "name": "origin",
+  "description": "",
+  "cookbook_versions": {
+
+  },
+  "json_class": "Chef::Environment",
+  "chef_type": "environment",
+  "default_attributes": {
+
+  },
+  "override_attributes": {
+    "cookbook-openshift3": {
+      "openshift_common_sdn_network_plugin_name": "redhat/openshift-ovs-multitenant",
+      "openshift_cluster_name": "console.${IP}.nip.io",
+      "openshift_HA": true,
+      "openshift_deployment_type": "origin",
+      "openshift_common_default_nodeSelector": "region=infra",
+      "deploy_containerized": true,
+      "deploy_example": true,
+      "openshift_master_htpasswd_users": [
+        {
+          "admin": "$apr1$5iDjNKyc$Cp8.GumvS3Q2jxeXYGptd."
+        }
+      ],
+      "openshift_master_router_subdomain": "cloudapps.${IP}.nip.io",
+      "master_servers": [
+        {
+          "fqdn": "${FQDN}",
+          "ipaddress": "$IP"
+        }
+      ],
+      "etcd_servers": [
+        {
+          "fqdn": "${FQDN}",
+          "ipaddress": "$IP"
+        }
+      ],
+      "node_servers": [
+        {
+          "fqdn": "${FQDN}",
+          "ipaddress": "$IP",
+          "schedulable": true,
+          "labels": "region=infra"
+        }
+      ]
+    }
+  }
+}
+BASH
 ### Specify the configuration details for chef-solo
 cat << BASH > ~/chef-solo-example/solo.rb
 cookbook_path [
@@ -33,7 +85,7 @@ log_location STDOUT
 solo true
 BASH
 ### Delete OSE !!!!
-chef-solo -o recipe[cookbook-openshift3::adhoc_uninstall] -c ~/chef-solo-example/solo.rb
+chef-solo --environment origin -o recipe[cookbook-openshift3::adhoc_uninstall] -c ~/chef-solo-example/solo.rb
 cat << BASH
 
 ##### Uninstallation DONE ######
