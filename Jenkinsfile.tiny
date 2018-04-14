@@ -43,7 +43,7 @@ try {
     if (params.doshutit) {
       stage('shutit_tests') {
         dir(builddir) {
-          sh 'cd /space/jenkins_cache/shutit-openshift-cluster && git pull && git clean -f && cd /space/jenkins-cache'
+          sh 'cd /space/jenkins_cache/shutit-openshift-cluster && git pull && git clean -f && cd /space/jenkins_cache'
           dir('shutit-openshift-cluster') {
             withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
               sh './run_tests.sh --interactive 0'
