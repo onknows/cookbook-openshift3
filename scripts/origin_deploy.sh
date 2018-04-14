@@ -64,7 +64,7 @@ cat << BASH > environments/origin.json
       "deploy_example": true,
       "openshift_master_htpasswd_users": [
         {
-          "admin": "$apr1$5iDjNKyc$Cp8.GumvS3Q2jxeXYGptd."
+          "admin": "$apr1$pfkEA1Z3$uhk1ZEs9pbkHjd3YevXDP."
         }
       ],
       "openshift_master_router_subdomain": "cloudapps.${IP}.nip.io",
