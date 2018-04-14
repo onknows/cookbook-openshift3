@@ -12,7 +12,7 @@ mkdir -p ~/chef-solo-example/{backup,cache,roles,cookbooks,environments}
 cd ~/chef-solo-example/cookbooks
 ### Installing dependencies
 echo "Installing prerequisite packages, please wait..."
-yum -y install -q https://packages.chef.io/files/stable/chef/12.17.44/el/7/chef-12.17.44-1.el7.x86_64.rpm git
+yum -y install -q https://packages.chef.io/files/stable/chef/14.0.190/el/7/chef-14.0.190-1.el7.x86_64.rpm git
 ### Installing cookbooks
 [ -d ~/chef-solo-example/cookbooks/cookbook-openshift3 ] || git clone -q https://github.com/IshentRas/cookbook-openshift3.git
 [ -d ~/chef-solo-example/cookbooks/iptables ] || git clone -q https://github.com/chef-cookbooks/iptables.git

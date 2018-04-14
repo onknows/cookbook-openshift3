@@ -30,7 +30,7 @@ mkdir -p ~/chef-solo-example/{backup,cache,roles,cookbooks,environments}
 cd ~/chef-solo-example/cookbooks
 ### Installing dependencies
 echo "Installing prerequisite packages, please wait..."
-curl -s -L https://omnitruck.chef.io/install.sh | bash
+yum -y install -q https://packages.chef.io/files/stable/chef/14.0.190/el/7/chef-14.0.190-1.el7.x86_64.rpm git
 yum install -y git
 ### Installing cookbooks
 [ -d ~/chef-solo-example/cookbooks/cookbook-openshift3 ] || git clone -q https://github.com/IshentRas/cookbook-openshift3.git
@@ -121,7 +121,7 @@ then
   oc adm policy add-cluster-role-to-user cluster-admin admin
   # Create a demo project
   oc adm new-project demo --display-name="Origin Demo Project" --admin=admin
-  oc create -f /root/chef-solo-example/cookbooks/cookbook-openshift3/scripts/build_and_run.yml &> /dev/null
+  oc create -f /root/chef-solo-example/cookbooks/cookbook-openshift3/scripts/build_and_run.yml -n demo &> /dev/null
 fi
 # Enable completion of commands
 . /etc/bash_completion.d/oc
@@ -135,7 +135,7 @@ An admin user has been created for you.
 Username is : admin
 Password is : admin
 
-A Sample application has been deployed :-)
+A Sample application has been deployed in the "demo" project :-)
 
 Access the console here : https://console.${IP}.nip.io:8443/console
 
