@@ -87,8 +87,6 @@ cat << BASH > environments/origin.json
   }
 }
 BASH
-# Update password for admin user
-htpasswd -b -c /etc/origin/openshift-passwd admin admin
 
 ### Specify the configuration details for chef-solo
 cat << BASH > /root/chef-solo-example/solo.rb
@@ -146,3 +144,5 @@ Next steps for you :
 ##############################
 ########## DONE ##############
 BASH
+# Update password for admin user
+/usr/bin/htpasswd -b -c /etc/origin/openshift-passwd admin admin
