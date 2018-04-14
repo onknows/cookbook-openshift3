@@ -9,21 +9,22 @@ cat << BASH
 
 BASH
 IP_DETECT=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
-DF=""
-read -p "Please enter the FQDN of the server: " FQDN
+FQDN_DETECT=$( [[ $(hostname -d)  == "" ]] && echo $(hostame -s) || echo "$(hostname -s).$(hostname -d) )
+read -p "Please enter the FQDN of the server (Auto Detect): $FQDN_DETECT FQDN
 read -p "Please enter the IP of the server (Auto Detect): $IP_DETECT" IP
 
 if [ -z $IP ] 
-then IP=$IP_DETECT
+  then IP=$IP_DETECT
+fi
+
+if [ -z $FQDN ]
+  then FQDN=$FQDN_DETECT
 fi
 
 # Add the above information in /etc/hosts
 # Remove existing entries
 sed -i "/$IP/d" /etc/hosts
 echo -e "$IP\t$FQDN" >> /etc/hosts
-### Update the server
-echo "Updating system, please wait..."
-yum -y update -q -e 0
 ### Create the chef-local mode infrastructure
 mkdir -p ~/chef-solo-example/{backup,cache,roles,cookbooks,environments}
 cd ~/chef-solo-example/cookbooks
