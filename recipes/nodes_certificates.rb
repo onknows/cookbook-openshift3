@@ -68,7 +68,7 @@ else
               --client-dir=#{Chef::Config[:file_cache_path]}/#{node_server['fqdn']} \
               --certificate-authority=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt \
               --signer-cert=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt --signer-key=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key \
-              --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt --user='system:node:#{node_server['fqdn']}' \
+              --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt --user='system:node:#{node_server['fqdn'].downcase}' \
               --groups=system:nodes --master=#{node['cookbook-openshift3']['openshift_master_api_url']}"
       creates "#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar.gz"
     end
