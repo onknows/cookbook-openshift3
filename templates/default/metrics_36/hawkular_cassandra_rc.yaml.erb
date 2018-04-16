@@ -49,13 +49,6 @@ spec:
         - "--require_node_auth=true"
         - "--enable_client_encryption=true"
         - "--require_client_auth=true"
-<% if @ose_major_version.split('.')[1].to_i < 6 %>
-        - "--keystore_file=/secret/cassandra.keystore"
-        - "--keystore_password_file=/secret/cassandra.keystore.password"
-        - "--truststore_file=/secret/cassandra.truststore"
-        - "--truststore_password_file=/secret/cassandra.truststore.password"
-        - "--cassandra_pem_file=/secret/cassandra.pem"
-<%- end -%>
         env:
         - name: CASSANDRA_MASTER
           value: "true"
@@ -63,12 +56,10 @@ spec:
           value: "/cassandra_data"
         - name: JVM_OPTS
           value: "-Dcassandra.commitlog.ignorereplayerrors=true"
-<% if @ose_major_version.split('.')[1].to_i >= 6 %>
         - name: TRUSTSTORE_NODES_AUTHORITIES
           value: "/hawkular-cassandra-certs/tls.peer.truststore.crt"
         - name: TRUSTSTORE_CLIENT_AUTHORITIES
           value: "/hawkular-cassandra-certs/tls.client.truststore.crt"
-<%- end -%>
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -85,24 +76,8 @@ spec:
         volumeMounts:
         - name: cassandra-data
           mountPath: "/cassandra_data"
-<% if @ose_major_version.split('.')[1].to_i < 6 %>
-        - name: hawkular-cassandra-secrets
-          mountPath: "/secret"
-<%- else -%>
         - name: hawkular-cassandra-certs
           mountPath: "/hawkular-cassandra-certs"
-<%- end -%>
-        resources:
-          limits:
-<% unless node['cookbook-openshift3']['openshift_metrics_cassandra_limits_cpu'].empty? %>
-            cpu: "<%= node['cookbook-openshift3']['openshift_metrics_cassandra_limits_cpu'] %>"
-<%- end -%>
-            memory: "<%= node['cookbook-openshift3']['openshift_metrics_cassandra_limits_memory'] %>"
-          requests:
-<% unless node['cookbook-openshift3']['openshift_metrics_cassandra_requests_cpu'].empty? %>
-            cpu: "<%= node['cookbook-openshift3']['openshift_metrics_cassandra_requests_cpu'] %>"
-<%- end -%>
-            memory: "<%= node['cookbook-openshift3']['openshift_metrics_cassandra_requests_memory'] %>"
         readinessProbe:
           exec:
             command:
@@ -116,21 +91,15 @@ spec:
             exec:
               command:
               - "/opt/apache-cassandra/bin/cassandra-poststart.sh"
-        terminationGracePeriodSeconds: 1800
+      terminationGracePeriodSeconds: 1800
       volumes:
       - name: cassandra-data
 <% if node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type'] == 'emptydir' -%>
         emptyDir: {}
-<%- else -%>        
+<%- else -%>
         persistentVolumeClaim:
           claimName: "<%= node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_prefix'] %>"
-<%- end -%>          
-<% if @ose_major_version.split('.')[1].to_i < 6 %>
-      - name: hawkular-cassandra-secrets
-        secret:
-          secretName: hawkular-cassandra-secrets
-<%- else -%>        
+<%- end -%>
       - name: hawkular-cassandra-certs
         secret:
           secretName: hawkular-cassandra-certs
-<%- end -%>          

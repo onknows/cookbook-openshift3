@@ -110,6 +110,7 @@ end
 action :create do
   converge_by 'Deploying Metrics' do
     ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
+    FOLDER_METRICS = ose_major_version.split('.')[1].to_i < 6 ? 'metrics_legacy' : 'metrics_36'
 
     directory "#{FOLDER}/templates" do
       recursive true
@@ -258,14 +259,14 @@ action :create do
 
     template 'Generate heapster replication controller' do
       path "#{FOLDER}/templates/metrics-heapster-rc.yaml"
-      source 'heapster.yaml.erb'
+      source "#{FOLDER_METRICS}/heapster.yaml.erb"
       variables(ose_major_version: ose_major_version)
       sensitive true
     end
 
     template 'Generate hawkular-metrics replication controller' do
       path "#{FOLDER}/templates/hawkular_metrics_rc.yaml"
-      source 'hawkular_metrics_rc.yaml.erb'
+      source "#{FOLDER_METRICS}/hawkular_metrics_rc.yaml.erb"
       variables(
         ose_major_version: ose_major_version,
         random_word: random_password
@@ -275,7 +276,7 @@ action :create do
 
     template 'Generate cassandra replication controller' do
       path "#{FOLDER}/templates/hawkular-cassandra-rc1.yaml"
-      source 'hawkular_cassandra_rc.yaml.erb'
+      source "#{FOLDER_METRICS}/hawkular_cassandra_rc.yaml.erb"
       variables(ose_major_version: ose_major_version)
       sensitive true
     end
