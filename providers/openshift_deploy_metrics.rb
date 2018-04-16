@@ -23,11 +23,51 @@ def encode_file(file)
   Base64.strict_encode64(::File.read(file))
 end
 
-def generate_route(route)
+def generate_secrets(secret)
+  secret_skel = { 'apiVersion' => 'v1', 'kind' => 'Secret', 'metadata' => {}, 'data' => {} }
+  secret_skel['metadata'] = secret['metadata']
+  secret_skel['data'] = secret['data']
+  open("#{FOLDER}/templates/#{secret['metadata']['name']}.yaml", 'w') { |f| f << secret_skel.to_yaml }
+end
+
+def generate_routes(route)
   route_skel = { 'apiVersion' => 'v1', 'kind' => 'Route', 'metadata' => {}, 'spec' => {} }
   route_skel['metadata'] = route['metadata']
   route_skel['spec'] = route['spec']
   open("#{FOLDER}/templates/#{route['metadata']['name']}-route.yaml", 'w') { |f| f << route_skel.to_yaml }
+end
+
+def generate_serviceaccounts(serviceaccount)
+  serviceaccount_skel = { 'apiVersion' => 'v1', 'kind' => 'ServiceAccount', 'metadata' => {} }
+  serviceaccount_skel['metadata'] = serviceaccount['metadata']
+  serviceaccount_skel['secrets'] = serviceaccount['secrets'] if serviceaccount.key?('secrets')
+  open("#{FOLDER}/templates/#{serviceaccount['metadata']['name']}-serviceaccount.yaml", 'w') { |f| f << serviceaccount_skel.to_yaml }
+end
+
+def generate_rolebindings(rolebinding)
+  type = rolebinding.key?('cluster') ? 'ClusterRoleBinding' : 'RoleBinding'
+  rolebinding_skel = { 'apiVersion' => 'v1', 'kind' => type, 'metadata' => {}, 'roleRef' => {}, 'subjects' => {} }
+  rolebinding_skel['metadata'] = rolebinding['metadata']
+  rolebinding_skel['roleRef'] = rolebinding['rolerefs']
+  rolebinding_skel['subjects'] = rolebinding['subjects']
+  open("#{FOLDER}/templates/#{rolebinding['metadata']['name']}-rolebinding.yaml", 'w') { |f| f << rolebinding_skel.to_yaml }
+end
+
+def generate_roles(role)
+  type = role.key?('cluster') ? 'ClusterRole' : 'Role'
+  role_skel = { 'apiVersion' => 'v1', 'kind' => type, 'metadata' => {}, 'rules' => {} }
+  role_skel['metadata'] = role['metadata']
+  role_skel['rules'] = role['rules']
+  open("#{FOLDER}/templates/#{role['metadata']['name']}-role.yaml", 'w') { |f| f << role_skel.to_yaml }
+end
+
+def generate_services(service)
+  service_skel = { 'apiVersion' => 'v1', 'kind' => 'Service', 'metadata' => {}, 'spec' => {} }
+  service_skel['metadata'] = service['metadata']
+  service_skel['spec']['ports'] = service['ports']
+  service_skel['spec']['selector'] = service['selector']
+  service_skel['spec']['clusterIP'] = 'None' if service.key?('headless')
+  open("#{FOLDER}/templates/#{service['metadata']['name']}-service.yaml", 'w') { |f| f << service_skel.to_yaml }
 end
 
 action :delete do
@@ -38,6 +78,7 @@ action :delete do
 
     remote_file "#{FOLDER}/admin.kubeconfig" do
       source "file://#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
+      sensitive true
     end
 
     execute 'Scaling down cluster before deletion' do
@@ -81,6 +122,7 @@ action :create do
 
     remote_file "#{FOLDER}/admin.kubeconfig" do
       source "file://#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
+      sensitive true
     end
 
     package 'java-1.8.0-openjdk-headless'
@@ -156,208 +198,60 @@ action :create do
     end
 
     if ose_major_version.split('.')[1].to_i < 6
-      template 'Generate hawkular-metrics-secrets secret template' do
-        path "#{FOLDER}/templates/hawkular_metrics_secrets.yaml"
-        source 'secret.yaml.erb'
-        variables lazy {
-          {
-            name: 'hawkular-metrics-secrets',
-            labels: { 'metrics-infra' => 'hawkular-metrics' },
-            data: {
-              'hawkular-metrics.keystore' => encode_file("#{FOLDER}/hawkular-metrics.keystore"),
-              'hawkular-metrics.keystore.password' => encode_file("#{FOLDER}/hawkular-metrics-keystore.pwd"),
-              'hawkular-metrics.truststore' => encode_file("#{FOLDER}/hawkular-metrics.truststore"),
-              'hawkular-metrics.truststore.password' => encode_file("#{FOLDER}/hawkular-metrics-truststore.pwd"),
-              'hawkular-metrics.keystore.alias' => Base64.strict_encode64('hawkular-metrics'),
-              'hawkular-metrics.htpasswd.file' => encode_file("#{FOLDER}/hawkular-metrics.htpasswd"),
-              'hawkular-metrics.jgroups.keystore' => encode_file("#{FOLDER}/hawkular-jgroups.keystore"),
-              'hawkular-metrics.jgroups.keystore.password' => encode_file("#{FOLDER}/hawkular-jgroups-keystore.pwd"),
-              'hawkular-metrics.jgroups.alias' => Base64.strict_encode64('hawkular')
-            }
-          }
-        }
-      end
 
-      template 'Generate hawkular-metrics-certificate secret template' do
-        path "#{FOLDER}/templates/hawkular_metrics_certificate.yaml"
-        source 'secret.yaml.erb'
-        variables lazy {
-          {
-            name: 'hawkular-metrics-certificate',
-            labels: { 'metrics-infra' => 'hawkular-metrics' },
-            data: {
-              'hawkular-metrics.certificate' => encode_file("#{FOLDER}/hawkular-metrics.crt"),
-              'hawkular-metrics-ca.certificate' => encode_file("#{FOLDER}/ca.crt")
-            }
-          }
-        }
-      end
-
-      template 'Generate hawkular-metrics-account secret template' do
-        path "#{FOLDER}/templates/hawkular_metrics_account.yaml"
-        source 'secret.yaml.erb'
-        variables lazy {
-          {
-            name: 'hawkular-metrics-account',
-            labels: { 'metrics-infra' => 'hawkular-metrics' },
-            data: {
-              'hawkular-metrics.username' => Base64.strict_encode64('hawkular'),
-              'hawkular-metrics.password' => encode_file("#{FOLDER}/hawkular-metrics.pwd")
-            }
-          }
-        }
-      end
-
-      template 'Generate cassandra secret template' do
-        path "#{FOLDER}/templates/cassandra_secrets.yaml"
-        source 'secret.yaml.erb'
-        variables lazy {
-          {
-            name: 'hawkular-cassandra-secrets',
-            labels: { 'metrics-infra' => 'hawkular-cassandra' },
-            data: {
-              'cassandra.keystore' => encode_file("#{FOLDER}/hawkular-cassandra.keystore"),
-              'cassandra.keystore.password' => encode_file("#{FOLDER}/hawkular-cassandra-keystore.pwd"),
-              'cassandra.keystore.alias' => Base64.strict_encode64('hawkular-cassandra'),
-              'cassandra.truststore' => encode_file("#{FOLDER}/hawkular-cassandra.truststore"),
-              'cassandra.truststore.password' => encode_file("#{FOLDER}/hawkular-cassandra-truststore.pwd"),
-              'cassandra.pem' => encode_file("#{FOLDER}/hawkular-cassandra.pem")
-            }
-          }
-        }
-      end
-
-      template 'Generate cassandra-certificate secret template' do
-        path "#{FOLDER}/templates/cassandra_certificate.yaml"
-        source 'secret.yaml.erb'
-        variables lazy {
-          {
-            name: 'hawkular-cassandra-certificate',
-            labels: { 'metrics-infra' => 'hawkular-cassandra' },
-            data: {
-              'cassandra.certificate' => encode_file("#{FOLDER}/hawkular-cassandra.crt"),
-              'cassandra-ca.certificate' => encode_file("#{FOLDER}/hawkular-cassandra.pem")
-            }
-          }
-        }
-      end
-
-      template 'Generate heapster secret template' do
-        path "#{FOLDER}/templates/heapster_secrets.yaml"
-        source 'secret.yaml.erb'
-        variables lazy {
-          {
-            name: 'heapster-secrets',
-            labels: { 'metrics-infra' => 'heapster' },
-            data: {
-              'heapster.cert' => encode_file("#{FOLDER}/heapster.crt"),
-              'heapster.key' => encode_file("#{FOLDER}/heapster.key"),
-              'heapster.client-ca' => encode_file("#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt"),
-              'heapster.allowed-users' => Base64.strict_encode64((node['cookbook-openshift3']['openshift_metrics_heapster_allowed_users']).to_s)
-            }
-          }
-        }
+      ruby_block 'Create Metrics Secrets (<3.6)' do
+        block do
+          [{ 'metadata' => { 'name' => 'hawkular-metrics-secrets', 'labels' => { 'metrics-infra' => 'hawkular-metrics' } }, 'data' => { 'hawkular-metrics.keystore' => encode_file("#{FOLDER}/hawkular-metrics.keystore"), 'hawkular-metrics.keystore.password' => encode_file("#{FOLDER}/hawkular-metrics-keystore.pwd"), 'hawkular-metrics.truststore' => encode_file("#{FOLDER}/hawkular-metrics.truststore"), 'hawkular-metrics.truststore.password' => encode_file("#{FOLDER}/hawkular-metrics-truststore.pwd"), 'hawkular-metrics.keystore.alias' => Base64.strict_encode64('hawkular-metrics'), 'hawkular-metrics.htpasswd.file' => encode_file("#{FOLDER}/hawkular-metrics.htpasswd"), 'hawkular-metrics.jgroups.keystore' => encode_file("#{FOLDER}/hawkular-jgroups.keystore"), 'hawkular-metrics.jgroups.keystore.password' => encode_file("#{FOLDER}/hawkular-jgroups-keystore.pwd"), 'hawkular-metrics.jgroups.alias' => Base64.strict_encode64('hawkular') } }, { 'metadata' => { 'name' => 'hawkular-metrics-certificate', 'labels' => { 'metrics-infra' => 'hawkular-metrics' } }, 'data' => { 'hawkular-metrics.certificate' => encode_file("#{FOLDER}/hawkular-metrics.crt"), 'hawkular-metrics-ca.certificate' => encode_file("#{FOLDER}/ca.crt") } }, { 'metadata' => { 'name' => 'hawkular-metrics-account', 'labels' => { 'metrics-infra' => 'hawkular-metrics' } }, 'data' => { 'hawkular-metrics.username' => Base64.strict_encode64('hawkular'), 'hawkular-metrics.password' => encode_file("#{FOLDER}/hawkular-metrics.pwd") } }, { 'metadata' => { 'name' => 'hawkular-cassandra-secrets', 'labels' => { 'metrics-infra' => 'hawkular-cassandra' } }, 'data' => { 'cassandra.keystore' => encode_file("#{FOLDER}/hawkular-cassandra.keystore"), 'cassandra.keystore.password' => encode_file("#{FOLDER}/hawkular-cassandra-keystore.pwd"), 'cassandra.keystore.alias' => Base64.strict_encode64('hawkular-cassandra'), 'cassandra.truststore' => encode_file("#{FOLDER}/hawkular-cassandra.truststore"), 'cassandra.truststore.password' => encode_file("#{FOLDER}/hawkular-cassandra-truststore.pwd"), 'cassandra.pem' => encode_file("#{FOLDER}/hawkular-cassandra.pem") } }, { 'metadata' => { 'name' => 'hawkular-cassandra-certificate', 'labels' => { 'metrics-infra' => 'hawkular-cassandra' } }, 'data' => { 'cassandra.certificate' => encode_file("#{FOLDER}/hawkular-cassandra.crt"), 'cassandra-ca.certificate' => encode_file("#{FOLDER}/hawkular-cassandra.pem") } }, { 'metadata' => { 'name' => 'heapster-secrets', 'labels' => { 'metrics-infra' => 'heapster' } }, 'data' => { 'heapster.cert' => encode_file("#{FOLDER}/heapster.crt"), 'heapster.key' => encode_file("#{FOLDER}/heapster.key"), 'heapster.client-ca' => encode_file("#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt"), 'heapster.allowed-users' => Base64.strict_encode64((node['cookbook-openshift3']['openshift_metrics_heapster_allowed_users']).to_s) } }].each do |secret|
+            generate_secrets(secret)
+          end
+        end
       end
     else
-      template 'Generate hawkular-metrics-certs secret template' do
-        path "#{FOLDER}/templates/hawkular_metrics-certs_secrets.yaml"
-        source 'secret.yaml.erb'
-        variables lazy {
-          {
-            name: 'hawkular-metrics-certs',
-            labels: { 'metrics-infra' => 'hawkular-metrics-certs' },
-            annotations: ['service.alpha.openshift.io/originating-service-name: hawkular-metrics'],
-            data: {
-              'tls.crt' => encode_file("#{FOLDER}/hawkular-metrics.crt"),
-              'tls.key' => encode_file("#{FOLDER}/hawkular-metrics.key"),
-              'tls.truststore.crt' => encode_file("#{FOLDER}/hawkular-cassandra.crt"),
-              'ca.crt' => encode_file("#{FOLDER}/ca.crt")
-            }
-          }
-        }
-      end
-
-      template 'Generate hawkular-metrics-account secret template' do
-        path "#{FOLDER}/templates/hawkular_metrics_account.yaml"
-        source 'secret.yaml.erb'
-        variables lazy {
-          {
-            name: 'hawkular-metrics-account',
-            labels: { 'metrics-infra' => 'hawkular-metrics' },
-            data: {
-              'hawkular-metrics.username' => Base64.strict_encode64('hawkular'),
-              'hawkular-metrics.htpasswd' => encode_file("#{FOLDER}/hawkular-metrics.htpasswd"),
-              'hawkular-metrics.password' => encode_file("#{FOLDER}/hawkular-metrics.pwd")
-            }
-          }
-        }
-      end
-
-      template 'Generate cassandra-certificate secret template' do
-        path "#{FOLDER}/templates/hawkular-cassandra-certs.yaml"
-        source 'secret.yaml.erb'
-        variables lazy {
-          {
-            name: 'hawkular-cassandra-certs',
-            labels: { 'metrics-infra' => 'hawkular-cassandra-certs' },
-            annotations: ['service.alpha.openshift.io/originating-service-name: hawkular-cassandra'],
-            data: {
-              'tls.crt' => encode_file("#{FOLDER}/hawkular-cassandra.crt"),
-              'tls.key' => encode_file("#{FOLDER}/hawkular-cassandra.key"),
-              'tls.peer.truststore.crt' => encode_file("#{FOLDER}/hawkular-cassandra.crt"),
-              'tls.client.truststore.crt' => encode_file("#{FOLDER}/hawkular-metrics.crt")
-            }
-          }
-        }
-      end
-
-      template 'Generate heapster secret template' do
-        path "#{FOLDER}/templates/heapster_secrets.yaml"
-        source 'secret.yaml.erb'
-        variables lazy {
-          {
-            name: 'heapster-secrets',
-            labels: { 'metrics-infra' => 'heapster' },
-            data: {
-              'heapster.allowed-users' => Base64.strict_encode64((node['cookbook-openshift3']['openshift_metrics_heapster_allowed_users']).to_s)
-            }
-          }
-        }
+      ruby_block 'Create Metrics Secrets (>=3.6)' do
+        block do
+          [{ 'metadata' => { 'name' => 'hawkular-metrics-certs', 'labels' => { 'metrics-infra' => 'hawkular-metrics-certs' } }, 'data' => { 'tls.crt' => encode_file("#{FOLDER}/hawkular-metrics.crt"), 'tls.key' => encode_file("#{FOLDER}/hawkular-metrics.key"), 'tls.truststore.crt' => encode_file("#{FOLDER}/hawkular-cassandra.crt"), 'ca.crt' => encode_file("#{FOLDER}/ca.crt") } }, { 'metadata' => { 'name' => 'hawkular-metrics-account', 'labels' => { 'metrics-infra' => 'hawkular-metrics' } }, 'data' => { 'hawkular-metrics.username' => Base64.strict_encode64('hawkular'), 'hawkular-metrics.htpasswd' => encode_file("#{FOLDER}/hawkular-metrics.htpasswd"), 'hawkular-metrics.password' => encode_file("#{FOLDER}/hawkular-metrics.pwd") } }, { 'metadata' => { 'name' => 'hawkular-cassandra-certs', 'labels' => { 'metrics-infra' => 'hawkular-cassandra-certs' }, 'annotations' => { 'service.alpha.openshift.io/originating-service-name' => 'hawkular-cassandra' } }, 'data' => { 'tls.crt' => encode_file("#{FOLDER}/hawkular-cassandra.crt"), 'tls.key' => encode_file("#{FOLDER}/hawkular-cassandra.key"), 'tls.peer.truststore.crt' => encode_file("#{FOLDER}/hawkular-cassandra.crt"), 'tls.client.truststore.crt' => encode_file("#{FOLDER}/hawkular-metrics.crt") } }, { 'metadata' => { 'name' => 'heapster-secrets', 'labels' => { 'metrics-infra' => 'heapster' } }, 'data' => { 'heapster.allowed-users' => Base64.strict_encode64((node['cookbook-openshift3']['openshift_metrics_heapster_allowed_users']).to_s) } }].each do |secret|
+            generate_secrets(secret)
+          end
+        end
       end
     end
 
-    [{ 'name' => 'hawkular', 'labels' => { 'metrics-infra' => 'support' }, 'secrets' => ['hawkular-metrics-secrets'] }, { 'name' => 'cassandra', 'labels' => { 'metrics-infra' => 'support' }, 'secrets' => ['hawkular-cassandra-secrets'] }, { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'support' }, 'secrets' => ['heapster-secrets', 'hawkular-metrics-certificate', 'hawkular-metrics-account'] }].each do |sa|
-      template "Generating serviceaccounts for #{sa['name']}" do
-        path "#{FOLDER}/templates/metrics-#{sa['name']}-sa.yaml"
-        source 'serviceaccount.yaml.erb'
-        variables(sa: sa)
+    ruby_block 'Create Service Accounts' do
+      block do
+        [{ 'metadata' => { 'name' => 'hawkular', 'labels' => { 'metrics-infra' => 'support' } }, 'secrets' => [{ 'name' => 'hawkular-metrics-secrets' }] }, { 'metadata' => { 'name' => 'cassandra', 'labels' => { 'metrics-infra' => 'support' } }, 'secrets' => [{ 'name' => 'hawkular-cassandra-secrets' }] }, { 'metadata' => { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'support' } }, 'secrets' => [{ 'name' => 'heapster-secrets' }, { 'name' => 'hawkular-metrics-certificate' }, { 'name' => 'hawkular-metrics-account' }] }].each do |serviceaccount|
+          generate_serviceaccounts(serviceaccount)
+        end
       end
     end
 
-    [{ 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics', 'name' => 'hawkular-metrics' }, 'selector' => { 'name' => 'hawkular-metrics' }, 'ports' => [{ 'port' => 443, 'targetPort' => 'https-endpoint' }] }, { 'name' => 'hawkular-cassandra', 'labels' => { 'metrics-infra' => 'hawkular-cassandra', 'name' => 'hawkular-cassandra' }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }] }, { 'name' => 'hawkular-cassandra-nodes', 'labels' => { 'metrics-infra' => 'hawkular-cassandra-nodes', 'name' => 'hawkular-cassandra-nodes' }, 'selector' => { 'type' => 'hawkular-cassandra-nodes' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }], 'headless' => true }, { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'heapster', 'name' => 'heapster' }, 'selector' => { 'name' => 'heapster' }, 'annotations' => ['service.alpha.openshift.io/serving-cert-secret-name: heapster-certs'], 'ports' => [{ 'port' => 80, 'targetPort' => 'http-endpoint' }] }].each do |svc|
-      template "Generating serviceaccounts for #{svc['name']}" do
-        path "#{FOLDER}/templates/metrics-#{svc['name']}-svc.yaml"
-        source 'service.yaml.erb'
-        variables(svc: svc)
+    ruby_block 'Create Services' do
+      block do
+        [{ 'metadata' => { 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics', 'name' => 'hawkular-metrics' } }, 'selector' => { 'name' => 'hawkular-metrics' }, 'ports' => [{ 'port' => 443, 'targetPort' => 'https-endpoint' }] }, { 'metadata' => { 'name' => 'hawkular-cassandra', 'labels' => { 'metrics-infra' => 'hawkular-cassandra', 'name' => 'hawkular-cassandra' } }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }] }, { 'metadata' => { 'name' => 'hawkular-cassandra-nodes', 'labels' => { 'metrics-infra' => 'hawkular-cassandra-nodes', 'name' => 'hawkular-cassandra-nodes' } }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }], 'headless' => true }, { 'metadata' => { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'heapster', 'name' => 'heapster' } }, 'selector' => { 'name' => 'heapster' }, 'annotations' => [{ 'service.alpha.openshift.io/serving-cert-secret-name' => 'heapster-certs' }], 'ports' => [{ 'port' => 80, 'targetPort' => 'http-endpoint' }] }].each do |service|
+          generate_services(service)
+        end
       end
     end
 
-    [{ 'name' => 'hawkular-view', 'labels' => { 'metrics-infra' => 'hawkular' }, 'rolerefs' => { 'name' => 'view' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }] }, { 'name' => 'hawkular-namespace-watcher', 'labels' => { 'metrics-infra' => 'hawkular' }, 'rolerefs' => { 'name' => 'hawkular-metrics', 'kind' => 'ClusterRole' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }], 'cluster' => true }, { 'name' => 'heapster-cluster-reader', 'labels' => { 'metrics-infra' => 'heapster' }, 'rolerefs' => { 'name' => 'cluster-reader', 'kind' => 'ClusterRole' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'heapster', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }], 'cluster' => true }].each do |role|
-      template "Generate view role binding for the #{role['name']} service account" do
-        path "#{FOLDER}/templates/#{role['name']}-rolebinding.yaml"
-        source 'rolebinding.yaml.erb'
-        variables(role: role)
+    ruby_block 'Create Role Bindings' do
+      block do
+        [{ 'metadata' => { 'name' => 'hawkular-view', 'labels' => { 'metrics-infra' => 'hawkular' } }, 'rolerefs' => { 'name' => 'view' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }] }, { 'metadata' => { 'name' => 'hawkular-namespace-watcher', 'labels' => { 'metrics-infra' => 'hawkular' } }, 'rolerefs' => { 'name' => 'hawkular-metrics', 'kind' => 'ClusterRole' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }], 'cluster' => true }, { 'metadata' => { 'name' => 'heapster-cluster-reader', 'labels' => { 'metrics-infra' => 'heapster' } }, 'rolerefs' => { 'name' => 'cluster-reader', 'kind' => 'ClusterRole' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'heapster', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }], 'cluster' => true }].each do |rolebinding|
+          generate_rolebindings(rolebinding)
+        end
       end
     end
 
-    cookbook_file "#{FOLDER}/templates/hawkular-cluster-role.yaml" do
-      source 'hawkular_metrics_role.yaml'
+    ruby_block 'Create Roles' do
+      block do
+        [{ 'metadata' => { 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics' } }, 'rules' => [{ 'apiGroups' => [''], 'resources' => ['namespaces'], 'verbs' => %w(list get watch) }], 'cluster' => true }].each do |role|
+          generate_roles(role)
+        end
+      end
     end
 
-    ruby_block 'Send route' do
+    ruby_block 'Create Routes' do
       block do
         [{ 'metadata' => { 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics' } }, 'spec' => { 'host' => node['cookbook-openshift3']['openshift_metrics_hawkular_hostname'], 'to' => { 'kind' => 'Service', 'name' => 'hawkular-metrics' }, 'tls' => { 'termination' => 'reencrypt', 'destinationCACertificate' => ::File.read("#{FOLDER}/ca.crt") } } }].each do |route|
-          generate_route(route)
+          generate_routes(route)
         end
       end
     end
@@ -366,6 +260,7 @@ action :create do
       path "#{FOLDER}/templates/metrics-heapster-rc.yaml"
       source 'heapster.yaml.erb'
       variables(ose_major_version: ose_major_version)
+      sensitive true
     end
 
     template 'Generate hawkular-metrics replication controller' do
@@ -375,12 +270,14 @@ action :create do
         ose_major_version: ose_major_version,
         random_word: random_password
       )
+      sensitive true
     end
 
     template 'Generate cassandra replication controller' do
       path "#{FOLDER}/templates/hawkular-cassandra-rc1.yaml"
       source 'hawkular_cassandra_rc.yaml.erb'
       variables(ose_major_version: ose_major_version)
+      sensitive true
     end
 
     [{ 'name' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_prefix'], 'labels' => { 'metrics-infra' => 'hawkular-cassandra' }, 'annotations' => { 'volume.alpha.kubernetes.io/storage-class' => 'dynamic' }, 'access_modes' => node['cookbook-openshift3']['openshift_metrics_cassandra_pvc_access'] }].each do |pvc|
