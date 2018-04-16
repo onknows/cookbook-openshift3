@@ -16,7 +16,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
   node.force_override['is_apaas_openshift_cookbook']['ose_major_version'] = node['is_apaas_openshift_cookbook']['upgrade_ose_major_version']
   node.force_override['is_apaas_openshift_cookbook']['ose_version'] = node['is_apaas_openshift_cookbook']['upgrade_ose_version']
   node.force_override['is_apaas_openshift_cookbook']['openshift_docker_image_version'] = node['is_apaas_openshift_cookbook']['upgrade_openshift_docker_image_version']
-  node.force_override['yum']['main']['exclude'] = 'docker-1.13*'
+  node.force_override['yum']['main']['exclude'] = 'docker-1.13* ' + node['is_apaas_openshift_cookbook']['custom_pkgs_excluder']
 
   server_info = OpenShiftHelper::NodeHelper.new(node)
   first_etcd = server_info.first_etcd

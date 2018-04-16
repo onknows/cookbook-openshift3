@@ -1,6 +1,11 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.25
+### Bug
+- Add option to control docker yum exclude options custom_pkgs_excluder
+- Revert last logic not working
+
 ## v2.0.24
 ### Bug
 - Fix issue with master keys != 400 perms
