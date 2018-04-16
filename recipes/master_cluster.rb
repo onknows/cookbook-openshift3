@@ -120,6 +120,14 @@ execute 'Extract master certificates to Master folder' do
   action :nothing
 end
 
+Dir.glob("#{node['cookbook-openshift3']['openshift_master_config_dir']}/*").grep(/\.(?:key)$/).uniq.each do |key|
+  file key do
+    owner 'root'
+    group 'root'
+    mode '0600'
+  end
+end
+
 execute 'Create the policy file' do
   command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} create-bootstrap-policy-file --filename=#{node['cookbook-openshift3']['openshift_master_policy']}"
   creates node['cookbook-openshift3']['openshift_master_policy']

@@ -1,6 +1,12 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.24
+### Bug
+- Fix issue with master keys != 400 perms
+### Improvement
+- Add option to control docker yum options (Exclude/Include X pkgs) docker_yum_options
+
 ## v2.0.23
 ### Bug
 - Fix issue with node service when NM is not turned off (Openshift >= 3.6)
