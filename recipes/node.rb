@@ -245,7 +245,7 @@ if is_node_server
     ruby_block 'Enforce running NM_CONTROLLED on host (>= 3.6)' do
       block do
         f = Chef::Util::FileEdit.new("/etc/sysconfig/network-scripts/ifcfg-#{node['network']['default_interface']}")
-        f.insert_line_if_no_match(/^NM_CONTROLLED/, 'NM_CONTROLLED=yes')
+        f.search_file_delete_line(/^NM_CONTROLLED/)
         f.write_file
       end
       notifies :restart, 'service[NetworkManager]', :immediately
