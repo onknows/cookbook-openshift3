@@ -70,7 +70,6 @@ if is_master_server
     notifies :restart, 'service[atomic-openshift-master]', :immediately unless node['is_apaas_openshift_cookbook']['openshift_HA']
     notifies :restart, 'service[atomic-openshift-master-api]', :immediately if node['is_apaas_openshift_cookbook']['openshift_HA']
     notifies :restart, 'service[atomic-openshift-master-controllers]', :immediately if node['is_apaas_openshift_cookbook']['openshift_HA']
-    notifies :restart, 'service[atomic-openshift-node]', :immediately if is_node_server
   end
 
   execute "Set upgrade markup for master : #{node['fqdn']}" do

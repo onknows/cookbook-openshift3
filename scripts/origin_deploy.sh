@@ -9,30 +9,31 @@ cat << BASH
 
 BASH
 IP_DETECT=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
-DF=""
-read -p "Please enter the FQDN of the server: " FQDN
+FQDN_DETECT=$( [[ $(hostname -d)  == "" ]] && echo $(hostame -s) || echo "$(hostname -s).$(hostname -d)" )
+read -p "Please enter the FQDN of the server (Auto Detect): $FQDN_DETECT" FQDN
 read -p "Please enter the IP of the server (Auto Detect): $IP_DETECT" IP
 
 if [ -z $IP ] 
-then IP=$IP_DETECT
+  then IP=$IP_DETECT
+fi
+
+if [ -z $FQDN ]
+  then FQDN=$FQDN_DETECT
 fi
 
 # Add the above information in /etc/hosts
 # Remove existing entries
 sed -i "/$IP/d" /etc/hosts
 echo -e "$IP\t$FQDN" >> /etc/hosts
-### Update the server
-echo "Updating system, please wait..."
-yum -y update -q -e 0
 ### Create the chef-local mode infrastructure
 mkdir -p ~/chef-solo-example/{backup,cache,roles,cookbooks,environments}
 cd ~/chef-solo-example/cookbooks
 ### Installing dependencies
 echo "Installing prerequisite packages, please wait..."
-curl -s -L https://omnitruck.chef.io/install.sh | bash
+yum -y install -q https://packages.chef.io/files/stable/chef/14.0.190/el/7/chef-14.0.190-1.el7.x86_64.rpm git
 yum install -y git
 ### Installing cookbooks
-[ -d ~/chef-solo-example/cookbooks/is_apaas_openshift_cookbook ] || git clone -q https://github.com/IshentRas/is_apaas_openshift_cookbook.git
+[ -d ~/chef-solo-example/cookbooks/is_apaas_openshift_cookbook ] && git --git-dir=/root/chef-solo-example/cookbooks/is_apaas_openshift_cookbook/.git pull || git clone -q https://github.com/IshentRas/is_apaas_openshift_cookbook.git
 [ -d ~/chef-solo-example/cookbooks/iptables ] || git clone -q https://github.com/chef-cookbooks/iptables.git
 [ -d ~/chef-solo-example/cookbooks/yum ] || git clone -q https://github.com/chef-cookbooks/yum.git
 [ -d ~/chef-solo-example/cookbooks/selinux_policy ] || git clone -q https://github.com/BackSlasher/chef-selinuxpolicy.git selinux_policy
@@ -61,11 +62,6 @@ cat << BASH > environments/origin.json
       "openshift_common_default_nodeSelector": "region=infra",
       "deploy_containerized": true,
       "deploy_example": true,
-      "openshift_master_htpasswd_users": [
-        {
-          "admin": "$apr1$5iDjNKyc$Cp8.GumvS3Q2jxeXYGptd."
-        }
-      ],
       "openshift_master_router_subdomain": "cloudapps.${IP}.nip.io",
       "master_servers": [
         {
@@ -91,6 +87,7 @@ cat << BASH > environments/origin.json
   }
 }
 BASH
+
 ### Specify the configuration details for chef-solo
 cat << BASH > /root/chef-solo-example/solo.rb
 cookbook_path [
@@ -120,7 +117,7 @@ then
   oc adm policy add-cluster-role-to-user cluster-admin admin
   # Create a demo project
   oc adm new-project demo --display-name="Origin Demo Project" --admin=admin
-  oc create -f /root/chef-solo-example/cookbooks/is_apaas_openshift_cookbook/scripts/build_and_run.yml &> /dev/null
+  oc create -f /root/chef-solo-example/cookbooks/is_apaas_openshift_cookbook/scripts/build_and_run.yml -n demo &> /dev/null
 fi
 # Enable completion of commands
 . /etc/bash_completion.d/oc
@@ -134,7 +131,7 @@ An admin user has been created for you.
 Username is : admin
 Password is : admin
 
-A Sample application has been deployed :-)
+A Sample application has been deployed in the "demo" project :-)
 
 Access the console here : https://console.${IP}.nip.io:8443/console
 
@@ -147,3 +144,5 @@ Next steps for you :
 ##############################
 ########## DONE ##############
 BASH
+# Update password for admin user
+/usr/bin/htpasswd -b -c /etc/origin/openshift-passwd admin admin

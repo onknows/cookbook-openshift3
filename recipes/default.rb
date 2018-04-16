@@ -10,6 +10,10 @@ is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
 is_certificate_server = server_info.on_certificate_server?
 
+if ::File.file?(node['is_apaas_openshift_cookbook']['adhoc_uninstall_control_flag'])
+  include_recipe 'is_apaas_openshift_cookbook::adhoc_uninstall'
+end
+
 include_recipe 'is_apaas_openshift_cookbook::services'
 
 if node['is_apaas_openshift_cookbook']['control_upgrade']

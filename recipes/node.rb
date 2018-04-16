@@ -241,6 +241,17 @@ if is_node_server
       action %i(enable start)
       ignore_failure true
     end
+
+    ruby_block 'Enforce running NM_CONTROLLED on host (>= 3.6)' do
+      block do
+        f = Chef::Util::FileEdit.new("/etc/sysconfig/network-scripts/ifcfg-#{node['network']['default_interface']}")
+        f.search_file_delete_line(/^NM_CONTROLLED/)
+        f.write_file
+      end
+      notifies :restart, 'service[NetworkManager]', :immediately
+      only_if { ::File.exist?("/etc/sysconfig/network-scripts/ifcfg-#{node['network']['default_interface']}") }
+      only_if { ose_major_version.split('.')[1].to_i >= 6 }
+    end
   end
 
   template node['is_apaas_openshift_cookbook']['openshift_node_config_file'] do

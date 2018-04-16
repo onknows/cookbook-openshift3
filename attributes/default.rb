@@ -6,10 +6,6 @@
 
 originrepos = [{ 'name' => 'centos-openshift-origin13', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin13/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin14', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin14/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin15', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin15/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin36', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin36/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin37', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin37/', 'gpgcheck' => false }]
 
-default['is_apaas_openshift_cookbook']['adhoc_redeploy_certificates'] = false
-default['is_apaas_openshift_cookbook']['adhoc_redeploy_etcd_ca'] = false
-default['is_apaas_openshift_cookbook']['adhoc_redeploy_cluster_ca'] = false
-
 default['is_apaas_openshift_cookbook']['use_wildcard_nodes'] = false
 default['is_apaas_openshift_cookbook']['wildcard_domain'] = ''
 default['is_apaas_openshift_cookbook']['openshift_cluster_name'] = ''
@@ -20,13 +16,6 @@ default['is_apaas_openshift_cookbook']['node_servers'] = []
 default['is_apaas_openshift_cookbook']['lb_servers'] = []
 default['is_apaas_openshift_cookbook']['certificate_server'] = {}
 default['is_apaas_openshift_cookbook']['openshift_push_via_dns'] = false
-
-default['is_apaas_openshift_cookbook']['redeploy_etcd_ca_control_flag'] = '/to_be_replaced_ca_etcd'
-default['is_apaas_openshift_cookbook']['redeploy_etcd_certs_control_flag'] = '/to_be_replaced_certs'
-
-default['is_apaas_openshift_cookbook']['redeploy_cluster_ca_certserver_control_flag'] = '/to_be_replaced_ca_cluster'
-default['is_apaas_openshift_cookbook']['redeploy_cluster_ca_masters_control_flag'] = '/to_be_replaced_masters'
-default['is_apaas_openshift_cookbook']['redeploy_cluster_ca_nodes_control_flag'] = '/to_be_replaced_nodes'
 
 if node['is_apaas_openshift_cookbook']['openshift_HA']
   default['is_apaas_openshift_cookbook']['openshift_common_api_hostname'] = node['is_apaas_openshift_cookbook']['openshift_cluster_name']
