@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.23
+### Bug
+- Fix issue with node service when NM is not turned off (Openshift >= 3.6)
+
 ## v2.0.22
 ### Bug
 - Fix issue when restarting ETCD during upgrade
