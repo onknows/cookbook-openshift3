@@ -41,7 +41,7 @@ try {
     stage('rubocop') {
       node() {
         dir(builddir) {
-          sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk rubocop:' + RUBOCOP_VERSION + ' -D'
+          sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk rubocop:' + "${params.RUBOCOP_VERSION} -D"  
         }
       }
     }
