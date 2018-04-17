@@ -88,7 +88,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     end
 
     include_recipe 'cookbook-openshift3::master'
-    include_recipe 'cookbook-openshift3::excluder'
+    include_recipe 'cookbook-openshift3::excluder' unless is_node_server
 
     log 'Restart Master services' do
       level :info

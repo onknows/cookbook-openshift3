@@ -97,6 +97,15 @@ module OpenShiftHelper
       fstab_file = Chef::Util::FileEdit.new('/etc/fstab')
       fstab_file.search_file_replace(regex, '# \1')
       fstab_file.write_file
+      remove_duplicates('/etc/fstab')
+      Mixlib::ShellOut.new('/usr/sbin/swapoff -a').run_command
+    end
+
+    def remove_duplicates(filename)
+      text = File.read(filename)
+      lines = text.split("\n")
+      new_contents = lines.uniq.join("\n")
+      File.open(filename, 'w') { |file| file.puts new_contents }
     end
 
     def check_certificate_server

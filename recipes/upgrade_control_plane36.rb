@@ -90,7 +90,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
     node.force_override['cookbook-openshift3']['etcd_migrated'] = false unless config_options['kubernetesMasterConfig']['apiServerArguments'].key?('storage-backend')
 
     include_recipe 'cookbook-openshift3::master'
-    include_recipe 'cookbook-openshift3::excluder'
+    include_recipe 'cookbook-openshift3::excluder' unless is_node_server
 
     log 'Restart Master services' do
       level :info

@@ -63,7 +63,7 @@ if is_master_server
   end
 
   include_recipe 'cookbook-openshift3::master'
-  include_recipe 'cookbook-openshift3::excluder'
+  include_recipe 'cookbook-openshift3::excluder' unless is_node_server
 
   log 'Restart Master services' do
     level :info

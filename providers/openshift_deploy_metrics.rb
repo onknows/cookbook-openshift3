@@ -112,6 +112,11 @@ action :create do
     ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
     FOLDER_METRICS = ose_major_version.split('.')[1].to_i < 6 ? 'metrics_legacy' : 'metrics_36'
 
+    directory FOLDER.to_s do
+      recursive true
+      action :delete
+    end
+
     directory "#{FOLDER}/templates" do
       recursive true
     end
@@ -227,7 +232,7 @@ action :create do
 
     ruby_block 'Create Services' do
       block do
-        [{ 'metadata' => { 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics', 'name' => 'hawkular-metrics' } }, 'selector' => { 'name' => 'hawkular-metrics' }, 'ports' => [{ 'port' => 443, 'targetPort' => 'https-endpoint' }] }, { 'metadata' => { 'name' => 'hawkular-cassandra', 'labels' => { 'metrics-infra' => 'hawkular-cassandra', 'name' => 'hawkular-cassandra' } }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }] }, { 'metadata' => { 'name' => 'hawkular-cassandra-nodes', 'labels' => { 'metrics-infra' => 'hawkular-cassandra-nodes', 'name' => 'hawkular-cassandra-nodes' } }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }], 'headless' => true }, { 'metadata' => { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'heapster', 'name' => 'heapster' } }, 'selector' => { 'name' => 'heapster' }, 'annotations' => { 'service.alpha.openshift.io/serving-cert-secret-name' => 'heapster-certs' }, 'ports' => [{ 'port' => 80, 'targetPort' => 'http-endpoint' }] }].each do |service|
+        [{ 'metadata' => { 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics', 'name' => 'hawkular-metrics' } }, 'selector' => { 'name' => 'hawkular-metrics' }, 'ports' => [{ 'port' => 443, 'targetPort' => 'https-endpoint' }] }, { 'metadata' => { 'name' => 'hawkular-cassandra', 'labels' => { 'metrics-infra' => 'hawkular-cassandra', 'name' => 'hawkular-cassandra' } }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }] }, { 'metadata' => { 'name' => 'hawkular-cassandra-nodes', 'labels' => { 'metrics-infra' => 'hawkular-cassandra-nodes', 'name' => 'hawkular-cassandra-nodes' } }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }], 'headless' => true }, { 'metadata' => { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'heapster', 'name' => 'heapster' }, 'annotations' => { 'service.alpha.openshift.io/serving-cert-secret-name' => 'heapster-certs' } }, 'selector' => { 'name' => 'heapster' }, 'ports' => [{ 'port' => 80, 'targetPort' => 'http-endpoint' }] }].each do |service|
           generate_services(service)
         end
       end
@@ -258,14 +263,14 @@ action :create do
     end
 
     template 'Generate heapster replication controller' do
-      path "#{FOLDER}/templates/metrics-heapster-rc.yaml"
+      path "#{FOLDER}/templates/heapster-rc.yaml"
       source "#{FOLDER_METRICS}/heapster.yaml.erb"
       variables(ose_major_version: ose_major_version)
       sensitive true
     end
 
     template 'Generate hawkular-metrics replication controller' do
-      path "#{FOLDER}/templates/hawkular_metrics_rc.yaml"
+      path "#{FOLDER}/templates/hawkular-metrics-rc.yaml"
       source "#{FOLDER_METRICS}/hawkular_metrics_rc.yaml.erb"
       variables(
         ose_major_version: ose_major_version,
@@ -275,7 +280,7 @@ action :create do
     end
 
     template 'Generate cassandra replication controller' do
-      path "#{FOLDER}/templates/hawkular-cassandra-rc1.yaml"
+      path "#{FOLDER}/templates/hawkular-cassandra-1-rc.yaml"
       source "#{FOLDER_METRICS}/hawkular_cassandra_rc.yaml.erb"
       variables(ose_major_version: ose_major_version)
       sensitive true
@@ -296,6 +301,20 @@ action :create do
         source 'pvc.yaml.erb'
         variables(pvc: pvc)
         not_if { node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type'] =~ /dynamic/i || node['cookbook-openshift3']['openshift_metrics_cassandra_storage_type'] =~ /emptydir/i }
+      end
+    end
+
+    %w(hawkular-cassandra-1 hawkular-metrics heapster).each do |rc|
+      ruby_block "Check existing RC #{rc}" do
+        block do
+          require 'fileutils'
+          get_rc_status = Mixlib::ShellOut.new("#{node['cookbook-openshift3']['openshift_common_client_binary']} get rc #{rc} -o yaml --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']} --config=#{FOLDER}/admin.kubeconfig").run_command.stdout.strip
+          get_rc_readyness = Mixlib::ShellOut.new("#{node['cookbook-openshift3']['openshift_common_client_binary']} get rc #{rc} -o yaml --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']} --config=#{FOLDER}/admin.kubeconfig").run_command.stdout.strip
+          if ::YAML.load(get_rc_status)['status'].key?('readyReplicas') && ::YAML.load(get_rc_readyness)['status']['readyReplicas'] == 1
+            FileUtils.rm "#{FOLDER}/templates/#{rc}-rc.yaml", force: true
+          end
+        end
+        only_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} get rc #{rc} --namespace=#{node['cookbook-openshift3']['openshift_metrics_project']} --config=#{FOLDER}/admin.kubeconfig"
       end
     end
 

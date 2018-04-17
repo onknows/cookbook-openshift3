@@ -16,6 +16,5 @@ ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true 
   execute "Enable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
     command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} disable"
     not_if { ose_major_version.split('.')[1].to_i < 5 && node['cookbook-openshift3']['openshift_deployment_type'] != 'enterprise' }
-    not_if { node['cookbook-openshift3']['upgrade'] }
   end
 end
