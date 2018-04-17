@@ -40,7 +40,7 @@ if node['is_apaas_openshift_cookbook']['use_wildcard_nodes']
 
   execute 'Generate the node server certificate for Wildcard node servers' do
     command "#{node['is_apaas_openshift_cookbook']['openshift_common_admin_binary']} ca create-server-cert --cert=server.crt --key=server.key --overwrite=true \
-             --hostnames=#{node['is_apaas_openshift_cookbook']['wildcard_domain']} --signer-cert=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt --signer-key=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.key \
+             --hostnames=#{node['is_apaas_openshift_cookbook']['wildcard_domain'].downcase} --signer-cert=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt --signer-key=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.key \
              --signer-serial=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.serial.txt && mv server.{key,crt} #{Chef::Config[:file_cache_path]}/wildcard_nodes"
     cwd Chef::Config[:file_cache_path]
     creates "#{node['is_apaas_openshift_cookbook']['openshift_node_generated_configs_dir']}/wildcard_nodes.tar.gz"
@@ -68,14 +68,14 @@ else
               --client-dir=#{Chef::Config[:file_cache_path]}/#{node_server['fqdn']} \
               --certificate-authority=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt \
               --signer-cert=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt --signer-key=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.key \
-              --signer-serial=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.serial.txt --user='system:node:#{node_server['fqdn']}' \
+              --signer-serial=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.serial.txt --user='system:node:#{node_server['fqdn'].downcase}' \
               --groups=system:nodes --master=#{node['is_apaas_openshift_cookbook']['openshift_master_api_url']}"
       creates "#{node['is_apaas_openshift_cookbook']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar.gz"
     end
 
     execute "Generate the node server certificate for #{node_server['fqdn']}" do
       command "#{node['is_apaas_openshift_cookbook']['openshift_common_admin_binary']} ca create-server-cert --cert=server.crt --key=server.key --overwrite=true \
-              --hostnames=#{node_server['fqdn'] + ',' + node_server['ipaddress']} --signer-cert=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt --signer-key=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.key \
+							--hostnames=#{node_server['fqdn'].downcase + ',' + node_server['ipaddress']} --signer-cert=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt --signer-key=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.key \
               --signer-serial=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.serial.txt && mv server.{key,crt} #{Chef::Config[:file_cache_path]}/#{node_server['fqdn']}"
       cwd Chef::Config[:file_cache_path]
       creates "#{node['is_apaas_openshift_cookbook']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar.gz"

@@ -1,6 +1,12 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.26
+### Bug
+- Fix issue with excluder pkgs when server has got dual roles (master && node)
+- Refactor the metrics logi to support all versions (3.3+)
+- Fix issue when disabling SWAP for node servers
+
 ## v2.0.25
 ### Bug
 - Add option to control docker yum exclude options custom_pkgs_excluder

@@ -89,12 +89,10 @@ action :create do
         pre_builddefaults = YAML.load_file("#{Chef::Config[:file_cache_path]}/BuildDefaults.yaml")
         pre_buildoverrides = YAML.load_file("#{Chef::Config[:file_cache_path]}/BuildOverrides.yaml")
         pre_clusteroverrides = YAML.load_file("#{Chef::Config[:file_cache_path]}/ClusterResourceOverride.yaml")
-
+        pre_master = YAML.load_file("#{Chef::Config[:file_cache_path]}/core-master.yaml")
         builddefaults = pre_builddefaults['BuildDefaults']['configuration'].keys.size.eql?(2) ? {} : pre_builddefaults
         buildoverrides = pre_buildoverrides['BuildOverrides']['configuration'].keys.size.eql?(2) ? {} : pre_buildoverrides
         clusteroverrides = pre_clusteroverrides['ClusterResourceOverride']['configuration'].keys.size.eql?(2) ? {} : pre_clusteroverrides
-
-        pre_master = YAML.load_file("#{Chef::Config[:file_cache_path]}/core-master.yaml")
         pre_master['admissionConfig']['pluginConfig'] = builddefaults.merge(buildoverrides).merge(clusteroverrides).merge(admission_default)
 
         file new_resource.master_file do

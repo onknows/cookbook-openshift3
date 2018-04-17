@@ -29,7 +29,7 @@ assetConfig:
   logoutURL: ""
   masterPublicURL: <%= node['is_apaas_openshift_cookbook']['openshift_master_public_api_url'] %>
   publicURL: <%= node['is_apaas_openshift_cookbook']['openshift_master_console_url'] %>/
-<% if node['is_apaas_openshift_cookbook']['openshift_master_metrics_public_url'] %>
+<% if node['is_apaas_openshift_cookbook']['openshift_hosted_cluster_metrics'] %>
   metricsPublicURL: https://<%= node['is_apaas_openshift_cookbook']['openshift_metrics_hawkular_hostname'] %>/hawkular/metrics
 <%- end -%>
 <% if node['is_apaas_openshift_cookbook']['openshift_master_logging_public_url'] %>

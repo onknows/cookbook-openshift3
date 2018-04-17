@@ -35,7 +35,7 @@ default['is_apaas_openshift_cookbook']['openshift_metrics_heapster_requests_cpu'
 default['is_apaas_openshift_cookbook']['openshift_metrics_heapster_requests_memory'] = '0.9375G'
 default['is_apaas_openshift_cookbook']['openshift_metrics_heapster_standalone'] = false
 default['is_apaas_openshift_cookbook']['openshift_metrics_image_prefix'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'registry.access.redhat.com/openshift3/' : 'docker.io/openshift/origin-'
-default['is_apaas_openshift_cookbook']['openshift_metrics_image_version'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'v3.6' : 'v3.6.1'
+default['is_apaas_openshift_cookbook']['openshift_metrics_image_version'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'v3.7' : 'v3.7.1'
 default['is_apaas_openshift_cookbook']['openshift_metrics_install_metrics'] = true
 default['is_apaas_openshift_cookbook']['openshift_metrics_master_url'] = 'https://kubernetes.default.svc'
 default['is_apaas_openshift_cookbook']['openshift_metrics_node_id'] = 'nodename'
