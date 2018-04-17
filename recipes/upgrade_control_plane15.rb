@@ -16,7 +16,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
   node.force_override['cookbook-openshift3']['ose_major_version'] = node['cookbook-openshift3']['upgrade_ose_major_version']
   node.force_override['cookbook-openshift3']['ose_version'] = node['cookbook-openshift3']['upgrade_ose_version']
   node.force_override['cookbook-openshift3']['openshift_docker_image_version'] = node['cookbook-openshift3']['upgrade_openshift_docker_image_version']
-  node.force_override['yum']['main']['exclude'] = 'docker-1.13* etcd-3.2* ' + node['cookbook-openshift3']['custom_pkgs_excluder']
+  node.force_override['yum']['main']['exclude'] = node['cookbook-openshift3']['custom_pkgs_excluder'] unless node['cookbook-openshift3']['custom_pkgs_excluder'].nil?
 
   server_info = OpenShiftHelper::NodeHelper.new(node)
   first_etcd = server_info.first_etcd
@@ -79,6 +79,11 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
     log 'Upgrade for ETCD [COMPLETED]' do
       level :info
+    end
+
+    file node['cookbook-openshift3']['control_upgrade_flag'] do
+      action :delete
+      only_if { is_etcd_server && !is_master_server }
     end
   end
 
@@ -159,10 +164,5 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
     include_recipe 'cookbook-openshift3::upgrade_managed_hosted' if is_master_server && is_first_master
     include_recipe 'cookbook-openshift3::upgrade_node15' if is_node_server
-
-    file node['cookbook-openshift3']['control_upgrade_flag'] do
-      action :delete
-      only_if { is_etcd_server && !is_master_server }
-    end
   end
 end

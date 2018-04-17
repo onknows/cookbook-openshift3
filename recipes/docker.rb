@@ -9,8 +9,8 @@ is_node_server = server_info.on_node_server?
 
 if is_node_server || node['cookbook-openshift3']['deploy_containerized']
   yum_package 'docker' do
-    action :upgrade if node['cookbook-openshift3']['upgrade']
-    version node['cookbook-openshift3']['docker_version'] unless node['cookbook-openshift3']['docker_version'].nil?
+    action :install
+    version node['cookbook-openshift3']['upgrade'] ? (node['cookbook-openshift3']['upgrade_docker_version'] unless node['cookbook-openshift3']['upgrade_docker_version'].nil?) : (node['cookbook-openshift3']['docker_version'] unless node['cookbook-openshift3']['docker_version'].nil?)
     retries 3
     notifies :restart, 'service[docker]', :immediately if node['cookbook-openshift3']['upgrade']
   end

@@ -63,6 +63,11 @@ if is_etcd_server
   log 'Upgrade for ETCD [COMPLETED]' do
     level :info
   end
+
+  file node['cookbook-openshift3']['control_upgrade_flag'] do
+    action :delete
+    only_if { is_etcd_server && !is_master_server }
+  end
 end
 
 include_recipe 'cookbook-openshift3::upgrade_control_plane37_part2'
