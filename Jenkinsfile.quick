@@ -37,7 +37,7 @@ try {
     if (params.dorubocop) {
       stage('rubocop') {
         dir(builddir) {
-          sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk:' + "${params.RUBOCOP_CHEFDK_VERSION} rubocop -D"
+          sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk:' + "${params.CHEFDK_RUBOCOP_VERSION} rubocop -D"
         }
       }
     }
