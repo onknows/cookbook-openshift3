@@ -1,9 +1,14 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.29
+### Improvement
+- Stop pushing for etcd / docker package upgrade
+- New vars for upgrade (ETCD/Docker) upgrade_docker_version upgrade_etcd_version
+
 ## v2.0.28
 ### Bug
-- Fix issue when upgrading etcd server
+- Fix issue when upgrading etcd
 
 ## v2.0.27
 ### Bug

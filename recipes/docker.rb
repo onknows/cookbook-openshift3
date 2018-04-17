@@ -9,8 +9,8 @@ is_node_server = server_info.on_node_server?
 
 if is_node_server || node['is_apaas_openshift_cookbook']['deploy_containerized']
   yum_package 'docker' do
-    action :upgrade if node['is_apaas_openshift_cookbook']['upgrade']
-    version node['is_apaas_openshift_cookbook']['docker_version'] unless node['is_apaas_openshift_cookbook']['docker_version'].nil?
+    action :install
+    version node['is_apaas_openshift_cookbook']['upgrade'] ? (node['is_apaas_openshift_cookbook']['upgrade_docker_version'] unless node['is_apaas_openshift_cookbook']['upgrade_docker_version'].nil?) : (node['is_apaas_openshift_cookbook']['docker_version'] unless node['is_apaas_openshift_cookbook']['docker_version'].nil?)
     retries 3
     notifies :restart, 'service[docker]', :immediately if node['is_apaas_openshift_cookbook']['upgrade']
   end

@@ -16,7 +16,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
   node.force_override['is_apaas_openshift_cookbook']['ose_major_version'] = node['is_apaas_openshift_cookbook']['upgrade_ose_major_version']
   node.force_override['is_apaas_openshift_cookbook']['ose_version'] = node['is_apaas_openshift_cookbook']['upgrade_ose_version']
   node.force_override['is_apaas_openshift_cookbook']['openshift_docker_image_version'] = node['is_apaas_openshift_cookbook']['upgrade_openshift_docker_image_version']
-  node.force_override['yum']['main']['exclude'] = 'docker-1.13* etcd-3.2* ' + node['is_apaas_openshift_cookbook']['custom_pkgs_excluder']
+  node.force_override['yum']['main']['exclude'] = node['is_apaas_openshift_cookbook']['custom_pkgs_excluder'] unless node['is_apaas_openshift_cookbook']['custom_pkgs_excluder'].nil?
 
   server_info = OpenShiftHelper::NodeHelper.new(node)
   first_etcd = server_info.first_etcd
@@ -79,6 +79,11 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
 
     log 'Upgrade for ETCD [COMPLETED]' do
       level :info
+    end
+
+    file node['is_apaas_openshift_cookbook']['control_upgrade_flag'] do
+      action :delete
+      only_if { is_etcd_server && !is_master_server }
     end
   end
 
@@ -152,10 +157,5 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
 
     include_recipe 'is_apaas_openshift_cookbook::upgrade_managed_hosted' if is_master_server && is_first_master
     include_recipe 'is_apaas_openshift_cookbook::upgrade_node14' if is_node_server
-
-    file node['is_apaas_openshift_cookbook']['control_upgrade_flag'] do
-      action :delete
-      only_if { is_etcd_server && !is_master_server }
-    end
   end
 end

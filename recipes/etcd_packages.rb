@@ -12,8 +12,8 @@ etcd_servers = server_info.etcd_servers
 
 if is_etcd_server
   yum_package 'etcd' do
-    action :upgrade if node['is_apaas_openshift_cookbook']['upgrade']
-    version node['is_apaas_openshift_cookbook']['etcd_version'] unless node['is_apaas_openshift_cookbook']['etcd_version'].nil?
+    action :install
+    version node['is_apaas_openshift_cookbook']['upgrade'] ? (node['is_apaas_openshift_cookbook']['upgrade_etcd_version'] unless node['is_apaas_openshift_cookbook']['upgrade_etcd_version'].nil?) : (node['is_apaas_openshift_cookbook']['etcd_version'] unless node['is_apaas_openshift_cookbook']['etcd_version'].nil?)
     retries 3
     notifies :restart, 'service[etcd-service]', :immediately if node['is_apaas_openshift_cookbook']['upgrade'] && !etcd_servers.find { |etcd| etcd['fqdn'] == node['fqdn'] }.nil?
   end

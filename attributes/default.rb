@@ -37,7 +37,6 @@ default['is_apaas_openshift_cookbook']['openshift_deployment_type'] = 'enterpris
 default['is_apaas_openshift_cookbook']['ose_major_version'] = '3.7'
 default['is_apaas_openshift_cookbook']['openshift_docker_image_version'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'v3.7' : 'v3.7.2'
 default['is_apaas_openshift_cookbook']['upgrade'] = false
-default['is_apaas_openshift_cookbook']['custom_pkgs_excluder'] = ''
 default['is_apaas_openshift_cookbook']['deploy_containerized'] = false
 default['is_apaas_openshift_cookbook']['deploy_example'] = false
 default['is_apaas_openshift_cookbook']['deploy_dnsmasq'] = true
