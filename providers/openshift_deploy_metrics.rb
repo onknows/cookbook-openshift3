@@ -71,7 +71,7 @@ def generate_services(service)
 end
 
 action :delete do
-  converge_by 'Uninstalling Metrics' do
+  converge_by "Uninstalling Metrics on #{node['fqdn']}" do
     directory "#{FOLDER}/templates" do
       recursive true
     end
@@ -108,7 +108,7 @@ action :delete do
 end
 
 action :create do
-  converge_by 'Deploying Metrics' do
+  converge_by "Deploying Metrics on #{node['fqdn']}" do
     ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
     FOLDER_METRICS = ose_major_version.split('.')[1].to_i < 6 ? 'metrics_legacy' : 'metrics_36'
 
@@ -222,33 +222,20 @@ action :create do
       end
     end
 
-    ruby_block 'Create Service Accounts' do
+    metric_components = { 'serviceaccounts' => [{ 'metadata' => { 'name' => 'hawkular', 'labels' => { 'metrics-infra' => 'support' } }, 'secrets' => [{ 'name' => 'hawkular-metrics-secrets' }] }, { 'metadata' => { 'name' => 'cassandra', 'labels' => { 'metrics-infra' => 'support' } }, 'secrets' => [{ 'name' => 'hawkular-cassandra-secrets' }] }, { 'metadata' => { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'support' } }, 'secrets' => [{ 'name' => 'heapster-secrets' }, { 'name' => 'hawkular-metrics-certificate' }, { 'name' => 'hawkular-metrics-account' }] }], 'services' => [{ 'metadata' => { 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics', 'name' => 'hawkular-metrics' } }, 'selector' => { 'name' => 'hawkular-metrics' }, 'ports' => [{ 'port' => 443, 'targetPort' => 'https-endpoint' }] }, { 'metadata' => { 'name' => 'hawkular-cassandra', 'labels' => { 'metrics-infra' => 'hawkular-cassandra', 'name' => 'hawkular-cassandra' } }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }] }, { 'metadata' => { 'name' => 'hawkular-cassandra-nodes', 'labels' => { 'metrics-infra' => 'hawkular-cassandra-nodes', 'name' => 'hawkular-cassandra-nodes' } }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }], 'headless' => true }, { 'metadata' => { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'heapster', 'name' => 'heapster' }, 'annotations' => { 'service.alpha.openshift.io/serving-cert-secret-name' => 'heapster-certs' } }, 'selector' => { 'name' => 'heapster' }, 'ports' => [{ 'port' => 80, 'targetPort' => 'http-endpoint' }] }], 'rolebindings' => [{ 'metadata' => { 'name' => 'hawkular-view', 'labels' => { 'metrics-infra' => 'hawkular' } }, 'rolerefs' => { 'name' => 'view' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }] }, { 'metadata' => { 'name' => 'hawkular-namespace-watcher', 'labels' => { 'metrics-infra' => 'hawkular' } }, 'rolerefs' => { 'name' => 'hawkular-metrics', 'kind' => 'ClusterRole' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }], 'cluster' => true }, { 'metadata' => { 'name' => 'heapster-cluster-reader', 'labels' => { 'metrics-infra' => 'heapster' } }, 'rolerefs' => { 'name' => 'cluster-reader', 'kind' => 'ClusterRole' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'heapster', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }], 'cluster' => true }], 'roles' => [{ 'metadata' => { 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics' } }, 'rules' => [{ 'apiGroups' => [''], 'resources' => ['namespaces'], 'verbs' => %w(list get watch) }], 'cluster' => true }] }
+
+    ruby_block 'Create Resources for Metrics' do
       block do
-        [{ 'metadata' => { 'name' => 'hawkular', 'labels' => { 'metrics-infra' => 'support' } }, 'secrets' => [{ 'name' => 'hawkular-metrics-secrets' }] }, { 'metadata' => { 'name' => 'cassandra', 'labels' => { 'metrics-infra' => 'support' } }, 'secrets' => [{ 'name' => 'hawkular-cassandra-secrets' }] }, { 'metadata' => { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'support' } }, 'secrets' => [{ 'name' => 'heapster-secrets' }, { 'name' => 'hawkular-metrics-certificate' }, { 'name' => 'hawkular-metrics-account' }] }].each do |serviceaccount|
+        metric_components['serviceaccounts'].each do |serviceaccount|
           generate_serviceaccounts(serviceaccount)
         end
-      end
-    end
-
-    ruby_block 'Create Services' do
-      block do
-        [{ 'metadata' => { 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics', 'name' => 'hawkular-metrics' } }, 'selector' => { 'name' => 'hawkular-metrics' }, 'ports' => [{ 'port' => 443, 'targetPort' => 'https-endpoint' }] }, { 'metadata' => { 'name' => 'hawkular-cassandra', 'labels' => { 'metrics-infra' => 'hawkular-cassandra', 'name' => 'hawkular-cassandra' } }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }] }, { 'metadata' => { 'name' => 'hawkular-cassandra-nodes', 'labels' => { 'metrics-infra' => 'hawkular-cassandra-nodes', 'name' => 'hawkular-cassandra-nodes' } }, 'selector' => { 'type' => 'hawkular-cassandra' }, 'ports' => [{ 'name' => 'cql-port', 'port' => 9042, 'targetPort' => 'cql-port' }, { 'name' => 'thrift-port', 'port' => 9160, 'targetPort' => 'thrift-port' }, { 'name' => 'tcp-port', 'port' => 7000, 'targetPort' => 'tcp-port' }, { 'name' => 'ssl-port', 'port' => 7001, 'targetPort' => 'ssl-port' }], 'headless' => true }, { 'metadata' => { 'name' => 'heapster', 'labels' => { 'metrics-infra' => 'heapster', 'name' => 'heapster' }, 'annotations' => { 'service.alpha.openshift.io/serving-cert-secret-name' => 'heapster-certs' } }, 'selector' => { 'name' => 'heapster' }, 'ports' => [{ 'port' => 80, 'targetPort' => 'http-endpoint' }] }].each do |service|
+        metric_components['services'].each do |service|
           generate_services(service)
         end
-      end
-    end
-
-    ruby_block 'Create Role Bindings' do
-      block do
-        [{ 'metadata' => { 'name' => 'hawkular-view', 'labels' => { 'metrics-infra' => 'hawkular' } }, 'rolerefs' => { 'name' => 'view' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }] }, { 'metadata' => { 'name' => 'hawkular-namespace-watcher', 'labels' => { 'metrics-infra' => 'hawkular' } }, 'rolerefs' => { 'name' => 'hawkular-metrics', 'kind' => 'ClusterRole' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'hawkular', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }], 'cluster' => true }, { 'metadata' => { 'name' => 'heapster-cluster-reader', 'labels' => { 'metrics-infra' => 'heapster' } }, 'rolerefs' => { 'name' => 'cluster-reader', 'kind' => 'ClusterRole' }, 'subjects' => [{ 'kind' => 'ServiceAccount', 'name' => 'heapster', 'namespace' => node['cookbook-openshift3']['openshift_metrics_project'] }], 'cluster' => true }].each do |rolebinding|
+        metric_components['rolebindings'].each do |rolebinding|
           generate_rolebindings(rolebinding)
         end
-      end
-    end
-
-    ruby_block 'Create Roles' do
-      block do
-        [{ 'metadata' => { 'name' => 'hawkular-metrics', 'labels' => { 'metrics-infra' => 'hawkular-metrics' } }, 'rules' => [{ 'apiGroups' => [''], 'resources' => ['namespaces'], 'verbs' => %w(list get watch) }], 'cluster' => true }].each do |role|
+        metric_components['roles'].each do |role|
           generate_roles(role)
         end
       end

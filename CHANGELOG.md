@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.27
+### Bug
+- Fix foodcritic issue with new metric logic
+
 ## v2.0.26
 ### Bug
 - Fix issue with excluder pkgs when server has got dual roles (master && node)
