@@ -15,6 +15,7 @@ try {
     string(name: 'CHEF_DEPLOY_CONTAINERIZED',                    defaultValue: '',                                             description: 'If "true", deploy containerized, "true false" for both'),
     string(name: 'LOG_LEVEL',                                    defaultValue: 'debug',                                        description: 'shutit log level (debug, info, warning, critical)'),
     string(name: 'SHUTIT_CLUSTER_CONFIGS',                       defaultValue: 'test_multi_node_separate_etcd',                description: 'which cluster configs to test'),
+    string(name: 'RUBOCOP_VERSION',                              defaultValue: '1.6.1',                                        description: 'Rubocop docker image version'),
     booleanParam(name: 'dokitchen',                              defaultValue: false,                                          description: 'Whether to run kitchen tests'),
     booleanParam(name: 'doshutit',                               defaultValue: true,                                           description: 'Whether to run shutit tests'),
     booleanParam(name: 'dorubocop',                              defaultValue: true,                                           description: 'Whether to run rubocop tests')
@@ -36,7 +37,7 @@ try {
     if (params.dorubocop) {
       stage('rubocop') {
         dir(builddir) {
-          sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk rubocop -D'
+          sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk rubocop:' + RUBOCOP_VERSION + ' -D'
         }
       }
     }
