@@ -164,7 +164,12 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
       level :info
     end
 
-    include_recipe 'is_apaas_openshift_cookbook::upgrade_managed_hosted'
+    include_recipe 'is_apaas_openshift_cookbook::upgrade_managed_hosted' if is_master_server && is_first_master
     include_recipe 'is_apaas_openshift_cookbook::upgrade_node36' if is_node_server
+
+    file node['is_apaas_openshift_cookbook']['control_upgrade_flag'] do
+      action :delete
+      only_if { is_etcd_server && !is_master_server }
+    end
   end
 end
