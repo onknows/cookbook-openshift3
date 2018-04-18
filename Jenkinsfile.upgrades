@@ -21,9 +21,9 @@ try {
     string(name: 'do_upgrade_36_37',                             defaultValue: 'true',                                         description: 'whether to upgrade from 3.6 to 3.7'),
     booleanParam(name: 'doshutit',                               defaultValue: true,                                           description: 'Whether to run shutit tests'),
   ])])
-  if (params.doshutit) {
-    stage('shutit_tests') {
-      node() {
+  node() {
+    if (params.doshutit) {
+      stage('shutit_tests') {
         dir(builddir) {
           sh 'cd /space/jenkins_cache/shutit-openshift-cluster && git pull && git submodule update && git clean -f && cd /space/jenkins_cache'
           dir('shutit-openshift-cluster') {
@@ -31,36 +31,16 @@ try {
               sh 'cp -r /space/jenkins_cache/shutit-openshift-cluster/* . && ./run_tests.sh -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_13_14 ' + do_upgrade_13_14 + ' -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_14_15 ' + do_upgrade_14_15 + ' -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_15_36 ' + do_upgrade_15_36 + ' -s tk.shutit.shutit_openshift_cluster.shutit_openshift_cluster do_upgrade_36_37 ' + do_upgrade_36_37 + ' --interactive 0'
             }
           }
-        }
-      }
-    }
-  }
-  mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/job/cookbook-openshift3-upgrades-pipeline
-
-''', cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: 'Upgrades Build OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
-  stage('cleanup') {
-    node() {
-      dir(builddir) {
-        dir('shutit-openshift-cluster') {
           sh('yes | ./destroy_vms.sh || true')
         }
       }
     }
+    mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/job/cookbook-openshift3-upgrades-pipeline
+''', cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: 'Upgrades Build OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
   }
 } catch(err) {
   mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/job/cookbook-openshift3-pipeline
 
 ''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: 'Upgrades Build Failure', to: 'ian.miell@gmail.com'
   throw(err)
-  if (params.doshutit) {
-    stage('cleanup') {
-      node() {
-        dir(builddir) {
-          dir('shutit-openshift-cluster') {
-            sh('yes | ./destroy_vms.sh || true')
-          }
-        }
-      }
-    }
-  }
 }

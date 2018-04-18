@@ -93,15 +93,4 @@ RELEASE
 
 ''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: 'Quick Build Failure', to: 'ian.miell@gmail.com'
   throw(err)
-  if (params.doshutit) {
-    node {
-      stage('cleanup') {
-        dir(builddir) {
-          dir('shutit-openshift-cluster') {
-            sh('yes | ./destroy_vms.sh || true')
-          }
-        }
-      }
-    }
-  }
 }
