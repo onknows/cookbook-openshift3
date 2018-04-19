@@ -41,12 +41,28 @@ end
 if node['is_apaas_openshift_cookbook']['adhoc_redeploy_cluster_ca']
   Chef::Log.warn("The CLUSTER CA CERTS redeploy will be skipped for Master[#{node['fqdn']}]. Could not find the flag: #{node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_masters_control_flag']}") unless ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_masters_control_flag'])
 
+  certs_to_be_removed = case ose_major_version.split('.')[1].to_i
+                        when 5..7
+                          node['is_apaas_openshift_cookbook']['openshift_master_certs'] + %w(service-signer.crt service-signer.key) + %w(ca.crt ca.key ca.serial.txt ca-bundle.crt master.server.crt master.server.key openshift-master.crt openshift-master.key openshift-master.kubeconfig)
+                        else
+                          node['is_apaas_openshift_cookbook']['openshift_master_certs'] + %w(ca.crt ca.key ca.serial.txt ca-bundle.crt master.server.crt master.server.key openshift-master.crt openshift-master.key openshift-master.kubeconfig)
+                        end
+
+  certs_to_be_removed.each do |remove_certificate|
+    file "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/#{remove_certificate}" do
+      action :delete
+      only_if { ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_masters_control_flag']) }
+    end
+  end
+
   ruby_block "Redeploy CA certs for #{node['fqdn']}" do
     block do
       helper.remove_dir("#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/openshift-#{node['fqdn']}.tgz*")
     end
     only_if { ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_masters_control_flag']) }
     notifies :delete, "file[#{node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_masters_control_flag']}]", :immediately
+    notifies :restart, 'service[Restart API]', :delayed if ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_masters_control_flag'])
+    notifies :restart, 'service[Restart Controller]', :delayed if ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_masters_control_flag'])
   end
 
   file node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_masters_control_flag'] do

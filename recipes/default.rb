@@ -26,4 +26,4 @@ if node['is_apaas_openshift_cookbook']['control_upgrade']
   end
 end
 
-include_recipe 'is_apaas_openshift_cookbook::validate' unless node['is_apaas_openshift_cookbook']['upgrade']
+include_recipe 'is_apaas_openshift_cookbook::validate'

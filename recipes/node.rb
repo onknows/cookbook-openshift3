@@ -134,6 +134,7 @@ if is_node_server
       end
       only_if { ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_nodes_control_flag']) }
       notifies :delete, "file[#{node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_nodes_control_flag']}]", :immediately
+      notifies :restart, 'service[Restart Node]', :delayed if ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_nodes_control_flag'])
     end
 
     file node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_nodes_control_flag'] do

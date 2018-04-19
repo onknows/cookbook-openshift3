@@ -1,6 +1,11 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.30
+### Improvement
+- Improve the certs renewal
+- Improve the custom router template (Name can be customised) openshift_hosted_deploy_custom_name
+
 ## v2.0.29
 ### Improvement
 - Stop pushing for etcd / docker package upgrade
