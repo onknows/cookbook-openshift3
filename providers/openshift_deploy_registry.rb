@@ -71,12 +71,12 @@ action :create do
     end
 
     execute 'Attach registry-certificates secret volume' do
-      command "#{node['cookbook-openshift3']['openshift_common_client_binary']} volume dc/docker-registry --add --overwrite --type=secret --secret-name=registry-certificates -m /etc/secrets -n ${namespace_registry} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
+      command "#{node['cookbook-openshift3']['openshift_common_client_binary']} volume dc/docker-registry --add --type=secret --secret-name=registry-certificates -m /etc/secrets -n ${namespace_registry} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig"
       environment(
         'namespace_registry' => node['cookbook-openshift3']['openshift_hosted_registry_namespace']
       )
       cwd node['cookbook-openshift3']['openshift_master_config_dir']
-      not_if "[[ `#{node['cookbook-openshift3']['openshift_common_client_binary']} get dc/docker-registry -o jsonpath=\'{.spec.template.spec.volumes[*].secret.secretName}\' -n ${namespace_registry} --no-headers --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig` =~ registry-certificate ]]"
+      not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} volume dc/docker-registry -n ${namespace_registry} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig | grep /etc/secrets"
     end
 
     execute 'Configure certificates in registry deplomentConfig' do
