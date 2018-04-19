@@ -15,7 +15,7 @@ is_node_server = server_info.on_node_server?
 is_first_master = server_info.on_first_master?
 master_servers = server_info.master_servers
 
-if is_master_server && is_first_master
+if is_first_master
   log 'Pre master upgrade - Upgrade all storage' do
     level :info
   end
@@ -135,5 +135,5 @@ if is_master_server
   end
 end
 
-include_recipe 'cookbook-openshift3::upgrade_managed_hosted' if is_master_server && is_first_master
+include_recipe 'cookbook-openshift3::upgrade_managed_hosted' if is_first_master
 include_recipe 'cookbook-openshift3::upgrade_node37' if is_node_server
