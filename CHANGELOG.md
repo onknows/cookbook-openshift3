@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.31
+### Bug
+- Force secret for registry HTTPS
+
 ## v2.0.30
 ### Improvement
 - Improve the certs renewal
