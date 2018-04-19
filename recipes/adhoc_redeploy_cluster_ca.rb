@@ -17,6 +17,28 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_certserver_cont
   ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
 
   if is_certificate_server
+    if node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'] && node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name']
+      secret_file = node['cookbook-openshift3']['openshift_master_ca_certificate']['secret_file'] || nil
+      ca_vars = data_bag_item(node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'], node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name'], secret_file)
+
+      file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key" do
+        content Base64.decode64(ca_vars['key_base64'])
+        mode '0600'
+        action :create_if_missing
+      end
+
+      file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt" do
+        content Base64.decode64(ca_vars['cert_base64'])
+        mode '0644'
+        action :create_if_missing
+      end
+    end
+
+    directory "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca" do
+      action :delete
+      recursive true
+    end
+
     directory "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca" do
       mode '0755'
       owner 'apache'
@@ -38,23 +60,6 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_certserver_cont
       end
     end
 
-    if node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'] && node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name']
-      secret_file = node['cookbook-openshift3']['openshift_master_ca_certificate']['secret_file'] || nil
-      ca_vars = data_bag_item(node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'], node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name'], secret_file)
-
-      file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key" do
-        content Base64.decode64(ca_vars['key_base64'])
-        mode '0600'
-        action :create_if_missing
-      end
-
-      file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt" do
-        content Base64.decode64(ca_vars['cert_base64'])
-        mode '0644'
-        action :create_if_missing
-      end
-    end
-
     file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt" do
       action :create_if_missing
       mode '0644'
@@ -65,6 +70,14 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_certserver_cont
       path "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt"
       content '00'
       action :nothing
+    end
+
+    ruby_block 'Update ca.crt with ca.bundle' do
+      block do
+        require 'fileutils'
+        FileUtils.cp("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca-bundle.crt", "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt")
+      end
+      not_if { FileUtils.compare_file("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca-bundle.crt", "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt") }
     end
 
     execute "Create the master certificates for #{first_master['fqdn']}" do
