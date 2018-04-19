@@ -113,7 +113,7 @@ default['cookbook-openshift3']['openshift_master_bind_addr'] = '0.0.0.0'
 default['cookbook-openshift3']['openshift_master_auditconfig'] = { 'enable' => false }
 default['cookbook-openshift3']['openshift_master_api_port'] = '8443'
 default['cookbook-openshift3']['openshift_lb_port'] = '8443'
-default['cookbook-openshift3']['openshift_master_certs'] = %w(admin.crt admin.key admin.kubeconfig master.kubelet-client.crt master.kubelet-client.key ca.crt ca.key ca.serial.txt ca-bundle.crt serviceaccounts.private.key serviceaccounts.public.key master.proxy-client.crt master.proxy-client.key service-signer.crt service-signer.key)
+default['cookbook-openshift3']['openshift_master_certs'] = %w(admin.crt admin.key admin.kubeconfig master.kubelet-client.crt master.kubelet-client.key ca.crt ca.key ca.serial.txt ca-bundle.crt serviceaccounts.private.key serviceaccounts.public.key master.proxy-client.crt master.proxy-client.key service-signer.crt service-signer.key openshift-registry.crt openshift-registry.key openshift-registry.kubeconfig openshift-router.crt openshift-router.key openshift-router.kubeconfig service-signer.crt service-signer.key)
 default['cookbook-openshift3']['openshift_master_console_port'] = '8443'
 default['cookbook-openshift3']['openshift_master_controllers_port'] = '8444'
 default['cookbook-openshift3']['openshift_master_controller_lease_ttl'] = '30'
@@ -189,6 +189,7 @@ default['cookbook-openshift3']['openshift_node_read_only_port'] = nil # usually 
 
 default['cookbook-openshift3']['openshift_hosted_deploy_custom_router'] = false
 default['cookbook-openshift3']['openshift_hosted_deploy_custom_router_file'] = ''
+default['cookbook-openshift3']['openshift_hosted_deploy_custom_name'] = 'config-volume'
 default['cookbook-openshift3']['openshift_hosted_deploy_env_router'] = []
 default['cookbook-openshift3']['openshift_hosted_manage_router'] = true
 default['cookbook-openshift3']['openshift_hosted_router_selector'] = 'region=infra'

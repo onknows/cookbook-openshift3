@@ -26,4 +26,4 @@ if node['cookbook-openshift3']['control_upgrade']
   end
 end
 
-include_recipe 'cookbook-openshift3::validate' unless node['cookbook-openshift3']['upgrade']
+include_recipe 'cookbook-openshift3::validate'

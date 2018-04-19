@@ -104,5 +104,8 @@ end
 if is_certificate_server
   include_recipe 'cookbook-openshift3::adhoc_migrate_certificate_server' if helper.check_certificate_server
 end
-include_recipe 'cookbook-openshift3::adhoc_redeploy_certificates' if node['cookbook-openshift3']['adhoc_redeploy_certificates']
-include_recipe 'cookbook-openshift3::commons' unless node.run_state['issues_detected']
+
+unless node['cookbook-openshift3']['upgrade']
+  include_recipe 'cookbook-openshift3::adhoc_redeploy_certificates' if node['cookbook-openshift3']['adhoc_redeploy_certificates']
+  include_recipe 'cookbook-openshift3::commons' unless node.run_state['issues_detected']
+end

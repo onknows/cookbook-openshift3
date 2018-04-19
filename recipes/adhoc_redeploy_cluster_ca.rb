@@ -70,7 +70,7 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_certserver_cont
     execute "Create the master certificates for #{first_master['fqdn']}" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-master-certs \
               --hostnames=#{(node['cookbook-openshift3']['erb_corsAllowedOrigins'] + [first_master['ipaddress'], first_master['fqdn'], node['cookbook-openshift3']['openshift_common_api_hostname']]).uniq.join(',')} \
-  	    --certificate-authority #{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt \
+  	          --certificate-authority #{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt \
               --master=#{node['cookbook-openshift3']['openshift_master_api_url']} \
               --public-master=#{node['cookbook-openshift3']['openshift_master_public_api_url']} \
               --cert-dir=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']} ${validty_certs} --overwrite=false"
@@ -118,6 +118,11 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_certserver_cont
         block do
           helper.remove_dir("#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz*")
         end
+      end
+
+      directory "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}" do
+        recursive true
+        action :delete
       end
     end
 

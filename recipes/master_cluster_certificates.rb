@@ -76,6 +76,8 @@ if is_certificate_server
 
     execute "Create the master server certificates for #{master_server['fqdn']}" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-server-cert \
+              --certificate-authority=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt \
+			        ${legacy_certs} \
               --hostnames=#{(node['cookbook-openshift3']['erb_corsAllowedOrigins'] + [master_server['ipaddress'], master_server['fqdn'], node['cookbook-openshift3']['openshift_common_api_hostname']]).uniq.join(',')} \
               --cert=#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/master.server.crt \
               --key=#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/master.server.key \
@@ -83,7 +85,10 @@ if is_certificate_server
               --signer-key=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key \
               --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt ${validty_certs}\
               --overwrite=false"
-      environment 'validty_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['cookbook-openshift3']['openshift_master_cert_expire_days']}"
+      environment(
+        'validty_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['cookbook-openshift3']['openshift_master_cert_expire_days']}",
+        'legacy_certs' => ::File.file?("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca") ? "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt" : ''
+      )
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/master.server.crt"
     end
 
@@ -103,8 +108,6 @@ if is_certificate_server
     end
 
     certs = case ose_major_version.split('.')[1].to_i
-            when 3..4
-              node['cookbook-openshift3']['openshift_master_certs'] + %w(openshift-registry.crt openshift-registry.key openshift-registry.kubeconfig openshift-router.crt openshift-router.key openshift-router.kubeconfig service-signer.crt service-signer.key)
             when 5..7
               node['cookbook-openshift3']['openshift_master_certs'] + %w(service-signer.crt service-signer.key)
             else
