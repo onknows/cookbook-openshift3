@@ -34,13 +34,13 @@ try {
         dir(builddir) {
           checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/IshentRas/cookbook-openshift3']]])
           sh 'cd /space/jenkins_cache/shutit-openshift-cluster && git pull && git submodule update && git clean -f && cd /space/jenkins_cache'
-          sh('yes | ./destroy_vms.sh || true')
+          sh('yes | destroy_vms.sh || true')
           dir('shutit-openshift-cluster') {
             withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
               sh 'cp -r /space/jenkins_cache/shutit-openshift-cluster/* . && ./run_tests.sh --interactive 0'
             }
           }
-          sh('yes | ./destroy_vms.sh || true')
+          sh('yes | destroy_vms.sh || true')
         }
       }
     }
@@ -57,7 +57,7 @@ try {
               sh('kitchen destroy ' + f)
             }
           }
-           sh('yes | ./destroy_vms.sh || true')
+           sh('yes | destroy_vms.sh || true')
         }
       }
     }
