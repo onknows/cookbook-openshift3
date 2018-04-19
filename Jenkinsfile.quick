@@ -44,12 +44,14 @@ try {
     if (params.doshutit) {
       stage('shutit_tests') {
         dir(builddir) {
+          sh('yes | /space/git/work/bin/destroy_vms.sh || true')
           sh 'cd /space/jenkins_cache/shutit-openshift-cluster && git pull && git submodule update && git clean -f && cd /space/jenkins_cache'
           dir('shutit-openshift-cluster') {
             withEnv(["SHUTIT=/usr/local/bin/shutit"]) {
               sh 'cp -r /space/jenkins_cache/shutit-openshift-cluster/* . && ./run_tests.sh --interactive 0'
             }
           }
+          sh('yes | /space/git/work/bin/destroy_vms.sh || true')
         }
       }
     }
@@ -65,6 +67,7 @@ try {
               sh('kitchen destroy ' + f)
             }
           }
+          sh('yes | /space/git/work/bin/destroy_vms.sh || true')
         }
       }
     }
@@ -80,13 +83,6 @@ RELEASE
 - knife cookbook site share is_apaas_openshift_cookbook # on rothko
 
 ''', cc: '', from: 'is_apaas_openshift_cookbook@jenkins.meirionconsulting.com', replyTo: '', subject: 'Quick Build OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
-    stage('cleanup') {
-      dir(builddir) {
-        dir('shutit-openshift-cluster') {
-          sh('yes | ./destroy_vms.sh || true')
-        }
-      }
-    }
   }
 } catch(err) {
   mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/job/is_apaas_openshift_cookbook-pipeline

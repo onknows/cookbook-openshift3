@@ -59,8 +59,8 @@ service 'Restart Node' do
   service_name 'atomic-openshift-node'
   action :nothing
   only_if 'systemctl is-enabled atomic-openshift-node'
-  retries 5
-  retry_delay 2
+  retries 4
+  retry_delay 5
 end
 
 systemd_unit 'atomic-openshift-node' do
