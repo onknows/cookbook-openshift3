@@ -1,6 +1,9 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.33
+- Bug with library for identifying the server roles
+
 ## v2.0.32
 ### Bug
 - Bug with library for identifying the server roles
