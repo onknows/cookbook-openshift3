@@ -111,7 +111,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
     end
   end
 
-  if is_master_server && is_first_master
+  if is_first_master
     log 'Reconcile Cluster Roles & Cluster Role Bindings [STARTED]' do
       level :info
     end
@@ -155,7 +155,8 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
       level :info
     end
 
-    include_recipe 'is_apaas_openshift_cookbook::upgrade_managed_hosted' if is_master_server && is_first_master
-    include_recipe 'is_apaas_openshift_cookbook::upgrade_node14' if is_node_server
+    include_recipe 'is_apaas_openshift_cookbook::upgrade_managed_hosted'
   end
+
+  include_recipe 'is_apaas_openshift_cookbook::upgrade_node14' if is_node_server
 end

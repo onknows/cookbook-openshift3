@@ -105,7 +105,7 @@ if is_certificate_server
   include_recipe 'is_apaas_openshift_cookbook::adhoc_migrate_certificate_server' if helper.check_certificate_server
 end
 
-unless node['is_apaas_openshift_cookbook']['upgrade']
+unless node['is_apaas_openshift_cookbook']['upgrade'] && ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
   include_recipe 'is_apaas_openshift_cookbook::adhoc_redeploy_certificates' if node['is_apaas_openshift_cookbook']['adhoc_redeploy_certificates']
   include_recipe 'is_apaas_openshift_cookbook::commons' unless node.run_state['issues_detected']
 end

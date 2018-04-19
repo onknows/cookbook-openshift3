@@ -53,15 +53,15 @@ module OpenShiftHelper
     end
 
     def on_master_server?
-      master_servers.all? { |server_master| server_master['fqdn'] == node['fqdn'] }
+      master_servers.any? { |server_master| server_master['fqdn'] == node['fqdn'] }
     end
 
     def on_node_server?
-      node_servers.all? { |server_node| server_node['fqdn'] == node['fqdn'] }
+      node_servers.any? { |server_node| server_node['fqdn'] == node['fqdn'] }
     end
 
     def on_etcd_server?
-      etcd_servers.all? { |server_etcd| server_etcd['fqdn'] == node['fqdn'] }
+      etcd_servers.any? { |server_etcd| server_etcd['fqdn'] == node['fqdn'] }
     end
 
     def on_first_master?
