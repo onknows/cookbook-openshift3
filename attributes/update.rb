@@ -1,3 +1,5 @@
+default['cookbook-openshift3']['control_rollback_flag'] = '/to_be_rollback'
+
 if node['cookbook-openshift3']['control_upgrade']
   default['cookbook-openshift3']['control_upgrade_version'] = ''
   default['cookbook-openshift3']['control_upgrade_flag'] = '/to_be_replaced'
