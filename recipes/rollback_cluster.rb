@@ -87,15 +87,15 @@ if is_etcd_server
     notifies :stop, 'service[etcd-service]', :immediately
     action :nothing
   end
-end
 
-if is_first_etcd
   ruby_block 'Deleting ETCD data' do
     block do
       helper.remove_dir("#{node['cookbook-openshift3']['etcd_data_dir']}/*")
     end
   end
+end
 
+if is_first_etcd
   ruby_block "Restore previous ETCD data to Version: pre-upgrade-#{node['cookbook-openshift3']['control_upgrade_version']}" do
     block do
       helper.backup_dir("#{node['cookbook-openshift3']['etcd_data_dir']}-pre-upgrade#{node['cookbook-openshift3']['control_upgrade_version']}/.", node['cookbook-openshift3']['etcd_data_dir'])
