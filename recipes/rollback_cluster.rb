@@ -67,25 +67,19 @@ if is_etcd_server
     command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://`hostname`:2379 get /rollback/etcd | grep -w pre"
     retries 30
     retry_delay 2
-    notifies :run, 'execute[Generate etcd backup before rolling back]', :immediately
   end
 
   execute 'Generate etcd backup before rolling back' do
     command "etcdctl backup --data-dir=#{node['cookbook-openshift3']['etcd_data_dir']} --backup-dir=#{node['cookbook-openshift3']['etcd_data_dir']}-rollback-#{node['cookbook-openshift3']['control_upgrade_version']}"
-    action :nothing
-    notifies :run, 'execute[Copy etcd v3 data store]', :immediately
   end
 
   execute 'Copy etcd v3 data store' do
     command "cp -a #{node['cookbook-openshift3']['etcd_data_dir']}/member/snap/db #{node['cookbook-openshift3']['etcd_data_dir']}-rollback-#{node['cookbook-openshift3']['control_upgrade_version']}/member/snap/"
-    action :nothing
-    notifies :write, 'log[Stop services on ETCD]', :immediately
   end
 
   log 'Stop services on ETCD' do
     level :info
     notifies :stop, 'service[etcd-service]', :immediately
-    action :nothing
   end
 
   ruby_block 'Deleting ETCD data' do
@@ -152,6 +146,7 @@ if is_first_etcd
 
   file "#{node['cookbook-openshift3']['etcd_data_dir']}/.rollback#{node['cookbook-openshift3']['control_upgrade_version']}" do
     action :create_if_missing
+    only_if { etcd_servers.size == 1 }
   end
 end
 
@@ -198,6 +193,7 @@ unless etcd_servers.size == 1
     template "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service.d/override.conf" do
       source 'etcd-override.conf.erb'
     end
+
     remote_file "Retrieve ETCD SystemD Drop-in from Certificate Server[#{certificate_server['fqdn']}]" do
       path "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service.d/etcd-dropin"
       source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/migration/etcd-#{node['fqdn']}"
