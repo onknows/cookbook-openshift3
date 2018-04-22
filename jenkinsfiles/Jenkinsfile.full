@@ -15,19 +15,10 @@ try {
     string(name: 'CHEF_DEPLOY_CONTAINERIZED',                    defaultValue: 'true false',                                   description: 'If "true", deploy containerized, "true false" to do both'),
     string(name: 'LOG_LEVEL',                                    defaultValue: 'debug',                                        description: 'shutit log level (debug, info, warning, critical)'),
     string(name: 'SHUTIT_CLUSTER_CONFIGS',                       defaultValue: 'test_multi_node_separate_etcd',                description: 'which cluster configs to test'),
-    string(name: 'CHEFDK_RUBOCOP_VERSION',                       defaultValue: '1.6.1',                                        description: 'ChefDK docker image version for rubocop'),
     booleanParam(name: 'dokitchen',                              defaultValue: true,                                           description: 'Whether to run kitchen tests'),
-    booleanParam(name: 'doshutit',                               defaultValue: true,                                           description: 'Whether to run shutit tests'),
-    booleanParam(name: 'dorubocop',                              defaultValue: true,                                           description: 'Whether to run rubocop tests')
+    booleanParam(name: 'doshutit',                               defaultValue: true,                                           description: 'Whether to run shutit tests')
   ])])
   node() {
-    if (params.dorubocop) {
-      stage('rubocop') {
-        dir(builddir) {
-          sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk:' + "${params.CHEFDK_RUBOCOP_VERSION} rubocop -D"
-        }
-      }
-    }
     if (params.doshutit) {
       stage('shutit_tests') {
         sh 'mkdir -p ' + builddir
