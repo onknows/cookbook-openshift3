@@ -7,8 +7,8 @@
 server_info = helper = OpenShiftHelper::NodeHelper.new(node)
 first_etcd = server_info.first_etcd
 is_etcd_server = server_info.on_etcd_server?
-is_master_server = server_info.on_master_server?
-is_node_server = server_info.on_node_server?
+# is_master_server = server_info.on_master_server?
+# is_node_server = server_info.on_node_server?
 is_first_etcd = server_info.on_first_etcd?
 certificate_server = server_info.certificate_server
 is_certificate_server = server_info.on_certificate_server?
@@ -48,14 +48,14 @@ end
 #     notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
 #   end
 # end
-# 
+#
 # if is_node_server
 #   log 'Stop services on NODES' do
 #     level :info
 #     notifies :stop, 'service[Restart Node]', :immediately
 #   end
 # end
-# 
+#
 # if is_master_server || is_node_server
 #   execute 'Downgrade pkgs' do
 #     command "yum -y downgrade #{node['cookbook-openshift3']['openshift_service_type']}-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-clients-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-master-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-node-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-sdn-ovs-#{node['cookbook-openshift3']['ose_version']} tuned-profiles-#{node['cookbook-openshift3']['openshift_service_type']}-node-#{node['cookbook-openshift3']['ose_version']}"
@@ -253,13 +253,13 @@ end
 
 # include_recipe 'cookbook-openshift3::master'
 # include_recipe 'cookbook-openshift3::node'
-# 
+#
 # if is_node_server
 #   log 'Restart services on NODES' do
 #     level :info
 #     notifies :restart, 'service[Restart Node]', :immediately
 #   end
-# 
+#
 #   log '(Nodes) Downgrade completed. Progressing with the CHEF run' do
 #     level :info
 #   end
