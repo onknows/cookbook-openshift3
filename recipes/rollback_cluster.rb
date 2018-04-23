@@ -16,14 +16,14 @@ etcd_servers = server_info.etcd_servers
 
 return unless ::File.file?(node['cookbook-openshift3']['control_rollback_flag'])
 
-if is_master_server || is_node_server
-  %w(excluder docker-excluder).each do |pkg|
-    execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} (Best effort < 3.5)" do
-      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
-      only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
-    end
-  end
-end
+# if is_master_server || is_node_server
+#   %w(excluder docker-excluder).each do |pkg|
+#     execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} (Best effort < 3.5)" do
+#       command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
+#       only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
+#     end
+#   end
+# end
 
 if is_etcd_server
   return if ::File.file?("#{node['cookbook-openshift3']['etcd_data_dir']}/.rollback#{node['cookbook-openshift3']['control_upgrade_version']}")
@@ -40,27 +40,27 @@ if is_first_etcd
   end
 end
 
-if is_master_server
-  log 'Stop services on MASTERS' do
-    level :info
-    notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
-    notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
-    notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
-  end
-end
-
-if is_node_server
-  log 'Stop services on NODES' do
-    level :info
-    notifies :stop, 'service[Restart Node]', :immediately
-  end
-end
-
-if is_master_server || is_node_server
-  execute 'Downgrade pkgs' do
-    command "yum -y downgrade #{node['cookbook-openshift3']['openshift_service_type']}-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-clients-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-master-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-node-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-sdn-ovs-#{node['cookbook-openshift3']['ose_version']} tuned-profiles-#{node['cookbook-openshift3']['openshift_service_type']}-node-#{node['cookbook-openshift3']['ose_version']}"
-  end
-end
+# if is_master_server
+#   log 'Stop services on MASTERS' do
+#     level :info
+#     notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :immediately unless node['cookbook-openshift3']['openshift_HA']
+#     notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :immediately if node['cookbook-openshift3']['openshift_HA']
+#     notifies :stop, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :immediately if node['cookbook-openshift3']['openshift_HA']
+#   end
+# end
+# 
+# if is_node_server
+#   log 'Stop services on NODES' do
+#     level :info
+#     notifies :stop, 'service[Restart Node]', :immediately
+#   end
+# end
+# 
+# if is_master_server || is_node_server
+#   execute 'Downgrade pkgs' do
+#     command "yum -y downgrade #{node['cookbook-openshift3']['openshift_service_type']}-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-clients-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-master-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-node-#{node['cookbook-openshift3']['ose_version']} #{node['cookbook-openshift3']['openshift_service_type']}-sdn-ovs-#{node['cookbook-openshift3']['ose_version']} tuned-profiles-#{node['cookbook-openshift3']['openshift_service_type']}-node-#{node['cookbook-openshift3']['ose_version']}"
+#   end
+# end
 
 if is_etcd_server
   execute 'Checking flag for rolling back (ETCD)' do
@@ -251,16 +251,16 @@ end
   end
 end
 
-include_recipe 'cookbook-openshift3::master'
-include_recipe 'cookbook-openshift3::node'
-
-if is_node_server
-  log 'Restart services on NODES' do
-    level :info
-    notifies :restart, 'service[Restart Node]', :immediately
-  end
-
-  log '(Nodes) Downgrade completed. Progressing with the CHEF run' do
-    level :info
-  end
-end
+# include_recipe 'cookbook-openshift3::master'
+# include_recipe 'cookbook-openshift3::node'
+# 
+# if is_node_server
+#   log 'Restart services on NODES' do
+#     level :info
+#     notifies :restart, 'service[Restart Node]', :immediately
+#   end
+# 
+#   log '(Nodes) Downgrade completed. Progressing with the CHEF run' do
+#     level :info
+#   end
+# end
