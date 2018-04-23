@@ -14,10 +14,6 @@ if ::File.file?(node['cookbook-openshift3']['adhoc_uninstall_control_flag'])
   include_recipe 'cookbook-openshift3::adhoc_uninstall'
 end
 
-if ::File.file?(node['cookbook-openshift3']['control_rollback_flag'])
-  include_recipe 'cookbook-openshift3::rollback_cluster'
-end
-
 include_recipe 'cookbook-openshift3::services'
 
 if node['cookbook-openshift3']['control_upgrade']
