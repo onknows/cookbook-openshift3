@@ -204,7 +204,7 @@ unless etcd_servers.size == 1
       path "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service.d/etcd-dropin"
       source "http://#{certificate_server['ipaddress']}:#{node['cookbook-openshift3']['httpd_xfer_port']}/etcd/migration/etcd-#{node['fqdn']}"
       action :create_if_missing
-      notifies :run, 'execute[daemon-reload]', :immediately
+      # notifies :run, 'execute[daemon-reload]', :immediately
       retries 120
       retry_delay 5
     end
