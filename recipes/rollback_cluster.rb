@@ -186,6 +186,12 @@ unless etcd_servers.size == 1
   end
 
   if is_etcd_server && !is_first_etcd
+    execute 'Checking flag for rolling back Readiness (ETCD)' do
+      command "/usr/bin/etcdctl --cert-file #{node['cookbook-openshift3']['etcd_peer_file']} --key-file #{node['cookbook-openshift3']['etcd_peer_key']} --ca-file #{node['cookbook-openshift3']['etcd_ca_cert']} -C https://#{first_etcd['ipaddress']}:2379 get /rollback/etcd | grep -w ready"
+      retries 30
+      retry_delay 2
+    end
+
     directory "/etc/systemd/system/#{node['cookbook-openshift3']['etcd_service_name']}.service.d" do
       action :create
     end
