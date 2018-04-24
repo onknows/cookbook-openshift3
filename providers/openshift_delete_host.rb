@@ -14,7 +14,6 @@ end
 action :delete do
   converge_by 'Uninstalling OpenShift' do
     helper = OpenShiftHelper::NodeHelper.new(node)
-    is_node_server = helper.on_node_server?
 
     service "#{node['cookbook-openshift3']['openshift_service_type']}-node" do
       action %i(stop disable)
@@ -57,8 +56,8 @@ action :delete do
     end
 
     service 'docker' do
-      action :stop
-      only_if { is_node_server || node['cookbook-openshift3']['deploy_containerized'] }
+      action %i(stop disable)
+      ignore_failure true
     end
 
     Mixlib::ShellOut.new('systemctl reset-failed').run_command
@@ -82,14 +81,14 @@ action :delete do
       end
     end
 
-    %W(#{node['cookbook-openshift3']['openshift_service_type']} #{node['cookbook-openshift3']['openshift_service_type']}-master #{node['cookbook-openshift3']['openshift_service_type']}-node #{node['cookbook-openshift3']['openshift_service_type']}-sdn-ovs #{node['cookbook-openshift3']['openshift_service_type']}-clients cockpit-bridge cockpit-docker cockpit-shell cockpit-ws openvswitch tuned-profiles-#{node['cookbook-openshift3']['openshift_service_type']}-node #{node['cookbook-openshift3']['openshift_service_type']}-excluder #{node['cookbook-openshift3']['openshift_service_type']}-docker-excluder etcd httpd haproxy).each do |remove_package|
+    %W(#{node['cookbook-openshift3']['openshift_service_type']} #{node['cookbook-openshift3']['openshift_service_type']}-master #{node['cookbook-openshift3']['openshift_service_type']}-node #{node['cookbook-openshift3']['openshift_service_type']}-sdn-ovs #{node['cookbook-openshift3']['openshift_service_type']}-clients cockpit-bridge cockpit-docker cockpit-shell cockpit-ws openvswitch tuned-profiles-#{node['cookbook-openshift3']['openshift_service_type']}-node #{node['cookbook-openshift3']['openshift_service_type']}-excluder #{node['cookbook-openshift3']['openshift_service_type']}-docker-excluder etcd httpd haproxy docker).each do |remove_package|
       package remove_package do
         action :remove
         ignore_failure true
       end
     end
 
-    %W(/var/lib/origin/* /etc/dnsmasq.d/origin-dns.conf /etc/dnsmasq.d/origin-upstream-dns.conf /etc/NetworkManager/dispatcher.d/99-origin-dns.sh /etc/#{node['cookbook-openshift3']['openshift_service_type']} /etc/sysconfig/openvswitch* /etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-node /etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-node-dep /etc/systemd/system/openvswitch.service* /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-master.service /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers.service* /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-master-api.service* /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-node-dep.service /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-node.service /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-node.service.wants /run/openshift-sdn /etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-master* /etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-master-api* /etc/systemd/system/docker.service.wants/#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers.service /etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers* /etc/sysconfig/openvswitch* /root/.kube /usr/share/openshift/examples /usr/share/openshift/hosted /usr/local/bin/openshift /usr/local/bin/oadm /usr/local/bin/oc /usr/local/bin/kubectl #{node['cookbook-openshift3']['etcd_conf_dir']}/* /etc/httpd/* /var/lib/etcd/* /etc/systemd/system/etcd.service.d /etc/systemd/system/etcd* /usr/lib/systemd/system/etcd* /etc/profile.d/etcdctl.sh #{node['cookbook-openshift3']['openshift_common_base_dir']}/* /var/www/html/* #{node['cookbook-openshift3']['openshift_master_api_systemd']} #{node['cookbook-openshift3']['openshift_master_controllers_systemd']} /etc/bash_completion.d/oc /etc/systemd/system/haproxy.service.d /etc/haproxy /etc/yum.repos.d/centos-openshift-origin*.repo).each do |file_to_remove|
+    %W(/var/lib/origin/* /var/lib/docker/* /var/run/docker* /etc/docker* /etc/sysconfig/docker* /etc/dnsmasq.d/origin-dns.conf /etc/dnsmasq.d/origin-upstream-dns.conf /etc/NetworkManager/dispatcher.d/99-origin-dns.sh /etc/#{node['cookbook-openshift3']['openshift_service_type']} /etc/sysconfig/openvswitch* /etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-node /etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-node-dep /etc/systemd/system/openvswitch.service* /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-master.service /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers.service* /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-master-api.service* /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-node-dep.service /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-node.service /etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-node.service.wants /run/openshift-sdn /etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-master* /etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-master-api* /etc/systemd/system/docker.service.wants/#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers.service /etc/sysconfig/#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers* /etc/sysconfig/openvswitch* /root/.kube /usr/share/openshift/examples /usr/share/openshift/hosted /usr/local/bin/openshift /usr/local/bin/oadm /usr/local/bin/oc /usr/local/bin/kubectl #{node['cookbook-openshift3']['etcd_conf_dir']}/* /etc/httpd/* /var/lib/etcd/* /etc/systemd/system/etcd.service.d /etc/systemd/system/etcd* /usr/lib/systemd/system/etcd* /etc/profile.d/etcdctl.sh #{node['cookbook-openshift3']['openshift_common_base_dir']}/* /var/www/html/* #{node['cookbook-openshift3']['openshift_master_api_systemd']} #{node['cookbook-openshift3']['openshift_master_controllers_systemd']} /etc/bash_completion.d/oc /etc/systemd/system/haproxy.service.d /etc/haproxy /etc/yum.repos.d/centos-openshift-origin*.repo).each do |file_to_remove|
       helper.remove_dir(file_to_remove)
     end
 
@@ -114,11 +113,6 @@ action :delete do
     end
 
     Mixlib::ShellOut.new('systemctl daemon-reload').run_command
-
-    service 'docker' do
-      action :restart
-      only_if { is_node_server || node['cookbook-openshift3']['deploy_containerized'] }
-    end
 
     systemd_unit 'iptables' do
       action :restart
