@@ -94,7 +94,7 @@ action :create do
           'namespace_router' => node['cookbook-openshift3']['openshift_hosted_router_namespace']
         )
         cwd node['cookbook-openshift3']['openshift_master_config_dir']
-        not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} volume dc/router --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig | grep /var/lib/haproxy/conf/custom"
+        not_if "#{node['cookbook-openshift3']['openshift_common_client_binary']} volume dc/router -n ${namespace_router} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig | grep /var/lib/haproxy/conf/custom"
       end
     end
   end
