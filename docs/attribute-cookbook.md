@@ -12,9 +12,16 @@ Installs/Configures Openshift 3.x (>= 3.2)
 ## Cookbooks:
 
 * iptables (>= 1.0.0)
-* selinux_policy
+* `selinux_policy`
 
 # Attributes
+
+All items below are in alphabetical order 
+
+Item name | Type | Related Items | Related Recipes | Description
+--------- | ---- | ------------- | --------------- | -----------
+`openshift_adhoc_reboot_node` | boolean | | | TODO
+
 
 * `node['cookbook-openshift3']['openshift_adhoc_reboot_node']` -  Defaults to `false`.
 * `node['cookbook-openshift3']['openshift_push_via_dns']` -  Defaults to `false`.
