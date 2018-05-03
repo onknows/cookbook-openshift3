@@ -36,9 +36,9 @@ try {
         sh('yes | /space/git/work/bin/destroy_vms.sh || true')
       }
     }
-    mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/''', cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: '1.3 Build OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
+    mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/''', cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: '3.7 Build OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
   }
 } catch(err) {
-  mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: '1.3 Build Failure', to: 'ian.miell@gmail.com'
+  mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/''' + err, cc: '', from: 'cookbook-openshift3@jenkins.meirionconsulting.com', replyTo: '', subject: '3.7 Build Failure', to: 'ian.miell@gmail.com'
   throw(err)
 }
