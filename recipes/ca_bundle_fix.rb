@@ -16,5 +16,5 @@ ruby_block 'Create ca-bundle if it is not there' do
     require 'fileutils'
     FileUtils.cp("#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt", "#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt")
   end
-  only_if { is_master_server && ::File.file?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt") && ! ::File.file?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt") }
+  only_if { is_master_server && ::File.file?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt") && !::File.file?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca-bundle.crt") }
 end

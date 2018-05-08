@@ -512,6 +512,7 @@ Variables:
 | redeploy_cluster_ca_certserver_control_flag | Location of the cluster ca control flag | `"/to_be_replaced_ca_cluster"`  | `YES` |
 | redeploy_cluster_ca_masters_control_flag | Location of the cluster master ca control flag | `"/to_be_replaced_masters"`  | `YES` |
 | redeploy_cluster_ca_nodes_control_flag | Location of the node ca control flag | `"/to_be_replaced_nodes"`  | `YES` |
+| redeploy_cluster_hosted_certserver_control_flag | Location of the hosted control flag | `"/to_be_replaced_hosted_cluster"`  | `YES` |
 
 ```json
   "override_attributes": {
