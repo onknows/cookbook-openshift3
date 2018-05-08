@@ -72,6 +72,14 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_certserver_cont
       action :nothing
     end
 
+    ruby_block 'Copy ca-bundle if it is not there master_certs_generated_certs_dir' do
+      block do
+        require 'fileutils'
+        FileUtils.cp("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt", "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca-bundle.crt")
+      end
+      only_if { !::File.file?("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca-bundle.crt") }
+    end
+
     ruby_block 'Update ca.crt with ca.bundle' do
       block do
         require 'fileutils'
