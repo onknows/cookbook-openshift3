@@ -88,6 +88,10 @@ module OpenShiftHelper
       FileUtils.cp_r(src, dest)
     end
 
+    def change_owner(user, group, dir)
+      FileUtils.chown_R user, group, dir
+    end
+
     def bundle_etcd_ca(old, new)
       File.open(new, 'w+') { |f| f.puts old.map { |s| IO.read(s) } }
     end

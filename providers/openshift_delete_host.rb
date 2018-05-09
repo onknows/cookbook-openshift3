@@ -14,7 +14,6 @@ end
 action :delete do
   converge_by 'Uninstalling OpenShift' do
     helper = OpenShiftHelper::NodeHelper.new(node)
-    is_node_server = helper.on_node_server?
 
     service 'atomic-openshift-node' do
       action %i(stop disable)
@@ -57,8 +56,8 @@ action :delete do
     end
 
     service 'docker' do
-      action :stop
-      only_if { is_node_server || node['is_apaas_openshift_cookbook']['deploy_containerized'] }
+      action %i(stop disable)
+      ignore_failure true
     end
 
     Mixlib::ShellOut.new('systemctl reset-failed').run_command
@@ -82,14 +81,14 @@ action :delete do
       end
     end
 
-    %w(atomic-openshift atomic-openshift-master atomic-openshift-node atomic-openshift-sdn-ovs atomic-openshift-clients cockpit-bridge cockpit-docker cockpit-shell cockpit-ws openvswitch tuned-profiles-atomic-openshift-node atomic-openshift-excluder atomic-openshift-docker-excluder etcd httpd haproxy).each do |remove_package|
+    %w(atomic-openshift atomic-openshift-master atomic-openshift-node atomic-openshift-sdn-ovs atomic-openshift-clients cockpit-bridge cockpit-docker cockpit-shell cockpit-ws openvswitch tuned-profiles-atomic-openshift-node atomic-openshift-excluder atomic-openshift-docker-excluder etcd httpd haproxy docker docker-client docker-common).each do |remove_package|
       package remove_package do
         action :remove
         ignore_failure true
       end
     end
 
-    %W(/var/lib/origin/* /etc/dnsmasq.d/origin-dns.conf /etc/dnsmasq.d/origin-upstream-dns.conf /etc/NetworkManager/dispatcher.d/99-origin-dns.sh /etc/atomic-openshift /etc/sysconfig/openvswitch* /etc/sysconfig/atomic-openshift-node /etc/sysconfig/atomic-openshift-node-dep /etc/systemd/system/openvswitch.service* /etc/systemd/system/atomic-openshift-master.service /etc/systemd/system/atomic-openshift-master-controllers.service* /etc/systemd/system/atomic-openshift-master-api.service* /etc/systemd/system/atomic-openshift-node-dep.service /etc/systemd/system/atomic-openshift-node.service /etc/systemd/system/atomic-openshift-node.service.wants /run/openshift-sdn /etc/sysconfig/atomic-openshift-master* /etc/sysconfig/atomic-openshift-master-api* /etc/systemd/system/docker.service.wants/atomic-openshift-master-controllers.service /etc/sysconfig/atomic-openshift-master-controllers* /etc/sysconfig/openvswitch* /root/.kube /usr/share/openshift/examples /usr/share/openshift/hosted /usr/local/bin/openshift /usr/local/bin/oadm /usr/local/bin/oc /usr/local/bin/kubectl #{node['is_apaas_openshift_cookbook']['etcd_conf_dir']}/* /etc/httpd/* /var/lib/etcd/* /etc/systemd/system/etcd.service.d /etc/systemd/system/etcd* /usr/lib/systemd/system/etcd* /etc/profile.d/etcdctl.sh #{node['is_apaas_openshift_cookbook']['openshift_common_base_dir']}/* /var/www/html/* #{node['is_apaas_openshift_cookbook']['openshift_master_api_systemd']} #{node['is_apaas_openshift_cookbook']['openshift_master_controllers_systemd']} /etc/bash_completion.d/oc /etc/systemd/system/haproxy.service.d /etc/haproxy /etc/yum.repos.d/centos-openshift-origin*.repo).each do |file_to_remove|
+    %W(/var/lib/origin/* /var/lib/docker/* /var/run/docker* /etc/docker* /etc/sysconfig/docker* /etc/dnsmasq.d/origin-dns.conf /etc/dnsmasq.d/origin-upstream-dns.conf /etc/NetworkManager/dispatcher.d/99-origin-dns.sh /etc/atomic-openshift /etc/sysconfig/openvswitch* /etc/sysconfig/atomic-openshift-node /etc/sysconfig/atomic-openshift-node-dep /etc/systemd/system/openvswitch.service* /etc/systemd/system/atomic-openshift-master.service /etc/systemd/system/atomic-openshift-master-controllers.service* /etc/systemd/system/atomic-openshift-master-api.service* /etc/systemd/system/atomic-openshift-node-dep.service /etc/systemd/system/atomic-openshift-node.service /etc/systemd/system/atomic-openshift-node.service.wants /run/openshift-sdn /etc/sysconfig/atomic-openshift-master* /etc/sysconfig/atomic-openshift-master-api* /etc/systemd/system/docker.service.wants/atomic-openshift-master-controllers.service /etc/sysconfig/atomic-openshift-master-controllers* /etc/sysconfig/openvswitch* /root/.kube /usr/share/openshift/examples /usr/share/openshift/hosted /usr/local/bin/openshift /usr/local/bin/oadm /usr/local/bin/oc /usr/local/bin/kubectl #{node['is_apaas_openshift_cookbook']['etcd_conf_dir']}/* /etc/httpd/* /var/lib/etcd/* /etc/systemd/system/etcd.service.d /etc/systemd/system/etcd* /usr/lib/systemd/system/etcd* /etc/profile.d/etcdctl.sh #{node['is_apaas_openshift_cookbook']['openshift_common_base_dir']}/* /var/www/html/* #{node['is_apaas_openshift_cookbook']['openshift_master_api_systemd']} #{node['is_apaas_openshift_cookbook']['openshift_master_controllers_systemd']} /etc/bash_completion.d/oc /etc/systemd/system/haproxy.service.d /etc/haproxy /etc/yum.repos.d/centos-openshift-origin*.repo).each do |file_to_remove|
       helper.remove_dir(file_to_remove)
     end
 
@@ -114,11 +113,6 @@ action :delete do
     end
 
     Mixlib::ShellOut.new('systemctl daemon-reload').run_command
-
-    service 'docker' do
-      action :restart
-      only_if { is_node_server || node['is_apaas_openshift_cookbook']['deploy_containerized'] }
-    end
 
     systemd_unit 'iptables' do
       action :restart

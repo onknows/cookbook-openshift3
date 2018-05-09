@@ -502,16 +502,17 @@ The redeployment of the certificates requires variables and flags to be set befo
 
 Variables:
 
-| NAME | PURPOSE | Default value | Mandatory |
-| ---------------- | ------------------------------- | ------------------ | ---------- |
-| adhoc_redeploy_certificates | Execute certificates redeploy    | `false`    | `YES` |
-| adhoc_redeploy_etcd_ca | Execute an ETCD CA redeploy    | `false`    | `YES` |
-| adhoc_redeploy_cluster_ca | Execute a CLUSTER CA CERTS redeploy   | `false` | `YES` |
-| redeploy_etcd_ca_control_flag | Location of the etcd ca control flag | `"/to_be_replaced_ca_etcd"`  | `YES` |
-| redeploy_etcd_certs_control_flag | Location of the etcd certs control flag | `"/to_be_replaced_certs"`  | `YES` |
-| redeploy_cluster_ca_certserver_control_flag | Location of the cluster ca control flag | `"/to_be_replaced_ca_cluster"`  | `YES` |
-| redeploy_cluster_ca_masters_control_flag | Location of the cluster master ca control flag | `"/to_be_replaced_masters"`  | `YES` |
-| redeploy_cluster_ca_nodes_control_flag | Location of the node ca control flag | `"/to_be_replaced_nodes"`  | `YES` |
+| NAME | PURPOSE | Default value | Mandatory | Target |
+| ---------------- | ------------------------------- | ------------------ | ---------- | ---------- |
+| adhoc_redeploy_certificates | Execute certificates redeploy    | `false`    | `YES` | Masters/Nodes/Certificate Server |
+| adhoc_redeploy_etcd_ca | Execute an ETCD CA redeploy    | `false`    | `YES` | ETCD/Masters |
+| adhoc_redeploy_cluster_ca | Execute a CLUSTER CA CERTS redeploy   | `false` | `YES` | Masters/Nodes/Certificate Server |
+| redeploy_etcd_ca_control_flag | Location of the etcd ca control flag | `"/to_be_replaced_ca_etcd"`  | `YES` | Certificate Server |
+| redeploy_etcd_certs_control_flag | Location of the etcd certs control flag | `"/to_be_replaced_certs"`  | `YES` | ETCD/Masters |
+| redeploy_cluster_ca_certserver_control_flag | Location of the cluster ca control flag | `"/to_be_replaced_ca_cluster"`  | `YES` | Certificate Server |
+| redeploy_cluster_ca_masters_control_flag | Location of the cluster master ca control flag | `"/to_be_replaced_masters"`  | `YES` | Masters |
+| redeploy_cluster_ca_nodes_control_flag | Location of the node ca control flag | `"/to_be_replaced_nodes"`  | `YES` | Nodes |
+| redeploy_cluster_hosted_certserver_control_flag | Location of the hosted control flag | `"/to_be_replaced_hosted_cluster"`  | `YES` | 1st Master |
 
 ```json
   "override_attributes": {

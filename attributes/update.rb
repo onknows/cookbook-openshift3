@@ -1,3 +1,5 @@
+default['is_apaas_openshift_cookbook']['control_rollback_flag'] = '/to_be_rollback'
+
 if node['is_apaas_openshift_cookbook']['control_upgrade']
   default['is_apaas_openshift_cookbook']['control_upgrade_version'] = ''
   default['is_apaas_openshift_cookbook']['control_upgrade_flag'] = '/to_be_replaced'

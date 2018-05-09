@@ -76,18 +76,17 @@ if is_certificate_server
 
     execute "Create the master server certificates for #{master_server['fqdn']}" do
       command "#{node['is_apaas_openshift_cookbook']['openshift_common_admin_binary']} ca create-server-cert \
-              --certificate-authority=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt \
 			        ${legacy_certs} \
               --hostnames=#{(node['is_apaas_openshift_cookbook']['erb_corsAllowedOrigins'] + [master_server['ipaddress'], master_server['fqdn'], node['is_apaas_openshift_cookbook']['openshift_common_api_hostname']]).uniq.join(',')} \
               --cert=#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/master.server.crt \
               --key=#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/master.server.key \
               --signer-cert=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt \
               --signer-key=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.key \
-              --signer-serial=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.serial.txt ${validty_certs}\
+              --signer-serial=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.serial.txt ${validity_certs} \
               --overwrite=false"
       environment(
-        'validty_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['is_apaas_openshift_cookbook']['openshift_master_cert_expire_days']}",
-        'legacy_certs' => ::File.file?("#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}-legacy-ca") ? "#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt" : ''
+        'validity_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['is_apaas_openshift_cookbook']['openshift_master_cert_expire_days']}",
+        'legacy_certs' => ::File.file?("#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}-legacy-ca") ? "--certificate-authority=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt" : ''
       )
       creates "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/master.server.crt"
     end
@@ -102,8 +101,8 @@ if is_certificate_server
               --signer-cert=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt \
               --signer-key=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.key \
               --signer-serial=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.serial.txt \
-              --user=system:openshift-master --basename=openshift-master ${validty_certs}"
-      environment 'validty_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['is_apaas_openshift_cookbook']['openshift_master_cert_expire_days']}"
+              --user=system:openshift-master --basename=openshift-master ${validity_certs}"
+      environment 'validity_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['is_apaas_openshift_cookbook']['openshift_master_cert_expire_days']}"
       creates "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/openshift-master.kubeconfig"
     end
 
@@ -114,10 +113,20 @@ if is_certificate_server
               node['is_apaas_openshift_cookbook']['openshift_master_certs']
             end
 
-    certs.uniq.each do |master_certificate|
+    certs.grep(/\.(?:crt|kubeconfig)$/).uniq.each do |master_certificate|
       remote_file "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/#{master_certificate}" do
         source "file://#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/#{master_certificate}"
         only_if { ::File.file?("#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/#{master_certificate}") }
+        mode '0644'
+        sensitive true
+      end
+    end
+
+    certs.grep(/\.(?:key)$/).uniq.each do |master_key|
+      remote_file "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/#{master_key}" do
+        source "file://#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/#{master_key}"
+        only_if { ::File.file?("#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/#{master_key}") }
+        mode '0600'
         sensitive true
       end
     end
@@ -128,8 +137,28 @@ if is_certificate_server
       end
     end
 
+    if node['is_apaas_openshift_cookbook']['adhoc_redeploy_cluster_ca']
+      ruby_block "(NEW-CA) Update the Master KUBECONFIG certificates for #{master_server['fqdn']}" do
+        block do
+          kubeconfig = YAML.load_file("#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/openshift-master.kubeconfig")
+          kubeconfig['clusters'][0]['cluster']['certificate-authority-data'] = Base64.encode64(::File.read("#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca-bundle.crt")).delete("\n")
+          open("#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/openshift-master.kubeconfig", 'w') { |f| f << kubeconfig.to_yaml }
+        end
+        only_if { ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_certserver_control_flag']) }
+      end
+
+      ruby_block "(NEW-CA) Update the Admin KUBECONFIG certificates for #{master_server['fqdn']}" do
+        block do
+          kubeconfig = YAML.load_file("#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/admin.kubeconfig")
+          kubeconfig['clusters'][0]['cluster']['certificate-authority-data'] = Base64.encode64(::File.read("#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca-bundle.crt")).delete("\n")
+          open("#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/admin.kubeconfig", 'w') { |f| f << kubeconfig.to_yaml }
+        end
+        only_if { ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_certserver_control_flag']) }
+      end
+    end
+
     execute "Create a tarball of the master certs for #{master_server['fqdn']}" do
-      command "tar --mode='0644' --owner=root --group=root -czvf #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz -C #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']} . && chown apache:apache #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz"
+      command "tar --owner=root --group=root -czvf #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz -C #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']} . && chown apache:apache #{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz"
       creates "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}.tgz"
     end
 
