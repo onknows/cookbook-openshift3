@@ -6,6 +6,7 @@
 
 server_info = OpenShiftHelper::NodeHelper.new(node)
 node_servers = server_info.node_servers
+ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
 
 %W(/var/www/html/node #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}).each do |path|
   directory path do
@@ -65,18 +66,26 @@ else
 
     execute "Generate certificate for #{node_server['fqdn']}" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} create-api-client-config \
+							${legacy_certs} \
               --client-dir=#{Chef::Config[:file_cache_path]}/#{node_server['fqdn']} \
               --certificate-authority=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt \
               --signer-cert=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt --signer-key=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key \
               --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt --user='system:node:#{node_server['fqdn'].downcase}' \
-              --groups=system:nodes --master=#{node['cookbook-openshift3']['openshift_master_api_url']}"
+              --groups=system:nodes --master=#{node['cookbook-openshift3']['openshift_master_api_url']} ${validity_certs}"
+      environment(
+        'validity_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['cookbook-openshift3']['openshift_node_cert_expire_days']}",
+        'legacy_certs' => File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_certserver_control_flag']) ? "--certificate-authority=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt" : ''
+      )
       creates "#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar.gz"
     end
 
     execute "Generate the node server certificate for #{node_server['fqdn']}" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-server-cert --cert=server.crt --key=server.key --overwrite=true \
 							--hostnames=#{node_server['fqdn'].downcase + ',' + node_server['ipaddress']} --signer-cert=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt --signer-key=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key \
-              --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt && mv server.{key,crt} #{Chef::Config[:file_cache_path]}/#{node_server['fqdn']}"
+              --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt && mv server.{key,crt} #{Chef::Config[:file_cache_path]}/#{node_server['fqdn']} ${validity_certs}"
+      environment(
+        'validity_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['cookbook-openshift3']['openshift_node_cert_expire_days']}"
+      )
       cwd Chef::Config[:file_cache_path]
       creates "#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar.gz"
     end

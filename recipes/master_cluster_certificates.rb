@@ -86,7 +86,7 @@ if is_certificate_server
               --overwrite=false"
       environment(
         'validity_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['cookbook-openshift3']['openshift_master_cert_expire_days']}",
-        'legacy_certs' => ::File.file?("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca") ? "--certificate-authority=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt" : ''
+        'legacy_certs' => File.directory?("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca") ? "--certificate-authority=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt" : ''
       )
       creates "#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/master.server.crt"
     end

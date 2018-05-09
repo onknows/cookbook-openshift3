@@ -1,10 +1,16 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.39
+### Bug
+- Bug with certificates renewal for node servers
+
 ## v2.0.34 - v2.0.38
+### Bug
 - Bug with certificates renewal
 
 ## v2.0.33
+### Bug
 - Bug with library for identifying the server roles
 
 ## v2.0.32

@@ -210,6 +210,7 @@ default['cookbook-openshift3']['erb_corsAllowedOrigins'] = ['127.0.0.1', 'localh
 default['cookbook-openshift3']['master_generated_certs_dir'] = '/var/www/html/master/generated_certs'
 default['cookbook-openshift3']['master_certs_generated_certs_dir'] = '/var/www/html/master_certs/generated_certs'
 default['cookbook-openshift3']['openshift_master_cert_expire_days'] = '730'
+default['cookbook-openshift3']['openshift_node_cert_expire_days'] = '730'
 default['cookbook-openshift3']['openshift_ca_cert_expire_days'] = '1825'
 default['cookbook-openshift3']['etcd_add_additional_nodes'] = false
 default['cookbook-openshift3']['etcd_service_name'] = node['cookbook-openshift3']['deploy_containerized'] == true ? 'etcd_container' : 'etcd'

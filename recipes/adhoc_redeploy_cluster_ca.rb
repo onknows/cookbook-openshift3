@@ -93,67 +93,17 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_certserver_cont
       end
     end
 
-    include_recipe 'cookbook-openshift3::master_cluster_ca'
-    include_recipe 'cookbook-openshift3::master_cluster_certificates'
-
-    directory '(NEW-CA) Create temp directory for updating nodes config' do
-      path "#{Chef::Config[:file_cache_path]}/certificates_nodes"
-      recursive true
-    end
-
     node_servers.each do |node_server|
       ruby_block "(NEW-CA) Remove old certs for #{node_server['fqdn']}" do
         block do
-          helper.remove_dir("#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tgz*")
+          helper.remove_dir("#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.*")
         end
-      end
-
-      execute "(NEW-CA) Extract certificates for #{node_server['fqdn']}" do
-        command "gunzip #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar.gz"
-      end
-
-      execute "(NEW-CA) Extract KUBECONFIG certificates for #{node_server['fqdn']}" do
-        command "tar --wildcards -xf #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar '*kubeconfig*'"
-        creates "#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar.gz"
-        cwd "#{Chef::Config[:file_cache_path]}/certificates_nodes"
-      end
-
-      bash "(NEW-CA) Update CA with CA-BUNDLE for #{node_server['fqdn']}" do
-        code <<-BASH
-	  tar --${ACTION} --wildcards -f #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar '*ca.crt'
-          tar --${ACTION} --wildcards -f #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar '*kubeconfig*'
-          tar --update --transform s/ca-bundle.crt/ca.crt/ -f #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar ./ca-bundle.crt
-        BASH
-        cwd node['cookbook-openshift3']['master_certs_generated_certs_dir']
-        environment 'ACTION' => 'delete'
-      end
-
-      ruby_block "(NEW-CA) Update the KUBECONFIG certificates for #{node_server['fqdn']}" do
-        block do
-          kubeconfig = YAML.load_file("#{Chef::Config[:file_cache_path]}/certificates_nodes/system:node:#{node_server['fqdn']}.kubeconfig")
-          kubeconfig['clusters'][0]['cluster']['certificate-authority-data'] = Base64.encode64(::File.read("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca-bundle.crt")).delete("\n")
-          open("#{Chef::Config[:file_cache_path]}/certificates_nodes/system:node:#{node_server['fqdn']}.kubeconfig", 'w') { |f| f << kubeconfig.to_yaml }
-        end
-      end
-
-      execute "(NEW-CA) Add KUBECONFIG for #{node_server['fqdn']}" do
-        command "tar --update -f #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar ./system:node:#{node_server['fqdn']}.kubeconfig"
-        creates "#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar.gz"
-        cwd "#{Chef::Config[:file_cache_path]}/certificates_nodes"
-        creates "#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar.gz"
-      end
-
-      execute "(NEW-CA) Recreate certificates for #{node_server['fqdn']}" do
-        command "gzip #{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar"
-        creates "#{node['cookbook-openshift3']['openshift_node_generated_configs_dir']}/#{node_server['fqdn']}.tar.gz"
       end
     end
 
-    directory '(NEW-CA) Delete temp directory for updating nodes config' do
-      path "#{Chef::Config[:file_cache_path]}/certificates_nodes"
-      recursive true
-      action :delete
-    end
+    include_recipe 'cookbook-openshift3::master_cluster_ca'
+    include_recipe 'cookbook-openshift3::master_cluster_certificates'
+    include_recipe 'cookbook-openshift3::nodes_certificates'
 
     file node['cookbook-openshift3']['redeploy_cluster_ca_certserver_control_flag'] do
       action :delete
