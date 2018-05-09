@@ -86,7 +86,7 @@ if is_certificate_server
               --overwrite=false"
       environment(
         'validity_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['is_apaas_openshift_cookbook']['openshift_master_cert_expire_days']}",
-        'legacy_certs' => ::File.file?("#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}-legacy-ca") ? "--certificate-authority=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt" : ''
+        'legacy_certs' => File.directory?("#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}-legacy-ca") ? "--certificate-authority=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt" : ''
       )
       creates "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/master.server.crt"
     end

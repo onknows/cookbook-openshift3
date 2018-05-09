@@ -210,6 +210,7 @@ default['is_apaas_openshift_cookbook']['erb_corsAllowedOrigins'] = ['127.0.0.1',
 default['is_apaas_openshift_cookbook']['master_generated_certs_dir'] = '/var/www/html/master/generated_certs'
 default['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir'] = '/var/www/html/master_certs/generated_certs'
 default['is_apaas_openshift_cookbook']['openshift_master_cert_expire_days'] = '730'
+default['is_apaas_openshift_cookbook']['openshift_node_cert_expire_days'] = '730'
 default['is_apaas_openshift_cookbook']['openshift_ca_cert_expire_days'] = '1825'
 default['is_apaas_openshift_cookbook']['etcd_add_additional_nodes'] = false
 default['is_apaas_openshift_cookbook']['etcd_service_name'] = node['is_apaas_openshift_cookbook']['deploy_containerized'] == true ? 'etcd_container' : 'etcd'

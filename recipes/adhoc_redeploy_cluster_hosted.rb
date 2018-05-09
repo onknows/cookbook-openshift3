@@ -70,9 +70,10 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_hosted_cer
     end
 
     execute 'Delete existing certificate' do
-      command "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} delete secret/router-certs --ignore-not-found -n ${namespace_router} --config=admin.kubeconfig"
+      command "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} $ACTION secret/router-certs --ignore-not-found -n ${namespace_router} --config=admin.kubeconfig"
       environment(
-        'namespace_router' => node['is_apaas_openshift_cookbook']['openshift_hosted_router_namespace']
+        'namespace_router' => node['is_apaas_openshift_cookbook']['openshift_hosted_router_namespace'],
+        'ACTION' => 'delete'
       )
       cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
     end

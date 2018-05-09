@@ -15,49 +15,11 @@ action :delete do
   converge_by 'Uninstalling OpenShift' do
     helper = OpenShiftHelper::NodeHelper.new(node)
 
-    service 'atomic-openshift-node' do
-      action %i(stop disable)
-      ignore_failure true
-    end
-
-    service 'openvswitch' do
-      action %i(stop disable)
-      ignore_failure true
-    end
-
-    service 'atomic-openshift-master' do
-      action %i(stop disable)
-      ignore_failure true
-    end
-
-    service 'atomic-openshift-master-api' do
-      action %i(stop disable)
-      ignore_failure true
-    end
-
-    service 'atomic-openshift-master-controllers' do
-      action %i(stop disable)
-      ignore_failure true
-    end
-
-    service 'etcd' do
-      action %i(stop disable)
-      ignore_failure true
-    end
-
-    service 'etcd_container' do
-      action %i(stop disable)
-      ignore_failure true
-    end
-
-    service 'haproxy' do
-      action %i(stop disable)
-      ignore_failure true
-    end
-
-    service 'docker' do
-      action %i(stop disable)
-      ignore_failure true
+    %w(atomic-openshift-node openvswitch atomic-openshift-master atomic-openshift-master-api atomic-openshift-master-controllers etcd etcd_container haproxy docker).each do |svc|
+      systemd_unit svc do
+        action %i(stop disable)
+        ignore_failure true
+      end
     end
 
     Mixlib::ShellOut.new('systemctl reset-failed').run_command

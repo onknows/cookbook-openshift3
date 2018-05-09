@@ -28,6 +28,7 @@ try {
     stage('rubocop') {
       dir(builddir) {
         sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk:' + "${params.CHEFDK_RUBOCOP_VERSION} rubocop -D"
+        sh 'docker run -t --rm --volume "$PWD:/app" --workdir /app chef/chefdk:' + "${params.CHEFDK_RUBOCOP_VERSION} foodcritic ."
       }
     }
     mail bcc: '', body: '''Rubocop passed''', cc: '', from: 'is_apaas_openshift_cookbook-rubocop@jenkins.meirionconsulting.com', replyTo: '', subject: 'Rubocop OK', to: 'ian.miell@gmail.com, william17.burton@gmail.com, julien.perville@perfect-memory.com'
