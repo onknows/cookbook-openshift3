@@ -144,7 +144,7 @@ if is_certificate_server
           kubeconfig['clusters'][0]['cluster']['certificate-authority-data'] = Base64.encode64(::File.read("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca-bundle.crt")).delete("\n")
           open("#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/openshift-master.kubeconfig", 'w') { |f| f << kubeconfig.to_yaml }
         end
-        only_if { ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_masters_control_flag']) }
+        only_if { ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_certserver_control_flag']) }
       end
 
       ruby_block "(NEW-CA) Update the Admin KUBECONFIG certificates for #{master_server['fqdn']}" do
@@ -153,7 +153,7 @@ if is_certificate_server
           kubeconfig['clusters'][0]['cluster']['certificate-authority-data'] = Base64.encode64(::File.read("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca-bundle.crt")).delete("\n")
           open("#{node['cookbook-openshift3']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/admin.kubeconfig", 'w') { |f| f << kubeconfig.to_yaml }
         end
-        only_if { ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_masters_control_flag']) }
+        only_if { ::File.file?(node['cookbook-openshift3']['redeploy_cluster_ca_certserver_control_flag']) }
       end
     end
 
