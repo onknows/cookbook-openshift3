@@ -70,9 +70,10 @@ if ::File.file?(node['cookbook-openshift3']['redeploy_cluster_hosted_certserver_
     end
 
     execute 'Delete existing certificate' do
-      command "#{node['cookbook-openshift3']['openshift_common_client_binary']} delete secret/router-certs --ignore-not-found -n ${namespace_router} --config=admin.kubeconfig"
+      command "#{node['cookbook-openshift3']['openshift_common_client_binary']} $ACTION secret/router-certs --ignore-not-found -n ${namespace_router} --config=admin.kubeconfig"
       environment(
-        'namespace_router' => node['cookbook-openshift3']['openshift_hosted_router_namespace']
+        'namespace_router' => node['cookbook-openshift3']['openshift_hosted_router_namespace'],
+        'ACTION' => 'delete'
       )
       cwd node['cookbook-openshift3']['openshift_master_config_dir']
     end
