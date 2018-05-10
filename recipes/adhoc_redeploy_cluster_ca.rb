@@ -86,7 +86,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_certser
         end
       end
 
-      %w(master.server.crt master.server.key).each do |remove_master_cert|
+      %w(master.server.crt master.server.key openshift-master.kubeconfig).each do |remove_master_cert|
         file "#{node['is_apaas_openshift_cookbook']['master_generated_certs_dir']}/openshift-#{master_server['fqdn']}/#{remove_master_cert}" do
           action :delete
         end

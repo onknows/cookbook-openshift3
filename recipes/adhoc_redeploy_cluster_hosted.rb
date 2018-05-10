@@ -54,6 +54,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_hosted_cer
       )
       retries 2
       retry_delay 10
+      ignore_failure true
       cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
     end
   end
@@ -76,6 +77,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_hosted_cer
         'ACTION' => 'delete'
       )
       cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
+      notifies :run, 'execute[Wait for 10 seconds whilst updating ENV]', :immediately
     end
 
     execute 'Remove router service annotations' do
@@ -110,6 +112,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_hosted_cer
       retries 2
       retry_delay 10
       cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
+      ignore_failure true
     end
   end
 
