@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.42
+### Bug
+- Regression bug for controller servers (TTL missing)
+
 ## v2.0.41
 ### Bug
 - Remove the openshift-master.kubeconfig file when regenerating certs (Issue < 3.2)
