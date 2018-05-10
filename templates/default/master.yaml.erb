@@ -66,10 +66,15 @@ auditConfig:
 <% if node['cookbook-openshift3']['openshift_master_auditconfig'].has_key?('max-file-number') %>
   maximumRetainedFiles: <%= node['cookbook-openshift3']['openshift_master_auditconfig']['max-file-number'] %>
 <% end -%>
+<% if node['cookbook-openshift3']['openshift_HA'] && @ose_major_version.split('.')[1].to_i < 7 %>
+controllerLeaseTTL: 30
+<%- end -%>
 <% if @ose_major_version.split('.')[1].to_i >= 3 %>
 controllerConfig:
+<% if @ose_major_version.split('.')[1].to_i >= 7 %>
   election:
     lockName: openshift-master-controllers
+<%- end -%>
   serviceServingCert:
     signer:
       certFile: service-signer.crt
