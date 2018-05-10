@@ -82,7 +82,7 @@ else
     execute "Generate the node server certificate for #{node_server['fqdn']}" do
       command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} ca create-server-cert --cert=server.crt --key=server.key --overwrite=true \
 							--hostnames=#{node_server['fqdn'].downcase + ',' + node_server['ipaddress']} --signer-cert=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt --signer-key=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key \
-              --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt && mv server.{key,crt} #{Chef::Config[:file_cache_path]}/#{node_server['fqdn']} ${validity_certs}"
+              --signer-serial=#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt ${validity_certs} && mv server.{key,crt} #{Chef::Config[:file_cache_path]}/#{node_server['fqdn']}"
       environment(
         'validity_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['cookbook-openshift3']['openshift_node_cert_expire_days']}"
       )
