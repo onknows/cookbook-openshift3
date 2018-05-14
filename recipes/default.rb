@@ -10,6 +10,11 @@ is_master_server = server_info.on_master_server?
 is_node_server = server_info.on_node_server?
 is_certificate_server = server_info.on_certificate_server?
 
+if ::File.file?(node['cookbook-openshift3']['adhoc_turn_off_openshift3_cookbook'])
+  Chef::Log.warn('adhoc_turn_off_openshift3_cookbook file found: ' + node['cookbook-openshift3']['adhoc_turn_off_openshift3_cookbook'])
+  return
+end
+
 include_recipe 'cookbook-openshift3::ca_bundle_fix'
 
 if ::File.file?(node['cookbook-openshift3']['adhoc_uninstall_control_flag'])
