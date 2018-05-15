@@ -4,52 +4,24 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
+helper = OpenShiftHelper::NodeHelper.new(node)
+
 ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
 
 if node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'] && node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name']
   secret_file = node['cookbook-openshift3']['openshift_master_ca_certificate']['secret_file'] || nil
   ca_vars = data_bag_item(node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_name'], node['cookbook-openshift3']['openshift_master_ca_certificate']['data_bag_item_name'], secret_file)
 
-  file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.key" do
+  file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.key" do
     content Base64.decode64(ca_vars['key_base64'])
     mode '0600'
     action :create_if_missing
   end
 
-  file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.crt" do
+  file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.crt" do
     content Base64.decode64(ca_vars['cert_base64'])
     mode '0644'
     action :create_if_missing
-  end
-end
-
-file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.serial.txt" do
-  action :create_if_missing
-  mode '0644'
-  notifies :create, 'file[Initialise Master CA Serial]', :immediately
-end
-
-file 'Initialise Master CA Serial' do
-  path "#{node['cookbook-openshift3']['openshift_master_config_dir']}/ca.serial.txt"
-  content '00'
-  action :nothing
-end
-
-certs.grep(/\.(?:crt|kubeconfig)$/).uniq.each do |master_certificate|
-  remote_file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{master_certificate}" do
-    source "file://#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/#{master_certificate}"
-    only_if { ::File.file?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{master_certificate}") }
-    mode '0644'
-    sensitive true
-  end
-end
-
-certs.grep(/\.(?:key)$/).uniq.each do |master_key|
-  remote_file "#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{master_key}" do
-    source "file://#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/#{master_key}"
-    only_if { ::File.file?("#{node['cookbook-openshift3']['openshift_master_config_dir']}/#{master_key}") }
-    mode '0600'
-    sensitive true
   end
 end
 
@@ -59,6 +31,12 @@ package "#{node['cookbook-openshift3']['openshift_service_type']}-master" do
   notifies :run, 'execute[daemon-reload]', :immediately
   not_if { node['cookbook-openshift3']['deploy_containerized'] }
   retries 3
+end
+
+ruby_block 'Duplicate Master directory' do
+  block do
+    helper.backup_dir("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/.", node['cookbook-openshift3']['openshift_master_config_dir'])
+  end
 end
 
 template "/etc/systemd/system/#{node['cookbook-openshift3']['openshift_service_type']}-master.service" do

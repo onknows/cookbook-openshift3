@@ -8,6 +8,7 @@ server_info = helper = OpenShiftHelper::NodeHelper.new(node)
 node_servers = server_info.node_servers
 certificate_server = server_info.certificate_server
 is_node_server = server_info.on_node_server?
+first_master = server_info.first_master
 docker_version = node['cookbook-openshift3']['openshift_docker_image_version']
 
 ose_major_version = node['cookbook-openshift3']['deploy_containerized'] == true ? node['cookbook-openshift3']['openshift_docker_image_version'] : node['cookbook-openshift3']['ose_major_version']
@@ -272,7 +273,8 @@ if is_node_server
   end
 
   execute 'Wait for API to become available before starting Node component' do
-    command "[[ $(curl --silent #{node['cookbook-openshift3']['openshift_master_api_url']}/healthz/ready --cacert #{node['cookbook-openshift3']['openshift_node_config_dir']}/ca.crt) =~ \"ok\" ]]"
+    command "[[ $(curl --silent ${MASTER_URL}/healthz/ready --cacert #{node['cookbook-openshift3']['openshift_node_config_dir']}/ca.crt) =~ \"ok\" ]]"
+    environment 'MASTER_URL' => node['cookbook-openshift3']['openshift_HA'] ? node['cookbook-openshift3']['openshift_master_api_url'] : "https://#{first_master['fqdn']}:#{node['cookbook-openshift3']['openshift_master_api_port']}"
     retries 120
     retry_delay 1
     notifies :start, 'service[Restart Node]', :immediately unless node['cookbook-openshift3']['upgrade'] && node['cookbook-openshift3']['deploy_containerized']
