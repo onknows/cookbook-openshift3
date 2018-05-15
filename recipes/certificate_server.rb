@@ -16,8 +16,8 @@ if is_certificate_server
 
   include_recipe 'cookbook-openshift3::master_packages'
   include_recipe 'cookbook-openshift3::etcd_packages'
-  include_recipe 'cookbook-openshift3::etcd_certificates'
-  include_recipe 'cookbook-openshift3::master_cluster_ca' if node['cookbook-openshift3']['openshift_HA']
+  include_recipe 'cookbook-openshift3::etcd_certificates' if node['cookbook-openshift3']['openshift_HA']
+  include_recipe 'cookbook-openshift3::master_cluster_ca'
   include_recipe 'cookbook-openshift3::master_cluster_certificates' if node['cookbook-openshift3']['openshift_HA']
   include_recipe 'cookbook-openshift3::nodes_certificates'
 end
