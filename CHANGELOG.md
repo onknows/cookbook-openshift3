@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.43
+### Bug
+- Fix issue 240 when using standalone master
+
 ## v2.0.42
 ### Bug
 - Regression bug for controller servers (TTL missing)
