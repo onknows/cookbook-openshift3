@@ -14,4 +14,4 @@ default['cookbook-openshift3']['redeploy_cluster_hosted_certserver_control_flag'
 
 default['cookbook-openshift3']['adhoc_uninstall_control_flag'] = '/root/uninstall_node'
 
-default['cookbook-openshift3']['adhoc_turn_off_openshift3_cookbook'] = '/root/turn_off_openshift3_cookbook'
+default['cookbook-openshift3']['adhoc_turn_off_openshift3_cookbook'] = '/to_be_replaced_turn_off_openshift3_cookbook'
