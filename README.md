@@ -71,7 +71,7 @@ Variables:
   }
 ```
 
-[Read more about the upgrade process here!](upgrade-process.md)
+[Read more about the upgrade process here!](docs/upgrade-process.md)
 
 Test Matrix
 ===========
@@ -83,7 +83,7 @@ Test Matrix
 Override Attributes
 ===================
 
-[Read more about overriding attributes here!](attribute-cookbook.md)
+[Read more about overriding attributes here!](docs/attribute-cookbook.md)
 
 #### Structure ####
 -------------------
@@ -523,7 +523,7 @@ Variables:
   }
 ```
 
-[Read more about the certificate redeploy process here!](certificates-process.md)
+[Read more about the certificate redeploy process here!](docs/certificates-process.md)
 
 ENVIRONMENT
 ===========
@@ -836,7 +836,7 @@ Release Checklist
 
 - Run kitchen tests
 - Are there any attributes changes? If yes:
-- Update attribute-cookbook.md and
+- Update docs/attribute-cookbook.md and
 - Update example roles in README.md
 - Have you updated the CHANGELOG.md?
 

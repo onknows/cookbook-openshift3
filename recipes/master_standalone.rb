@@ -4,44 +4,25 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
+helper = OpenShiftHelper::NodeHelper.new(node)
+
 ose_major_version = node['is_apaas_openshift_cookbook']['deploy_containerized'] == true ? node['is_apaas_openshift_cookbook']['openshift_docker_image_version'] : node['is_apaas_openshift_cookbook']['ose_major_version']
 
 if node['is_apaas_openshift_cookbook']['openshift_master_ca_certificate']['data_bag_name'] && node['is_apaas_openshift_cookbook']['openshift_master_ca_certificate']['data_bag_item_name']
   secret_file = node['is_apaas_openshift_cookbook']['openshift_master_ca_certificate']['secret_file'] || nil
   ca_vars = data_bag_item(node['is_apaas_openshift_cookbook']['openshift_master_ca_certificate']['data_bag_name'], node['is_apaas_openshift_cookbook']['openshift_master_ca_certificate']['data_bag_item_name'], secret_file)
 
-  file "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/ca.key" do
+  file "#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.key" do
     content Base64.decode64(ca_vars['key_base64'])
     mode '0600'
     action :create_if_missing
   end
 
-  file "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/ca.crt" do
+  file "#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt" do
     content Base64.decode64(ca_vars['cert_base64'])
     mode '0644'
     action :create_if_missing
   end
-
-  file "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/ca.serial.txt" do
-    action :create_if_missing
-    mode '0644'
-    notifies :create, 'file[Initialise Master CA Serial]', :immediately
-  end
-
-  file 'Initialise Master CA Serial' do
-    path "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/ca.serial.txt"
-    content '00'
-    action :nothing
-  end
-end
-
-execute 'Create the master certificates' do
-  command "#{node['is_apaas_openshift_cookbook']['openshift_common_admin_binary']} ca create-master-certs \
-          --hostnames=#{(node['is_apaas_openshift_cookbook']['erb_corsAllowedOrigins'] + [node['is_apaas_openshift_cookbook']['openshift_common_ip'], node['is_apaas_openshift_cookbook']['openshift_common_api_hostname']]).uniq.join(',')} \
-          --master=#{node['is_apaas_openshift_cookbook']['openshift_master_api_url']} \
-          --public-master=#{node['is_apaas_openshift_cookbook']['openshift_master_public_api_url']} \
-          --cert-dir=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']} --overwrite=false"
-  creates "#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.server.key"
 end
 
 package 'atomic-openshift-master' do
@@ -50,6 +31,12 @@ package 'atomic-openshift-master' do
   notifies :run, 'execute[daemon-reload]', :immediately
   not_if { node['is_apaas_openshift_cookbook']['deploy_containerized'] }
   retries 3
+end
+
+ruby_block 'Duplicate Master directory' do
+  block do
+    helper.backup_dir("#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/.", node['is_apaas_openshift_cookbook']['openshift_master_config_dir'])
+  end
 end
 
 template '/etc/systemd/system/atomic-openshift-master.service' do
