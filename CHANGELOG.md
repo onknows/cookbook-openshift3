@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.44
+### Improvement
+- Change the ETCD CA directory for the certificate server (Moving the certificate server becomes easier: mv /var/www/html)
+
 ## v2.0.43
 ### Bug
 - Fix issue 240 when using standalone master

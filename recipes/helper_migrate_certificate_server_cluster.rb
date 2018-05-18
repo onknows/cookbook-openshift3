@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: cookbook-openshift3
-# Recipe:: adhoc_migrate_certificate_server
+# Recipe:: helper_migrate_certificate_server_cluster
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 

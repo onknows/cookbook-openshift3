@@ -102,7 +102,8 @@ if master_servers.empty?
 end
 
 if is_certificate_server
-  include_recipe 'cookbook-openshift3::adhoc_migrate_certificate_server' if helper.check_certificate_server
+  include_recipe 'cookbook-openshift3::helper_migrate_certificate_server_cluster' if helper.check_certificate_server_cluster
+  include_recipe 'cookbook-openshift3::helper_migrate_certificate_server_etcd' if helper.check_certificate_server_etcd
 end
 
 unless node['cookbook-openshift3']['upgrade'] && ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])

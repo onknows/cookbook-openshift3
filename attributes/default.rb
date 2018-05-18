@@ -208,6 +208,7 @@ default['cookbook-openshift3']['openshift_hosted_cluster_metrics'] = false
 default['cookbook-openshift3']['erb_corsAllowedOrigins'] = ['127.0.0.1', 'localhost', node['cookbook-openshift3']['openshift_common_public_hostname']].uniq + node['cookbook-openshift3']['openshift_common_svc_names']
 
 default['cookbook-openshift3']['master_generated_certs_dir'] = '/var/www/html/master/generated_certs'
+default['cookbook-openshift3']['etcd_certs_generated_certs_dir'] = '/var/www/html/etcd_certs/generated_certs'
 default['cookbook-openshift3']['master_certs_generated_certs_dir'] = '/var/www/html/master_certs/generated_certs'
 default['cookbook-openshift3']['openshift_master_cert_expire_days'] = '730'
 default['cookbook-openshift3']['openshift_node_cert_expire_days'] = '730'
@@ -216,7 +217,8 @@ default['cookbook-openshift3']['etcd_add_additional_nodes'] = false
 default['cookbook-openshift3']['etcd_service_name'] = node['cookbook-openshift3']['deploy_containerized'] == true ? 'etcd_container' : 'etcd'
 default['cookbook-openshift3']['etcd_remove_servers'] = []
 default['cookbook-openshift3']['etcd_conf_dir'] = '/etc/etcd'
-default['cookbook-openshift3']['etcd_ca_dir'] = "#{node['cookbook-openshift3']['etcd_conf_dir']}/ca"
+default['cookbook-openshift3']['legacy_etcd_ca_dir'] = "#{node['cookbook-openshift3']['etcd_conf_dir']}/ca"
+default['cookbook-openshift3']['etcd_ca_dir'] = node['cookbook-openshift3']['etcd_certs_generated_certs_dir']
 default['cookbook-openshift3']['etcd_debug'] = 'False'
 default['cookbook-openshift3']['etcd_generated_certs_dir'] = '/var/www/html/etcd/generated_certs'
 default['cookbook-openshift3']['etcd_generated_ca_dir'] = '/var/www/html/etcd'
