@@ -7,7 +7,7 @@ issues_url 'https://github.com/IshentRas/is_apaas_openshift_cookbook/issues'
 description 'Installs/Configures Openshift 3.x (>= 3.3)'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 chef_version '>= 12.4' if respond_to?(:chef_version)
-version '2.0.43'
+version '2.0.44'
 supports 'redhat', '>= 7.1'
 supports 'centos', '>= 7.1'
 
@@ -17,7 +17,6 @@ depends 'selinux_policy'
 depends 'docker', '>= 4.0'
 
 recipe 'is_apaas_openshift_cookbook::adhoc_migrate_etcd', 'Adhoc action for migrating ETCD from v2 to v3'
-recipe 'is_apaas_openshift_cookbook::adhoc_migrate_certificate_server', 'Helper for migrating old cert logic to new'
 recipe 'is_apaas_openshift_cookbook::adhoc_redeploy_certificates', 'Redeploy certificates'
 recipe 'is_apaas_openshift_cookbook::adhoc_redeploy_cluster_ca', 'Redeploy OpenShift certificates'
 recipe 'is_apaas_openshift_cookbook::adhoc_redeploy_etcd_ca', 'Redeploy ETCD CA certificates'
@@ -32,6 +31,8 @@ recipe 'is_apaas_openshift_cookbook::etcd_certificates', 'Configure ETCD CA cert
 recipe 'is_apaas_openshift_cookbook::etcd_cluster', 'Configure ETCD cluster'
 recipe 'is_apaas_openshift_cookbook::etcd_packages', 'Install/Configure ETCD packages'
 recipe 'is_apaas_openshift_cookbook::excluder', 'Install/Configure the excluder packages'
+recipe 'is_apaas_openshift_cookbook::helper_migrate_certificate_server_cluster', 'Helper for migrating old cert logic to new'
+recipe 'is_apaas_openshift_cookbook::helper_migrate_certificate_server_etcd', 'Helper for migrating old cert logic to new'
 recipe 'is_apaas_openshift_cookbook::master_cluster_ca', 'Configure CA cluster certificate'
 recipe 'is_apaas_openshift_cookbook::master_cluster_certificates', 'Configure Master/Node certificates'
 recipe 'is_apaas_openshift_cookbook::master_cluster', 'Configure HA cluster master (Only Native method)'

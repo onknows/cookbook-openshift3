@@ -102,7 +102,8 @@ if master_servers.empty?
 end
 
 if is_certificate_server
-  include_recipe 'is_apaas_openshift_cookbook::adhoc_migrate_certificate_server' if helper.check_certificate_server
+  include_recipe 'is_apaas_openshift_cookbook::helper_migrate_certificate_server_cluster' if helper.check_certificate_server_cluster
+  include_recipe 'is_apaas_openshift_cookbook::helper_migrate_certificate_server_etcd' if helper.check_certificate_server_etcd
 end
 
 unless node['is_apaas_openshift_cookbook']['upgrade'] && ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])

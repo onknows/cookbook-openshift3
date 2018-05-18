@@ -44,16 +44,10 @@ if is_certificate_server
     creates "#{node['is_apaas_openshift_cookbook']['etcd_ca_dir']}/index.txt"
   end
 
-  file "#{node['is_apaas_openshift_cookbook']['etcd_ca_dir']}/serial" do
-    action :create_if_missing
-    mode '0644'
-    notifies :create, 'file[Initialise ETCD CA Serial]', :immediately
-  end
-
   file 'Initialise ETCD CA Serial' do
     path "#{node['is_apaas_openshift_cookbook']['etcd_ca_dir']}/serial"
     content '01'
-    action :nothing
+    not_if { ::File.exist?("#{node['is_apaas_openshift_cookbook']['etcd_ca_dir']}/serial") }
   end
 
   execute "ETCD Generate CA certificate for #{node['fqdn']}" do
@@ -80,6 +74,8 @@ if is_certificate_server
   end
 
   remote_file '/var/www/html/etcd/ca.crt' do
+    owner 'apache'
+    group 'apache'
     source "file://#{node['is_apaas_openshift_cookbook']['etcd_ca_dir']}/ca.crt"
     mode '0644'
     sensitive true

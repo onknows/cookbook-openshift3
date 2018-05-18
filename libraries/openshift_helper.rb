@@ -112,9 +112,15 @@ module OpenShiftHelper
       File.open(filename, 'w') { |file| file.puts new_contents }
     end
 
-    def check_certificate_server
+    def check_certificate_server_cluster
       ca_exist = File.exist?("#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/ca.crt")
       dir_exist = File.directory?(node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir'])
+      ca_exist && !dir_exist
+    end
+
+    def check_certificate_server_etcd
+      ca_exist = File.exist?("#{node['is_apaas_openshift_cookbook']['legacy_etcd_ca_dir']}/ca.crt")
+      dir_exist = File.directory?(node['is_apaas_openshift_cookbook']['etcd_certs_generated_certs_dir'])
       ca_exist && !dir_exist
     end
 
