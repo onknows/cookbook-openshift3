@@ -7,6 +7,8 @@
 originrepos = [{ 'name' => 'centos-openshift-origin13', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin13/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin14', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin14/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin15', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin15/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin36', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin36/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin37', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin37/', 'gpgcheck' => false }]
 
 default['is_apaas_openshift_cookbook']['use_wildcard_nodes'] = false
+default['is_apaas_openshift_cookbook']['custom_origin-dns'] = false
+default['is_apaas_openshift_cookbook']['custom_origin_location'] = ''
 default['is_apaas_openshift_cookbook']['wildcard_domain'] = ''
 default['is_apaas_openshift_cookbook']['openshift_cluster_name'] = ''
 default['is_apaas_openshift_cookbook']['openshift_HA'] = false
