@@ -1,3 +1,4 @@
+-A OS_FIREWALL_ALLOW -m comment --comment "OpenShift vxlan" -m udp -p udp --dport 4789 -j ACCEPT
 -A OS_FIREWALL_ALLOW -m state --state NEW,ESTABLISHED -m comment --comment "OpenShift kubelet" -m tcp -p tcp --dport 10250 -j ACCEPT
 -A OS_FIREWALL_ALLOW -m state --state NEW,ESTABLISHED -m comment --comment "OpenShift kubelet ReadOnlyPort" -m tcp -p tcp --dport 10255 -j ACCEPT
 -A OS_FIREWALL_ALLOW -m state --state NEW,ESTABLISHED -m comment --comment "OpenShift kubelet ReadOnlyPort udp" -m udp -p udp --dport 10255 -j ACCEPT
