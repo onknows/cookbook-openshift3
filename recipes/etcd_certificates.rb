@@ -79,7 +79,6 @@ if is_certificate_server
     source "file://#{node['cookbook-openshift3']['etcd_ca_dir']}/ca.crt"
     mode '0644'
     sensitive true
-    action :create_if_missing
   end
 
   etcd_servers.each do |etcd_master|

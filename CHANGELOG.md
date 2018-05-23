@@ -1,6 +1,11 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.49
+### Bug
+- Fix several Cloning resource attributes issues
+- Fix ETCD ca perms on certificate server
+
 ## v2.0.48
 ### Bug
 - Prevent Docker to reinstall or update without control

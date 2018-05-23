@@ -35,16 +35,10 @@ if is_certificate_server
     end
   end
 
-  file "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt" do
-    action :create_if_missing
-    mode '0644'
-    notifies :create, 'file[Initialise Master CA Serial]', :immediately
-  end
-
   file 'Initialise Master CA Serial' do
     path "#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt"
     content '00'
-    action :nothing
+    not_if { ::File.exist?("#{node['cookbook-openshift3']['master_certs_generated_certs_dir']}/ca.serial.txt") }
   end
 
   execute "Create the master certificates for #{first_master['fqdn']}" do

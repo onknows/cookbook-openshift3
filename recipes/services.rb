@@ -109,3 +109,7 @@ ruby_block 'Modify the AllowOverride options' do
   action :nothing
   notifies :reload, 'service[httpd]', :immediately
 end
+
+file node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'] do
+  action :nothing
+end

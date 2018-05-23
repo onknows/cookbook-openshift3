@@ -46,7 +46,7 @@ if is_etcd_server
   if node['cookbook-openshift3']['adhoc_redeploy_etcd_ca']
     Chef::Log.warn("The ETCD CA CERTS redeploy will be skipped for ETCD[#{node['fqdn']}]. Could not find the flag: #{node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']}") unless ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'])
 
-    ruby_block "Redeploy ETCD CA certs for #{node['fqdn']}" do
+    ruby_block "Redeploy ETCD CA certs for ETCD server: #{node['fqdn']}" do
       block do
         helper.remove_dir("#{node['cookbook-openshift3']['etcd_conf_dir']}/ca.crt")
         helper.remove_dir("#{node['cookbook-openshift3']['etcd_conf_dir']}/etcd-#{node['fqdn']}.tgz*")
@@ -130,9 +130,5 @@ if is_etcd_server
     notifies :restart, 'service[etcd-service]', :immediately if helper_certs.valid_certificate?(node['cookbook-openshift3']['etcd_ca_cert'], node['cookbook-openshift3']['etcd_cert_file'])
     notifies :delete, "file[#{node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']}]", :immediately unless is_master_server
     only_if { helper_certs.valid_certificate?(node['cookbook-openshift3']['etcd_ca_cert'], node['cookbook-openshift3']['etcd_cert_file']) && ::File.file?(node['cookbook-openshift3']['redeploy_etcd_certs_control_flag']) }
-  end
-
-  file node['cookbook-openshift3']['redeploy_etcd_certs_control_flag'] do
-    action :nothing
   end
 end

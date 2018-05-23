@@ -37,7 +37,7 @@ action :delete do
     end
 
     ::Dir.glob('/var/lib/origin/openshift.local.volumes/**/*').select { |fn| ::File.directory?(fn) }.each do |dir|
-      execute 'Unmount kube volumes' do
+      execute "Unmount kube volumes for #{dir}" do
         command "$ACTION #{dir} || true"
         environment 'ACTION' => 'umount'
       end
@@ -55,7 +55,7 @@ action :delete do
     end
 
     ::Dir.glob('/var/lib/origin/openshift.local.volumes/**/*').select { |fn| ::File.directory?(fn) }.each do |dir|
-      execute 'Unmount kube volumes' do
+      execute "Force Unmount kube volumes #{dir}" do
         command "$ACTION #{dir} || true"
         environment 'ACTION' => 'umount'
       end
