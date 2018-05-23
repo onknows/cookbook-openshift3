@@ -1,4 +1,5 @@
 default['is_apaas_openshift_cookbook']['control_rollback_flag'] = '/to_be_rollback'
+default['is_apaas_openshift_cookbook']['asynchronous_upgrade'] = false
 
 if node['is_apaas_openshift_cookbook']['control_upgrade']
   default['is_apaas_openshift_cookbook']['control_upgrade_version'] = ''

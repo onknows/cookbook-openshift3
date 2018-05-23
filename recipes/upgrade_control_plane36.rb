@@ -35,14 +35,7 @@ if ::File.file?(node['is_apaas_openshift_cookbook']['control_upgrade_flag'])
 
   include_recipe 'yum::default'
   include_recipe 'is_apaas_openshift_cookbook::packages'
-
-  if is_master_server || is_node_server
-    %w(excluder docker-excluder).each do |pkg|
-      execute "Disable atomic-openshift-#{pkg}" do
-        command "atomic-openshift-#{pkg} enable"
-      end
-    end
-  end
+  include_recipe 'is_apaas_openshift_cookbook::disable_excluder'
 
   if is_etcd_server
     log 'Upgrade for ETCD [STARTED]' do

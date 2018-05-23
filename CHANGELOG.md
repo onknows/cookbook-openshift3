@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.47
+### Improvement
+- Asynchronous Errata Updates via variable asynchronous_upgrade (Default to false)
+
 ## v2.0.46
 ### Improvement
 - Add possibility to specify specific yum options when installing docker docker_yum_options

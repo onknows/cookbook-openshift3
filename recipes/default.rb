@@ -33,4 +33,8 @@ if node['is_apaas_openshift_cookbook']['control_upgrade']
   end
 end
 
+if node['is_apaas_openshift_cookbook']['asynchronous_upgrade']
+  include_recipe 'is_apaas_openshift_cookbook::disable_excluder'
+end
+
 include_recipe 'is_apaas_openshift_cookbook::validate'

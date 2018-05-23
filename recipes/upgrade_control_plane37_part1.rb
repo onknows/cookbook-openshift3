@@ -11,7 +11,6 @@
 server_info = OpenShiftHelper::NodeHelper.new(node)
 is_etcd_server = server_info.on_etcd_server?
 is_master_server = server_info.on_master_server?
-is_node_server = server_info.on_node_server?
 
 if defined? node['is_apaas_openshift_cookbook']['upgrade_repos']
   node.force_override['is_apaas_openshift_cookbook']['yum_repositories'] = node['is_apaas_openshift_cookbook']['upgrade_repos']
@@ -19,14 +18,7 @@ end
 
 include_recipe 'yum::default'
 include_recipe 'is_apaas_openshift_cookbook::packages'
-
-if is_master_server || is_node_server
-  %w(excluder docker-excluder).each do |pkg|
-    execute "Disable atomic-openshift-#{pkg}" do
-      command "atomic-openshift-#{pkg} enable"
-    end
-  end
-end
+include_recipe 'is_apaas_openshift_cookbook::disable_excluder'
 
 if is_etcd_server
   log 'Upgrade for ETCD [STARTED]' do
