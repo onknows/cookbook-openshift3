@@ -12,6 +12,7 @@ if is_node_server || node['is_apaas_openshift_cookbook']['deploy_containerized']
     action :install
     version node['is_apaas_openshift_cookbook']['upgrade'] ? (node['is_apaas_openshift_cookbook']['upgrade_docker_version'] unless node['is_apaas_openshift_cookbook']['upgrade_docker_version'].nil?) : (node['is_apaas_openshift_cookbook']['docker_version'] unless node['is_apaas_openshift_cookbook']['docker_version'].nil?)
     retries 3
+    options node['is_apaas_openshift_cookbook']['docker_yum_options'] unless node['is_apaas_openshift_cookbook']['docker_yum_options'].nil?
     notifies :restart, 'service[docker]', :immediately if node['is_apaas_openshift_cookbook']['upgrade']
   end
 
