@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.48
+### Bug
+- Prevent Docker to reinstall or update without control
+
 ## v2.0.47
 ### Improvement
 - Asynchronous Errata Updates via variable asynchronous_upgrade (Default to false)
