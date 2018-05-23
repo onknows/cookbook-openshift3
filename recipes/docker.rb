@@ -14,6 +14,9 @@ if is_node_server || node['is_apaas_openshift_cookbook']['deploy_containerized']
     retries 3
     options node['is_apaas_openshift_cookbook']['docker_yum_options'] unless node['is_apaas_openshift_cookbook']['docker_yum_options'].nil?
     notifies :restart, 'service[docker]', :immediately if node['is_apaas_openshift_cookbook']['upgrade']
+    only_if do
+      ::Mixlib::ShellOut.new('rpm -q docker').run_command.error? || node['is_apaas_openshift_cookbook']['upgrade']
+    end
   end
 
   bash "Configure Docker to use the default FS type for #{node['fqdn']}" do
