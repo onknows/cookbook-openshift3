@@ -33,4 +33,8 @@ if node['cookbook-openshift3']['control_upgrade']
   end
 end
 
+if node['cookbook-openshift3']['asynchronous_upgrade']
+  include_recipe 'cookbook-openshift3::disable_excluder'
+end
+
 include_recipe 'cookbook-openshift3::validate'

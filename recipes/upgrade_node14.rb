@@ -27,17 +27,11 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
   include_recipe 'yum::default'
   include_recipe 'cookbook-openshift3::packages'
+  include_recipe 'cookbook-openshift3::disable_excluder'
 
   if is_node_server
     log 'Upgrade for NODE [STARTED]' do
       level :info
-    end
-
-    %w(excluder docker-excluder).each do |pkg|
-      execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
-        command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
-        only_if "rpm -q #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}"
-      end
     end
 
     include_recipe 'cookbook-openshift3::services'

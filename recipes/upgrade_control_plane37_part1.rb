@@ -11,7 +11,6 @@
 server_info = OpenShiftHelper::NodeHelper.new(node)
 is_etcd_server = server_info.on_etcd_server?
 is_master_server = server_info.on_master_server?
-is_node_server = server_info.on_node_server?
 
 if defined? node['cookbook-openshift3']['upgrade_repos']
   node.force_override['cookbook-openshift3']['yum_repositories'] = node['cookbook-openshift3']['upgrade_repos']
@@ -19,14 +18,7 @@ end
 
 include_recipe 'yum::default'
 include_recipe 'cookbook-openshift3::packages'
-
-if is_master_server || is_node_server
-  %w(excluder docker-excluder).each do |pkg|
-    execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
-      command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
-    end
-  end
-end
+include_recipe 'cookbook-openshift3::disable_excluder'
 
 if is_etcd_server
   log 'Upgrade for ETCD [STARTED]' do

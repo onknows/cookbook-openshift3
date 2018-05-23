@@ -1,4 +1,5 @@
 default['cookbook-openshift3']['control_rollback_flag'] = '/to_be_rollback'
+default['cookbook-openshift3']['asynchronous_upgrade'] = false
 
 if node['cookbook-openshift3']['control_upgrade']
   default['cookbook-openshift3']['control_upgrade_version'] = ''

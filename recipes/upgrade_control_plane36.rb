@@ -35,14 +35,7 @@ if ::File.file?(node['cookbook-openshift3']['control_upgrade_flag'])
 
   include_recipe 'yum::default'
   include_recipe 'cookbook-openshift3::packages'
-
-  if is_master_server || is_node_server
-    %w(excluder docker-excluder).each do |pkg|
-      execute "Disable #{node['cookbook-openshift3']['openshift_service_type']}-#{pkg}" do
-        command "#{node['cookbook-openshift3']['openshift_service_type']}-#{pkg} enable"
-      end
-    end
-  end
+  include_recipe 'cookbook-openshift3::disable_excluder'
 
   if is_etcd_server
     log 'Upgrade for ETCD [STARTED]' do
