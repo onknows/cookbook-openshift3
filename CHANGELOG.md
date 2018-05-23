@@ -1,6 +1,11 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.46
+### Improvement
+- Add possibility to specify specific yum options when installing docker docker_yum_options
+- Add reverse lookup for SkyDNS
+
 ## v2.0.45
 ### Improvement
 - Give the possibilty to provide a custom location for '/etc/NetworkManager/dispatcher.d/99-origin-dns.sh'

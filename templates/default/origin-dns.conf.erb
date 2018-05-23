@@ -7,5 +7,6 @@ enable-dbus
 bind-interfaces
 except-interface=lo
 <%- else -%>
-server=/cluster.local/<%=node['cookbook-openshift3']['openshift_common_first_svc_ip'] %>
+server=/cluster.local/<%= node['cookbook-openshift3']['openshift_common_first_svc_ip'] %>
+server=/<%= node['cookbook-openshift3']['openshift_common_first_svc_ip'].split('.')[1] + "." + node['cookbook-openshift3']['openshift_common_first_svc_ip'].split('.')[0] %>.in-addr.arpa/<%= node['cookbook-openshift3']['openshift_common_first_svc_ip'] %>
 <%- end %>

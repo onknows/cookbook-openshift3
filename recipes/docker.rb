@@ -12,6 +12,7 @@ if is_node_server || node['cookbook-openshift3']['deploy_containerized']
     action :install
     version node['cookbook-openshift3']['upgrade'] ? (node['cookbook-openshift3']['upgrade_docker_version'] unless node['cookbook-openshift3']['upgrade_docker_version'].nil?) : (node['cookbook-openshift3']['docker_version'] unless node['cookbook-openshift3']['docker_version'].nil?)
     retries 3
+    options node['cookbook-openshift3']['docker_yum_options'] unless node['cookbook-openshift3']['docker_yum_options'].nil?
     notifies :restart, 'service[docker]', :immediately if node['cookbook-openshift3']['upgrade']
   end
 
