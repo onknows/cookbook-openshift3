@@ -129,7 +129,7 @@ if is_node_server
   if node['is_apaas_openshift_cookbook']['adhoc_redeploy_cluster_ca']
     Chef::Log.warn("The CLUSTER CA CERTS redeploy will be skipped for Node[#{node['fqdn']}]. Could not find the flag: #{node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_nodes_control_flag']}") unless ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_nodes_control_flag'])
 
-    ruby_block "Redeploy CA certs for #{node['fqdn']}" do
+    ruby_block "Redeploy CA certs for Node server: #{node['fqdn']}" do
       block do
         helper.remove_dir("#{node['is_apaas_openshift_cookbook']['openshift_node_config_dir']}/#{node['fqdn']}.tgz*")
       end
