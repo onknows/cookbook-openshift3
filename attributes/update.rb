@@ -24,6 +24,10 @@ if node['cookbook-openshift3']['control_upgrade']
       default['cookbook-openshift3']['upgrade_ose_major_version'] = '3.7'
       default['cookbook-openshift3']['upgrade_ose_version'] = '3.7.23-1.git.0.8edc154.el7'
       default['cookbook-openshift3']['upgrade_openshift_docker_image_version'] = 'v3.7.23'
+    when '39'
+      default['cookbook-openshift3']['upgrade_ose_major_version'] = '3.9'
+      default['cookbook-openshift3']['upgrade_ose_version'] = '3.9.0-1.el7.git.0.ba7faec'
+      default['cookbook-openshift3']['upgrade_openshift_docker_image_version'] = 'v3.9.0'
     end
   else
     case node['cookbook-openshift3']['control_upgrade_version']
@@ -43,6 +47,10 @@ if node['cookbook-openshift3']['control_upgrade']
       default['cookbook-openshift3']['upgrade_ose_major_version'] = '3.7'
       default['cookbook-openshift3']['upgrade_ose_version'] = '3.7.2-1.el7.git.0.cd74924'
       default['cookbook-openshift3']['upgrade_openshift_docker_image_version'] = 'v3.7.2'
+    when '39'
+      default['cookbook-openshift3']['upgrade_ose_major_version'] = '3.9'
+      default['cookbook-openshift3']['upgrade_ose_version'] = '3.9.0-1.el7.git.0.ba7faec'
+      default['cookbook-openshift3']['upgrade_openshift_docker_image_version'] = 'v3.9.0'
     end
   end
 end

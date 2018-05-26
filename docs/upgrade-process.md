@@ -89,6 +89,8 @@ The node phase includes upgrading:
 
 [x] 3.6 to 3.7
 
+[ ] 3.7 to 3.9 - TODO
+
 *Cluster upgrades cannot span more than one minor version at a time, so if your
 cluster is at a version earlier than the targeted one, you must first upgrade
 incrementally (e.g., 1.4 to 1.5, then 1.5 to 3.6...)*
@@ -145,6 +147,9 @@ Feel free to override those so as to match your environment:
 | upgrade_ose_major_version |  37 | `"3.7"`    |
 | upgrade_ose_version | 37 | `"3.7.1-2.el7"` |
 | upgrade_openshift_docker_image_version | 37 | `"v3.7.2"`  |
+| upgrade_ose_major_version |  39 | `"3.9"`    |
+| upgrade_ose_version | 39 | `"TODO"` |
+| upgrade_openshift_docker_image_version | 39 | `"v3.9.0"`  |
 
 ##### Enterprise Deployment
 
@@ -162,6 +167,9 @@ Feel free to override those so as to match your environment:
 | upgrade_ose_major_version |  37 | `"3.7"`    |
 | upgrade_ose_version | 37 | `"3.7.23-1.git.0.8edc154.el7"` |
 | upgrade_openshift_docker_image_version | 37 | `"v3.7.23"`  |
+| upgrade_ose_major_version |  39 | `"3.9"`    |
+| upgrade_ose_version | 39 | `"TODO"` |
+| upgrade_openshift_docker_image_version | 37 | `"v3.9.0"`  |
 
 ##### Please Note
 

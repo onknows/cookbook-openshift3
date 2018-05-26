@@ -4,7 +4,7 @@
 #
 # Copyright (c) 2015 The Authors, All Rights Reserved.
 
-originrepos = [{ 'name' => 'centos-openshift-origin13', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin13/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin14', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin14/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin15', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin15/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin36', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin36/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin37', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin37/', 'gpgcheck' => false }]
+originrepos = [{ 'name' => 'centos-openshift-origin13', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin13/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin14', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin14/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin15', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin15/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin36', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin36/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin37', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin37/', 'gpgcheck' => false }, { 'name' => 'centos-openshift-origin39', 'baseurl' => 'http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin39/', 'gpgcheck' => false }]
 
 default['cookbook-openshift3']['use_wildcard_nodes'] = false
 default['cookbook-openshift3']['custom_origin-dns'] = false
@@ -37,7 +37,7 @@ end
 default['cookbook-openshift3']['ose_version'] = nil
 default['cookbook-openshift3']['persistent_storage'] = []
 default['cookbook-openshift3']['openshift_deployment_type'] = 'enterprise'
-default['cookbook-openshift3']['ose_major_version'] = '3.7'
+default['cookbook-openshift3']['ose_major_version'] = '3.9'
 default['cookbook-openshift3']['openshift_docker_image_version'] = node['cookbook-openshift3']['openshift_deployment_type'] =~ /enterprise/ ? 'v3.7' : 'v3.7.2'
 default['cookbook-openshift3']['upgrade'] = false
 default['cookbook-openshift3']['deploy_containerized'] = false
