@@ -37,4 +37,26 @@ if is_node_server || node['cookbook-openshift3']['deploy_containerized']
     notifies :restart, 'service[docker]', :immediately
     notifies :enable, 'service[docker]', :immediately
   end
+
+  if node['cookbook-openshift3']['openshift_docker_secure']
+    node['cookbook-openshift3']['openshift_docker_add_registry_arg'].each do |registry|
+      directory "/etc/docker/certs.d/#{registry}" do
+        owner 'root'
+        group 'root'
+        mode '0755'
+        action :create
+        recursive true
+      end
+
+      ruby_block "Update Docker trusted certificates for #{node['fqdn']}" do
+        block do
+          fqdn, port = registry.split(':')
+          uri = port.nil? ? "#{fqdn}:443" : "#{fqdn}:#{port}"
+          crt = Mixlib::ShellOut.new("echo | timeout 5 openssl s_client -servername #{fqdn} -connect #{uri} 2>/dev/null | openssl x509").run_command.stdout.strip
+          open("/etc/docker/certs.d/#{registry}/registry.crt", 'w') { |f| f << crt.to_s } unless crt.empty?
+        end
+        not_if { ::File.file?("/etc/docker/certs.d/#{registry}/registry.crt") }
+      end
+    end
+  end
 end
