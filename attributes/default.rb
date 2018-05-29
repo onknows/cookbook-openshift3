@@ -96,7 +96,7 @@ default['cookbook-openshift3']['openshift_common_public_ip'] = node['ipaddress']
 default['cookbook-openshift3']['openshift_common_admin_binary'] = node['cookbook-openshift3']['deploy_containerized'] == true ? '/usr/local/bin/oc adm' : '/usr/bin/oc adm'
 default['cookbook-openshift3']['openshift_common_client_binary'] = node['cookbook-openshift3']['deploy_containerized'] == true ? '/usr/local/bin/oc' : '/usr/bin/oc'
 default['cookbook-openshift3']['openshift_common_service_accounts'] = []
-default['cookbook-openshift3']['openshift_common_service_accounts'] = [{ 'name' => 'router', 'namespace' => 'default', 'scc' => 'hostnetwork' }]
+default['cookbook-openshift3']['openshift_common_service_accounts'] = [{ 'name' => 'router', 'namespace' => 'default', 'scc' => ['hostnetwork'] }]
 default['cookbook-openshift3']['openshift_common_service_accounts_additional'] = []
 default['cookbook-openshift3']['openshift_common_use_openshift_sdn'] = true
 default['cookbook-openshift3']['openshift_common_sdn_network_plugin_name'] = 'redhat/openshift-ovs-subnet'
