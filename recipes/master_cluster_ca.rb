@@ -52,7 +52,7 @@ if is_certificate_server
       'validity_certs' => ose_major_version.split('.')[1].to_i < 5 ? '' : "--expire-days=#{node['is_apaas_openshift_cookbook']['openshift_master_cert_expire_days']}",
       'legacy_certs' => node['is_apaas_openshift_cookbook']['adhoc_redeploy_cluster_ca'] && ::File.file?(node['is_apaas_openshift_cookbook']['redeploy_cluster_ca_certserver_control_flag']) ? "--certificate-authority=#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}-legacy-ca/ca.crt" : ''
     )
-    creates "#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt"
+    creates node['is_apaas_openshift_cookbook']['openshift_master_ca_certificate']['data_bag_name'] ? "#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/serviceaccounts.private.key" : "#{node['is_apaas_openshift_cookbook']['master_certs_generated_certs_dir']}/ca.crt"
   end
 
   unless node['is_apaas_openshift_cookbook']['openshift_HA']

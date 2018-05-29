@@ -1,6 +1,18 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.51
+### Bug
+- Fix rubocop issues
+
+## v2.0.50
+### Bug
+- Fix issue reported 244 (Insecure docker registry)
+- Fix issue reported 247 (Customised CA)
+
+### Improvement
+- Give the possibility of providing an array for the SCCs
+
 ## v2.0.49
 ### Bug
 - Fix several Cloning resource attributes issues

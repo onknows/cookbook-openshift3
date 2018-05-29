@@ -18,6 +18,7 @@ default['is_apaas_openshift_cookbook']['node_servers'] = []
 default['is_apaas_openshift_cookbook']['lb_servers'] = []
 default['is_apaas_openshift_cookbook']['certificate_server'] = {}
 default['is_apaas_openshift_cookbook']['openshift_push_via_dns'] = false
+default['is_apaas_openshift_cookbook']['openshift_hosted_registry_insecure'] = false
 
 if node['is_apaas_openshift_cookbook']['openshift_HA']
   default['is_apaas_openshift_cookbook']['openshift_common_api_hostname'] = node['is_apaas_openshift_cookbook']['openshift_cluster_name']
@@ -95,17 +96,18 @@ default['is_apaas_openshift_cookbook']['openshift_common_public_ip'] = node['ipa
 default['is_apaas_openshift_cookbook']['openshift_common_admin_binary'] = node['is_apaas_openshift_cookbook']['deploy_containerized'] == true ? '/usr/local/bin/oc adm' : '/usr/bin/oc adm'
 default['is_apaas_openshift_cookbook']['openshift_common_client_binary'] = node['is_apaas_openshift_cookbook']['deploy_containerized'] == true ? '/usr/local/bin/oc' : '/usr/bin/oc'
 default['is_apaas_openshift_cookbook']['openshift_common_service_accounts'] = []
-default['is_apaas_openshift_cookbook']['openshift_common_service_accounts'] = [{ 'name' => 'router', 'namespace' => 'default', 'scc' => 'hostnetwork' }]
+default['is_apaas_openshift_cookbook']['openshift_common_service_accounts'] = [{ 'name' => 'router', 'namespace' => 'default', 'scc' => ['hostnetwork'] }]
 default['is_apaas_openshift_cookbook']['openshift_common_service_accounts_additional'] = []
 default['is_apaas_openshift_cookbook']['openshift_common_use_openshift_sdn'] = true
 default['is_apaas_openshift_cookbook']['openshift_common_sdn_network_plugin_name'] = 'redhat/openshift-ovs-subnet'
 default['is_apaas_openshift_cookbook']['openshift_common_svc_names'] = ['openshift', 'openshift.default', 'openshift.default.svc', "openshift.default.svc.#{node['is_apaas_openshift_cookbook']['osn_cluster_dns_domain']}", 'kubernetes', 'kubernetes.default', 'kubernetes.default.svc', "kubernetes.default.svc.#{node['is_apaas_openshift_cookbook']['osn_cluster_dns_domain']}", node['is_apaas_openshift_cookbook']['openshift_common_first_svc_ip']]
 default['is_apaas_openshift_cookbook']['openshift_common_registry_url'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/ose-${component}:${version}' : 'openshift/origin-${component}:${version}'
 default['is_apaas_openshift_cookbook']['openshift_cloud_provider_config_dir'] = "#{node['is_apaas_openshift_cookbook']['openshift_common_cloud_provider_dir']}/cloudprovider"
+default['is_apaas_openshift_cookbook']['openshift_docker_secure'] = false
 default['is_apaas_openshift_cookbook']['openshift_docker_insecure_registry_arg'] = []
 default['is_apaas_openshift_cookbook']['openshift_docker_add_registry_arg'] = []
 default['is_apaas_openshift_cookbook']['openshift_docker_block_registry_arg'] = []
-default['is_apaas_openshift_cookbook']['openshift_docker_insecure_registries'] = node['is_apaas_openshift_cookbook']['openshift_docker_add_registry_arg'].empty? ? [node['is_apaas_openshift_cookbook']['openshift_common_portal_net']] : [node['is_apaas_openshift_cookbook']['openshift_common_portal_net']] + node['is_apaas_openshift_cookbook']['openshift_docker_insecure_registry_arg']
+default['is_apaas_openshift_cookbook']['openshift_docker_insecure_registries'] = node['is_apaas_openshift_cookbook']['openshift_hosted_registry_insecure'] ? [node['is_apaas_openshift_cookbook']['openshift_common_portal_net']] + node['is_apaas_openshift_cookbook']['openshift_docker_insecure_registry_arg'] : node['is_apaas_openshift_cookbook']['openshift_docker_insecure_registry_arg']
 default['is_apaas_openshift_cookbook']['openshift_docker_master_image'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/ose' : 'openshift/origin'
 default['is_apaas_openshift_cookbook']['openshift_docker_node_image'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/node' : 'openshift/node'
 default['is_apaas_openshift_cookbook']['openshift_docker_ovs_image'] = node['is_apaas_openshift_cookbook']['openshift_deployment_type'] =~ /enterprise/ ? 'openshift3/openvswitch' : 'openshift/openvswitch'

@@ -38,10 +38,14 @@ service_accounts.each do |serviceaccount|
 
   next unless serviceaccount.key?('scc')
 
-  execute "Add SCC to service account: \"#{serviceaccount['name']}\" ; Namespace: \"#{serviceaccount['namespace']}\"" do
-    command "#{node['is_apaas_openshift_cookbook']['openshift_common_admin_binary']} policy add-scc-to-user #{serviceaccount['scc']} -z #{serviceaccount['name']} --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig -n #{serviceaccount['namespace']}"
-    cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
-    not_if "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} get scc/#{serviceaccount['scc']} -n #{serviceaccount['namespace']} -o yaml --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig | grep system:serviceaccount:#{serviceaccount['namespace']}:#{serviceaccount['name']}"
+  sccs = serviceaccount['scc'].is_a?(Array) ? serviceaccount['scc'] : serviceaccount['scc'].split(' ') # Backport old logic
+
+  sccs.each do |scc|
+    execute "Add SCC [#{scc}] to service account: \"#{serviceaccount['name']}\" ; Namespace: \"#{serviceaccount['namespace']}\"" do
+      command "#{node['is_apaas_openshift_cookbook']['openshift_common_admin_binary']} policy add-scc-to-user #{scc} -z #{serviceaccount['name']} --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig -n #{serviceaccount['namespace']}"
+      cwd node['is_apaas_openshift_cookbook']['openshift_master_config_dir']
+      not_if "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} get scc/#{scc} -n #{serviceaccount['namespace']} -o yaml --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig | grep system:serviceaccount:#{serviceaccount['namespace']}:#{serviceaccount['name']}"
+    end
   end
 end
 
