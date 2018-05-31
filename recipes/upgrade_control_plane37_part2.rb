@@ -27,7 +27,7 @@ if is_first_master
     not_if "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 
-  execute 'Migrate storage post policy reconciliation' do
+  execute 'Migrate storage post policy reconciliation Pre upgrade' do
     command "#{node['is_apaas_openshift_cookbook']['openshift_common_admin_binary']} \
             --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig \
             migrate storage --include=* --confirm"
@@ -35,14 +35,14 @@ if is_first_master
   end
 
   execute 'Create key for upgrade all storage' do
-    command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['is_apaas_openshift_cookbook']['etcd_peer_file']} --key #{node['is_apaas_openshift_cookbook']['etcd_peer_key']} --cacert #{node['is_apaas_openshift_cookbook']['etcd_ca_cert']} --endpoints https://`hostname`:2379 put /migration/storage ok"
+    command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-client.crt --key #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-client.key --cacert #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-ca.crt --endpoints https://#{first_etcd['ipaddress']}:2379 put /migration/storage ok"
     not_if "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} version | grep -w v3.7"
   end
 end
 
 if is_master_server && !is_first_master
   execute 'Wait for First master to upgrade all storage' do
-    command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['is_apaas_openshift_cookbook']['etcd_peer_file']} --key #{node['is_apaas_openshift_cookbook']['etcd_peer_key']} --cacert #{node['is_apaas_openshift_cookbook']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get /migration/storage -w simple | grep -w ok"
+    command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-client.crt --key #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-client.key --cacert #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-ca.crt --endpoints https://#{first_etcd['ipaddress']}:2379 get /migration/storage -w simple | grep -w ok"
     retries 120
     retry_delay 5
     not_if "#{node['is_apaas_openshift_cookbook']['openshift_common_client_binary']} version | grep -w v3.7"
@@ -83,7 +83,7 @@ end
 
 if is_master_server && !is_first_master
   execute 'Wait for First master to reconcile all roles' do
-    command "[[ $(ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['is_apaas_openshift_cookbook']['etcd_peer_file']} --key #{node['is_apaas_openshift_cookbook']['etcd_peer_key']} --cacert #{node['is_apaas_openshift_cookbook']['etcd_ca_cert']} --endpoints https://`hostname`:2379 get migration -w simple | wc -l) -eq 0 ]]"
+    command "[[ $(ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-client.crt --key #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-client.key --cacert #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-ca.crt --endpoints https://#{first_etcd['ipaddress']}:2379 get /migration/storage -w simple | wc -l) -eq 0 ]]"
     retries 120
     retry_delay 5
   end
@@ -113,14 +113,14 @@ if is_master_server && is_first_master
             policy reconcile-sccs --confirm --additive-only=true"
   end
 
-  execute 'Migrate storage post policy reconciliation' do
+  execute 'Migrate storage post policy reconciliation Post upgrade' do
     command "#{node['is_apaas_openshift_cookbook']['openshift_common_admin_binary']} \
             --config=#{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/admin.kubeconfig \
             migrate storage --include=* --confirm"
   end
 
   execute 'Delete key for upgrade all storage' do
-    command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['is_apaas_openshift_cookbook']['etcd_peer_file']} --key #{node['is_apaas_openshift_cookbook']['etcd_peer_key']} --cacert #{node['is_apaas_openshift_cookbook']['etcd_ca_cert']} --endpoints https://`hostname`:2379 del migration"
+    command "ETCDCTL_API=3 /usr/bin/etcdctl --cert #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-client.crt --key #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-client.key --cacert #{node['is_apaas_openshift_cookbook']['openshift_master_config_dir']}/master.etcd-ca.crt --endpoints https://#{first_etcd['ipaddress']}:2379 del /migration/storage"
   end
 end
 

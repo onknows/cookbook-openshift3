@@ -41,7 +41,7 @@ if node['is_apaas_openshift_cookbook']['control_upgrade']
       default['is_apaas_openshift_cookbook']['upgrade_openshift_docker_image_version'] = 'v3.6.1'
     when '37'
       default['is_apaas_openshift_cookbook']['upgrade_ose_major_version'] = '3.7'
-      default['is_apaas_openshift_cookbook']['upgrade_ose_version'] = '3.7.1-2.el7'
+      default['is_apaas_openshift_cookbook']['upgrade_ose_version'] = '3.7.2-1.el7.git.0.cd74924'
       default['is_apaas_openshift_cookbook']['upgrade_openshift_docker_image_version'] = 'v3.7.2'
     end
   end
