@@ -31,7 +31,7 @@ if node['cookbook-openshift3']['openshift_cloud_provider']
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master]", :delayed if is_master_server && !node['cookbook-openshift3']['openshift_HA']
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-api]", :delayed if is_master_server && node['cookbook-openshift3']['openshift_HA']
       notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-master-controllers]", :delayed if is_master_server && node['cookbook-openshift3']['openshift_HA']
-      notifies :restart, "service[#{node['cookbook-openshift3']['openshift_service_type']}-node]", :delayed if is_node_server
+      notifies :restart, 'service[Restart Node]', :delayed if is_node_server
     end
   end
 end
