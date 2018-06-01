@@ -91,7 +91,7 @@ if is_certificate_server
     %w(server peer).each do |etcd_certificates|
       execute "ETCD Create the #{etcd_certificates} csr for #{etcd_master['fqdn']}" do
         command "openssl req -new -keyout #{etcd_certificates}.key -config #{node['cookbook-openshift3']['etcd_openssl_conf']} -out #{etcd_certificates}.csr -reqexts #{node['cookbook-openshift3']['etcd_req_ext']} -batch -nodes -subj /CN=#{etcd_master['fqdn']}"
-        environment 'SAN' => "IP:#{etcd_master['ipaddress']}"
+        environment 'SAN' => "IP:#{etcd_master['ipaddress']}, DNS:#{etcd_master['fqdn']}"
         cwd "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}"
         creates "#{node['cookbook-openshift3']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}/#{etcd_certificates}.csr"
       end
