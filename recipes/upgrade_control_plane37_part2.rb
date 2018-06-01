@@ -116,7 +116,7 @@ if is_master_server && is_first_master
   execute 'Migrate storage post policy reconciliation Post upgrade' do
     command "#{node['cookbook-openshift3']['openshift_common_admin_binary']} \
             --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
-            migrate storage --include=* --confirm"
+            migrate storage --include=* --confirm --server #{node['cookbook-openshift3']['openshift_master_loopback_api_url']}"
   end
 
   execute 'Delete key for upgrade all storage' do
