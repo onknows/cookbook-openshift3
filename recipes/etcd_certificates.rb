@@ -91,7 +91,7 @@ if is_certificate_server
     %w(server peer).each do |etcd_certificates|
       execute "ETCD Create the #{etcd_certificates} csr for #{etcd_master['fqdn']}" do
         command "openssl req -new -keyout #{etcd_certificates}.key -config #{node['is_apaas_openshift_cookbook']['etcd_openssl_conf']} -out #{etcd_certificates}.csr -reqexts #{node['is_apaas_openshift_cookbook']['etcd_req_ext']} -batch -nodes -subj /CN=#{etcd_master['fqdn']}"
-        environment 'SAN' => "IP:#{etcd_master['ipaddress']}"
+        environment 'SAN' => "IP:#{etcd_master['ipaddress']}, DNS:#{etcd_master['fqdn']}"
         cwd "#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}"
         creates "#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}/#{etcd_certificates}.csr"
       end
@@ -109,7 +109,7 @@ if is_certificate_server
       creates "#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz"
     end
 
-    execute 'Encrypt etcd certificate tgz files' do
+    execute "Encrypt etcd certificate tgz files for #{etcd_master['fqdn']}" do
       command "openssl enc -aes-256-cbc -in #{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz -out #{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz.enc -k '#{encrypted_file_password}' && chown -R apache:apache #{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz.enc"
       creates "#{node['is_apaas_openshift_cookbook']['etcd_generated_certs_dir']}/etcd-#{etcd_master['fqdn']}.tgz.enc"
     end
