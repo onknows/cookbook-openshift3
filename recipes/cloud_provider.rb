@@ -31,7 +31,7 @@ if node['is_apaas_openshift_cookbook']['openshift_cloud_provider']
       notifies :restart, 'service[atomic-openshift-master]', :delayed if is_master_server && !node['is_apaas_openshift_cookbook']['openshift_HA']
       notifies :restart, 'service[atomic-openshift-master-api]', :delayed if is_master_server && node['is_apaas_openshift_cookbook']['openshift_HA']
       notifies :restart, 'service[atomic-openshift-master-controllers]', :delayed if is_master_server && node['is_apaas_openshift_cookbook']['openshift_HA']
-      notifies :restart, 'service[atomic-openshift-node]', :delayed if is_node_server
+      notifies :restart, 'service[Restart Node]', :delayed if is_node_server
     end
   end
 end

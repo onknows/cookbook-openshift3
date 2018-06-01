@@ -1,11 +1,9 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
-## v2.0.53
+## v2.0.53-54
 ### Bug
-- Fix race condition for upgrade 36-37 (Use loopback config)
-- Fix bug related to SAN for ETCD (https://github.com/docker/for-linux/issues/248)
-- Fix duplicate resources
+- Fix issue with cloud_provider when restarting node service.
 
 ## v2.0.52
 ### Bug
