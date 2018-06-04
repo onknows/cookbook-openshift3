@@ -36,6 +36,16 @@ template "#{Chef::Config[:file_cache_path]}/registry-patch" do
   )
 end
 
+if node['cookbook-openshift3']['openshift_hosted_deploy_custom_router'] && ::File.exist?(node['cookbook-openshift3']['openshift_hosted_deploy_custom_router_file'])
+  execute 'Update ConfigMap of the customised Hosted Router' do
+    command "#{node['cookbook-openshift3']['openshift_common_client_binary']} create configmap customrouter --from-file=haproxy-config.template=#{node['cookbook-openshift3']['openshift_hosted_deploy_custom_router_file']} -n ${namespace_router} --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig --dry-run -o yaml | #{node['cookbook-openshift3']['openshift_common_client_binary']} replace -f -"
+    environment(
+      'namespace_router' => node['cookbook-openshift3']['openshift_hosted_router_namespace']
+    )
+    cwd node['cookbook-openshift3']['openshift_master_config_dir']
+  end
+end
+
 execute "Update router image to current version \"#{hosted_upgrade_version}\"" do
   command "#{node['cookbook-openshift3']['openshift_common_client_binary']} \
     --config=#{node['cookbook-openshift3']['openshift_master_config_dir']}/admin.kubeconfig \
