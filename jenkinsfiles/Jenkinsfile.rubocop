@@ -36,6 +36,6 @@ try {
 } catch(err) {
   mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/
 
-''' + err, cc: '', from: 'cookbook-openshift3-rubocop@jenkins.meirionconsulting.com', replyTo: '', subject: 'Rubocop Build Failure', to: 'ian.miell@gmail.com'
+''' + err, cc: '', from: 'cookbook-openshift3-rubocop@jenkins.meirionconsulting.com', replyTo: '', subject: 'Rubocop Build Failure', to: 'ian.miell@gmail.com, william17.burton@gmail.com'
   throw(err)
 }
