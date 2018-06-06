@@ -110,3 +110,15 @@ unless node['cookbook-openshift3']['upgrade'] && ::File.file?(node['cookbook-ope
   include_recipe 'cookbook-openshift3::adhoc_redeploy_certificates' if node['cookbook-openshift3']['adhoc_redeploy_certificates']
   include_recipe 'cookbook-openshift3::commons' unless node.run_state['issues_detected']
 end
+
+if node['cookbook-openshift3']['control_upgrade'] && (node['cookbook-openshift3']['control_upgrade_version'].nil? || node['cookbook-openshift3']['control_upgrade_version'] == '')
+  Chef::Log.error('control_upgrade set but control_upgrade_version is unset')
+end
+
+if node['cookbook-openshift3']['control_upgrade'] && %w(14 15 36 37).include?(node['cookbook-openshift3']['control_upgrade_version'])
+  Chef::Log.error('control_upgrade_version set')
+end
+
+if !node['cookbook-openshift3']['control_upgrade'] && !node['cookbook-openshift3']['control_upgrade_version'].nil?
+  Chef::Log.error('control_upgrade switched off but control_upgrade_version set, which is not consistent')
+end
