@@ -1,6 +1,10 @@
 # Openshift 3 Cookbook CHANGELOG
 This file is used to list changes made in each version of the Openshift 3 cookbook.
 
+## v2.0.57
+### Bug
+- Fix issue when deleting servers
+
 ## v2.0.56
 ### Improvement
 - Automatically upgrade the custom router template during upgrades
