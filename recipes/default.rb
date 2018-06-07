@@ -19,6 +19,10 @@ include_recipe 'is_apaas_openshift_cookbook::ca_bundle_fix'
 
 if ::File.file?(node['is_apaas_openshift_cookbook']['adhoc_uninstall_control_flag'])
   include_recipe 'is_apaas_openshift_cookbook::adhoc_uninstall'
+
+  file node['is_apaas_openshift_cookbook']['adhoc_uninstall_control_flag'] do
+    action :delete
+  end
 end
 
 include_recipe 'is_apaas_openshift_cookbook::services'

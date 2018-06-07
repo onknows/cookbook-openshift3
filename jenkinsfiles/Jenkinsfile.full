@@ -14,7 +14,7 @@ try {
     string(name: 'CHEF_DEPLOY_METHODS',                          defaultValue: 'server solo',                                  description: 'Which deployment methods to use (server and/or solo)'),
     string(name: 'CHEF_DEPLOY_CONTAINERIZED',                    defaultValue: 'true false',                                   description: 'If "true", deploy containerized, "true false" to do both'),
     string(name: 'LOG_LEVEL',                                    defaultValue: 'debug',                                        description: 'shutit log level (debug, info, warning, critical)'),
-    string(name: 'SHUTIT_CLUSTER_CONFIGS',                       defaultValue: 'test_multi_node_separate_etcd',                description: 'which cluster configs to test')
+    string(name: 'SHUTIT_CLUSTER_CONFIGS',                       defaultValue: 'test_multi_node_colocated_etcd',               description: 'which cluster configs to test')
   ])])
   node() {
     stage('shutit_tests') {
@@ -36,6 +36,6 @@ try {
 } catch(err) {
   mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/
 
-''' + err, cc: '', from: 'is_apaas_openshift_cookbook@jenkins.meirionconsulting.com', replyTo: '', subject: 'Full Build Failure', to: 'ian.miell@gmail.com'
+''' + err, cc: '', from: 'is_apaas_openshift_cookbook@jenkins.meirionconsulting.com', replyTo: '', subject: 'Full Build Failure', to: 'ian.miell@gmail.com, william17.burton@gmail.com'
   throw(err)
 }

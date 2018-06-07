@@ -49,6 +49,6 @@ try {
     }
   }
 } catch(err) {
-  mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/''' + err, cc: '', from: 'is_apaas_openshift_cookbook@jenkins.meirionconsulting.com', replyTo: '', subject: 'Tiny Build Failure', to: 'ian.miell@gmail.com'
+  mail bcc: '', body: '''See: https://jenkins.meirionconsulting.com/''' + err, cc: '', from: 'is_apaas_openshift_cookbook@jenkins.meirionconsulting.com', replyTo: '', subject: 'Tiny Build Failure', to: 'ian.miell@gmail.com, william17.burton@gmail.com'
   throw(err)
 }
